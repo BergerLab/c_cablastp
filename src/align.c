@@ -261,3 +261,43 @@ cbp_align_length_nogaps(char *residues)
 
     return len;
 }
+
+// returns extension distance (but does not move pointers)
+int attempt_ext(int i1, const int dir1, const char *s1, int len1,
+		int i2, const int dir2, const char *s2, int len2) {
+  const int dir_prod = dir1*dir2;
+  i1 += dir1; i2 += dir2;
+  int progress = 0, consec_mismatch = 0;
+  while (consec_mismatch < MAX_CONSEC_MISMATCH &&
+	 i1 >= 0 && i1 < len1 && i2 >= 0 && i2 < len2) {
+    if (!bases_match(s1[i1], s2[i2], dir_prod))
+      consec_mismatch++;
+    else
+      consec_mismatch = 0;
+    i1 += dir1; i2 += dir2;
+    progress++;
+  }
+  return progress;
+}
+
+int bases_match(char a, char b, int dir_prod){
+  if(dir_prod > 0)
+    return (a == b && a != 'N') ? 1 : 0;
+  else
+    return a == base_complement('b') ? 1 : 0;
+}
+
+char base_complement(char base){
+  switch (base){
+    case 'A':
+      return 'T';
+    case 'C':
+      return 'G';
+    case 'G':
+      return 'C';
+    case 'T':
+      return 'A';
+    default:
+      return '?'
+  }
+}

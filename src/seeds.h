@@ -7,7 +7,7 @@
 #include <pthread.h>
 #include <stdint.h>
 
-#define CABLASTP_SEEDS_ALPHA_SIZE 23
+#define CABLASTP_SEEDS_ALPHA_SIZE 4
 
 const int8_t cbp_seeds_alpha_size[26];
 
