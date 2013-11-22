@@ -50,4 +50,8 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
 int32_t
 cbp_align_length_nogaps(char *residues);
 
+int
+attempt_ext(int i1, const int dir1, const char *s1, int len1,
+            int i2, const int dir2, const char *s2, int len2);
+
 #endif

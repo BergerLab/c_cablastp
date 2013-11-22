@@ -3,9 +3,9 @@
 
 #include <stdint.h>
 
-#define BLOSUM62_ALPHABET "ABCDEFGHIKLMNPQRSTVWXYZ"
+#define BLOSUM62_ALPHABET "ACGT"
 
-#define BLOSUM62_SIZE 24
+#define BLOSUM62_SIZE 5
 
 const int8_t BLOSUM62_RESIDUE_TO_INDEX[26];
 
