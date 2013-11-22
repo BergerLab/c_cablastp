@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+
 #include "align.h"
 #include "blosum62.h"
 

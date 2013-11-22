@@ -24,7 +24,7 @@ load_compress_args()
         "\tregard to sequence identity. This is to avoid small sequences\n"
         "\tin the coarse database.");
     opt_flag_int(conf,
-        &compress_flags.match_kmer_size, "match-kmer-size", 4,
+        &compress_flags.match_kmer_size, "match-kmer-size", 10,
         "The size of the K-mer fragments to match in ungapped extension.");
     opt_flag_int(conf,
         &compress_flags.match_seq_id_threshold, "match-seq-id-threshold", 70,
@@ -45,6 +45,20 @@ load_compress_args()
     opt_flag_int(conf,
         &compress_flags.ext_seq_id_threshold, "ext-seq-id-threshold", 50,
         "The sequence identity threshold of [un]gapped extension.");
+
+    opt_flag_int(conf,
+        &compress_flags.min_match_len, "min-match-len", 300,
+        "The minimum size of an extension needed for a match to be recorded.");
+    opt_flag_int(conf,
+        &compress_flags.max_kmer_freq, "max-kmer-freq", 500,
+        "The maximum number of entries for a k-mer in the seeds table.");
+    opt_flag_int(conf,
+        &compress_flags.overlap, "overlap", 100,
+        "The maximum number of entries for a k-mer in the seeds table.");
+    opt_flag_int(conf,
+        &compress_flags.max_chunk_size, "max-chunk-size", 10000,
+        "The maximum number of bases that are checked before adding a chunk without a match.");
+
 
     return conf;
 }
