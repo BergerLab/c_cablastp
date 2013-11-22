@@ -3,7 +3,7 @@
 
 #include <stdint.h>
 
-#define BLOSUM62_ALPHABET "ACGTN"
+#define BLOSUM62_ALPHABET "ACGT"
 
 #define BLOSUM62_SIZE 5
 

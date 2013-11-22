@@ -54,10 +54,4 @@ int
 attempt_ext(int i1, const int dir1, const char *s1, int len1,
             int i2, const int dir2, const char *s2, int len2);
 
-int
-bases_match(char a, char b, int dir_prod);
-
-char
-base_complement(char base);
-
 #endif
