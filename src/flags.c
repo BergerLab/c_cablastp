@@ -36,7 +36,7 @@ load_compress_args()
         &compress_flags.procs, "procs", cpus,
         "The number of total CPUs to use to divide work.");
     opt_flag_int(conf,
-        &compress_flags.map_seed_size, "map-seed-size", 6,
+        &compress_flags.map_seed_size, "map-seed-size", 10,
         "The size of a seed in the K-mer map. This size combined with "
         "'ext-seed-size' forms the total seed size.");
     opt_flag_int(conf,

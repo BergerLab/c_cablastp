@@ -5,11 +5,32 @@
 #include "seeds.h"
 
 const int8_t cbp_seeds_alpha_size[] = {
-	0,  /* 'A' */
-	1,  /* 'C' */
-	2,  /* 'G' */
-	3,  /* 'T' */
-	4,  /* 'N' */
+	0,   /* 'A' */	
+	-1,  /* 'B' */
+	1,   /* 'C' */
+	-1,  /* 'D' */
+	-1,  /* 'E' */
+	-1,  /* 'F' */
+	2,   /* 'G' */
+	-1,  /* 'H' */
+	-1,  /* 'I' */
+	-1,  /* 'J' */
+	-1,  /* 'K' */
+	-1,  /* 'L' */
+	-1,  /* 'M' */
+	-1,  /* 'N' */
+	-1,  /* 'O' */
+	-1,  /* 'P' */
+	-1,  /* 'Q' */
+	-1,  /* 'R' */
+	-1,  /* 'S' */
+	3,   /* 'T' */
+	-1,  /* 'U' */
+	-1,  /* 'V' */
+	-1,  /* 'W' */
+	-1,  /* 'X' */
+	-1,  /* 'Y' */
+	-1   /* 'Z' */
 };
 
 static int32_t residue_value(char residue);
@@ -71,9 +92,9 @@ cbp_seeds_free(struct cbp_seeds *seeds) {
 void
 cbp_seeds_add(struct cbp_seeds *seeds, struct cbp_coarse_seq *seq)
 {
-    struct cbp_seed_loc *sl1, *sl2;
     char *kmer;
     int32_t hash, i;
+    struct cbp_seed_loc *sl1, *sl2;
 
     pthread_rwlock_wrlock(&seeds->lock);
 
@@ -151,11 +172,11 @@ static int32_t residue_value(char residue)
 
     i = residue - 'A';
     if (i < 0 || i >= 26) {
-        fprintf(stderr, "Invalid amino acid residue: %c\n", residue);
+        fprintf(stderr, "Invalid nucleotide residue: %c\n", residue);
         exit(1);
     }
     if (-1 == (val = cbp_seeds_alpha_size[i])) {
-        fprintf(stderr, "Invalid amino acid residue: %c\n", residue);
+        fprintf(stderr, "Invalid nucleotide residue: %c\n", residue);
         exit(1);
     }
     return val;
@@ -164,9 +185,36 @@ static int32_t residue_value(char residue)
 static int32_t hash_kmer(struct cbp_seeds *seeds, char *kmer)
 {
     int32_t i, key;
-
     key = 0;
     for (i = 0; i < seeds->seed_size; i++)
         key += residue_value(kmer[i]) * seeds->powers[i];
     return key;
+}
+
+char *unhash_kmer(struct cbp_seeds *seeds, int hash){
+    char *kmer = malloc(11*sizeof(char));
+    int i;
+    char nucleotides[4] = {'A','C','G','T'};
+    kmer[10] = '\0';
+    for(i = 0; i < seeds -> seed_size; i++){
+        kmer[i] = nucleotides[hash%4];
+        hash /= 4;
+    }
+    return kmer;
+}
+
+void print_seeds(struct cbp_seeds *seeds){
+    int32_t i;
+    for(i = 0; i < seeds-> locs_length; i++){
+      char *kmer = unhash_kmer(seeds, i);
+      struct cbp_seed_loc *j = seeds->locs[i];
+      printf("%s\n", kmer);
+      free(kmer);
+      kmer = NULL;
+      while(j){
+        printf("(%d %d) > ", j->coarse_seq_id, j -> residue_index);
+        j = j -> next;
+      }
+      printf("\n");
+    }
 }

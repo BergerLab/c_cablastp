@@ -4,11 +4,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-<<<<<<< HEAD
-
-=======
 #include "DNAutils.h"
->>>>>>> bee71e418127f06250f80eba708d4f854ea8e2b4
 #include "align.h"
 #include "blosum62.h"
 

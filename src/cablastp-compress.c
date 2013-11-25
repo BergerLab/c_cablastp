@@ -29,9 +29,10 @@ main(int argc, char **argv)
     int i, org_seq_id;
     struct timeval start, current;
     long double elapsed;
-
+printf("!");
     conf = load_compress_args();
     args = opt_config_parse(conf, argc, argv);
+printf("!");
     if (args->nargs < 2) {
         fprintf(stderr, 
             "Usage: %s [flags] database-dir fasta-file [ fasta-file ... ]\n",
@@ -39,9 +40,11 @@ main(int argc, char **argv)
         opt_config_print_usage(conf);
         exit(1);
     }
+printf("!");
 
     db = cbp_database_init(args->args[0], compress_flags.map_seed_size, false);
     workers = cbp_compress_start_workers(db, compress_flags.procs);
+printf("!");
 
     org_seq_id = 0;
     gettimeofday(&start, NULL);

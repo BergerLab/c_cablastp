@@ -114,17 +114,42 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     int32_t seed_size, ext_seed, resind, mext, new_coarse_seq_id;
     int32_t last_match, current;
     int32_t id;
+
+    int32_t max_chunk_size;
+    int32_t overlap;
+
+    int32_t start_of_section;
+    int32_t end_of_section;
+
     bool has_end, changed;
 
+printf("compress has started!\n");
     cseq = cbp_compressed_seq_init(org_seq->id, org_seq->name);
+printf("initialized cseq\n");
     seed_size = coarse_db->seeds->seed_size;
     mext = compress_flags.match_extend;
     ext_seed = compress_flags.ext_seed_size;
 
+    max_chunk_size = compress_flags.max_chunk_size;
+    overlap = compress_flags.overlap;
 
     last_match = 0;
     current = 0;
+    start_of_section = 0;
+    end_of_section = start_of_section + max_chunk_size;
+
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
+        if(current == 0 && coarse_db->seqs->size == 0){
+            cbp_seeds_add(coarse_db->seeds, cbp_coarse_seq_init(0, org_seq->residues, 0,
+                                                              max_chunk_size));
+            start_of_section += max_chunk_size - overlap;
+            end_of_section = min(start_of_section + 10000,
+                                 org_seq->length - seed_size - ext_seed);
+            current = start_of_section;
+            continue;
+        }
+print_seeds(coarse_db->seeds);
+        break;
         kmer = org_seq->residues + current;
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
         if (seeds == NULL)
@@ -214,7 +239,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
             cbp_link_to_coarse_init_nodiff(
                 new_coarse_seq_id, 0, org_seq->length - last_match));
     }
-
+fprintf(stderr, "Compress finished");
     return cseq;
 }
 

@@ -48,4 +48,6 @@ cbp_seeds_add(struct cbp_seeds *seeds, struct cbp_coarse_seq *seq);
 struct cbp_seed_loc *
 cbp_seeds_lookup(struct cbp_seeds *seeds, char *kmer);
 
+void print_seeds(struct cbp_seeds *seeds);
+
 #endif
