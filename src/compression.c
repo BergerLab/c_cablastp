@@ -122,7 +122,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     int32_t start_of_section;
     int32_t end_of_section;
 
-    bool has_end, changed;
+    bool has_end, changed, found_match;
 
     cseq = cbp_compressed_seq_init(org_seq->id, org_seq->name);
     seed_size = coarse_db->seeds->seed_size;
@@ -136,6 +136,8 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     current = 0;
     start_of_section = 0;
     end_of_section = start_of_section + max_chunk_size;
+
+    found_match = false;
 
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
         if(current == 0 && coarse_db->seqs->size == 0){
@@ -223,9 +225,12 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
             last_match = current + mlens.olen;
             current = last_match - 1;
 
+            found_match = true;
             break;
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
+            if(found_match)
+              break;
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
 
