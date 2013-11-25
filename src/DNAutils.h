@@ -3,6 +3,6 @@
 
 int bases_match(char a, char b, int dir_prod);
 char base_complement(char base);
-char *revcomp(char *kmer);
+char *kmer_revcomp(char *kmer);
 
 #endif

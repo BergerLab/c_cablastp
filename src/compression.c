@@ -4,6 +4,7 @@
 
 #include "compression.h"
 #include "flags.h"
+#include "DNAutils.h"
 
 struct worker_args {
     struct cbp_database *db;
@@ -108,7 +109,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     struct extend_match mlens;
     struct cbp_coarse_seq *coarse_seq;
     struct cbp_compressed_seq *cseq;
-    struct cbp_seed_loc *seeds, *seedLoc;
+    struct cbp_seed_loc *seeds, *seeds_r, *seedLoc;
     struct cbp_alignment alignment;
     char *kmer;
     int32_t seed_size, ext_seed, resind, mext, new_coarse_seq_id;
@@ -123,9 +124,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
 
     bool has_end, changed;
 
-printf("compress has started!\n");
     cseq = cbp_compressed_seq_init(org_seq->id, org_seq->name);
-printf("initialized cseq\n");
     seed_size = coarse_db->seeds->seed_size;
     mext = compress_flags.match_extend;
     ext_seed = compress_flags.ext_seed_size;
@@ -148,10 +147,9 @@ printf("initialized cseq\n");
             current = start_of_section;
             continue;
         }
-print_seeds(coarse_db->seeds);
-        break;
         kmer = org_seq->residues + current;
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
+        seeds_r = cbp_seeds_lookup(coarse_db->seeds, kmer_revcomp(kmer));
         if (seeds == NULL)
             continue;
 
@@ -227,8 +225,81 @@ print_seeds(coarse_db->seeds);
 
             break;
         }
+        for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
+            resind = seedLoc->residue_index;
+            coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
+
+            if (resind + seed_size + ext_seed > coarse_seq->seq->length)
+                continue;
+
+            if (0 != strncmp(
+                        coarse_seq->seq->residues + seed_size,
+                        org_seq->residues + seed_size,
+                        ext_seed))
+                continue;
+
+            mlens = extend_match(
+                mem,
+                coarse_seq->seq->residues, resind, coarse_seq->seq->length,
+                org_seq->residues, current, org_seq->length);
+
+            has_end = mlens.olen + mext >= org_seq->length - current;
+            if (mlens.olen < compress_flags.min_match_len && !has_end)
+                continue;
+
+            alignment = cbp_align_nw(
+                mem,
+                coarse_seq->seq->residues, resind, resind + mlens.rlen,
+                org_seq->residues, current, current + mlens.olen);
+            id = cbp_align_identity(
+                alignment.ref, 0, alignment.length,
+                alignment.org, 0, alignment.length);
+            if (id < compress_flags.match_seq_id_threshold)
+                continue;
+
+            changed = false;
+            if (has_end) {
+                mlens.olen = org_seq->length - current;
+                changed = true;
+            }
+            if (current - last_match <= mext) {
+                mlens.olen += current - last_match;
+                current = last_match;
+                changed = true;
+            }
+
+            if (changed)
+                alignment = cbp_align_nw(
+                    mem,
+                    coarse_seq->seq->residues, resind, resind + mlens.rlen,
+                    org_seq->residues, current, current + mlens.olen);
+
+            if (current - last_match > 0) {
+                new_coarse_seq_id = add_without_match(
+                    coarse_db, org_seq, last_match, current);
+                cbp_compressed_seq_addlink(
+                    cseq,
+                    cbp_link_to_coarse_init_nodiff(
+                        new_coarse_seq_id, 0, current - last_match));
+            }
+
+            cbp_compressed_seq_addlink(
+                cseq,
+                cbp_link_to_coarse_init(
+                    coarse_seq->id, resind, resind + mlens.rlen, alignment));
+            cbp_coarse_seq_addlink(
+                coarse_seq,
+                cbp_link_to_compressed_init(
+                    org_seq->id, resind, resind + mlens.rlen));
+
+            last_match = current + mlens.olen;
+            current = last_match - 1;
+
+            break;
+        }
 
         cbp_seed_loc_free(seeds);
+        cbp_seed_loc_free(seeds_r);
     }
 
     if (org_seq->length - last_match > 0) {
@@ -239,7 +310,8 @@ print_seeds(coarse_db->seeds);
             cbp_link_to_coarse_init_nodiff(
                 new_coarse_seq_id, 0, org_seq->length - last_match));
     }
-fprintf(stderr, "Compress finished");
+print_seeds(coarse_db->seeds);
+fprintf(stderr, "Compress finished\n");
     return cseq;
 }
 

@@ -22,7 +22,7 @@ int bases_match(char a, char b, int dir_prod){
     return a == base_complement('b') ? 1 : 0;
 }
 
-char *revcomp(char *kmer){
+char *kmer_revcomp(char *kmer){
   int seed_size = 10; /*compress_flags.seed_size;*/
   char *kmer_revcomp = malloc(seed_size * sizeof(char));
   int i;
