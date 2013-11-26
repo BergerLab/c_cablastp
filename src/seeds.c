@@ -98,7 +98,7 @@ cbp_seeds_add(struct cbp_seeds *seeds, struct cbp_coarse_seq *seq)
 
     pthread_rwlock_wrlock(&seeds->lock);
 
-    for (i = 0; i < seq->seq->length - seeds->seed_size; i++) {
+    for (i = 0; i < seq->seq->length - seeds->seed_size+1; i++) {
         kmer = seq->seq->residues + i;
         sl1 = cbp_seed_loc_init(seq->id, i);
 
