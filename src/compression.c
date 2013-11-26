@@ -136,7 +136,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     last_match = 0;
     current = 0;
     start_of_section = 0;
-    end_of_section = start_of_section + max_chunk_size;
+    end_of_section = start_of_section + max_chunk_size - 1;
 
     found_match = false;
 
@@ -147,30 +147,38 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
             end_of_section = min(start_of_section + max_chunk_size,
                                  org_seq->length - seed_size - ext_seed);
             current = start_of_section;
+/********print_seeds(coarse_db->seeds);********/
             continue;
         }
         kmer = org_seq->residues + current;
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, kmer_revcomp(kmer));
         if (seeds == NULL)
-            continue;
+            if(current >= end_of_section)
+                break;
+            else
+                continue;
 
         for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
+char *base = kmer;
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
             if (resind + seed_size + ext_seed > coarse_seq->seq->length)
                 continue;
-
+for(; base < kmer+10; base++){
+    printf("%c",*base);
+}
+printf(" ");
             if (0 != strncmp(
                         coarse_seq->seq->residues + seed_size,
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;
-            /*printf("%d, %d\n",
-               attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section,
+            printf("%d, %d\n",
+               attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
-               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section,
-                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0));*/
+               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0));
 
 
             /*mlens = extend_match(
@@ -310,7 +318,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
 
         cbp_seed_loc_free(seeds);
         cbp_seed_loc_free(seeds_r);
-
 if(current >= end_of_section)break;
     }
 

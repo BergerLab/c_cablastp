@@ -268,20 +268,20 @@ int
 attempt_ext(int i1, const int dir1, const char *s1, int len1, int start1,
             int i2, const int dir2, const char *s2, int len2, int start2)
 {
-  const int dir_prod = dir1*dir2;
-  int progress = 0;
-  int consec_mismatch = 0;
-  i1 += dir1;
-  i2 += dir2;
-  /*Replace this 3 with the flag for max_consec_mismatch*/
-  while (consec_mismatch < 3 &&
-	 i1 >= start1 && i1 < start1+len1 && i2 >= start2 && i2 < start2+len2) {
-    if (!bases_match(s1[i1], s2[i2], dir_prod))
-      consec_mismatch++;
-    else
-      consec_mismatch = 0;
-    i1 += dir1; i2 += dir2;
-    progress++;
-  }
-  return progress;
+    const int dir_prod = dir1*dir2;
+    int progress = 0;
+    int consec_mismatch = 0;
+    i1 += dir1;
+    i2 += dir2;
+    /*Replace this 3 with the flag for max_consec_mismatch*/
+    while (consec_mismatch < 3 &&
+        i1 >= start1 && i1 < start1+len1 && i2 >= start2 && i2 < start2+len2) {
+        if (!bases_match(s1[i1], s2[i2], dir_prod))
+            consec_mismatch++;
+        else
+            consec_mismatch = 0;
+        i1 += dir1; i2 += dir2;
+        progress++;
+    }
+    return progress;
 }
