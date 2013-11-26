@@ -19,7 +19,7 @@ int bases_match(char a, char b, int dir_prod){
   if(dir_prod > 0)
     return (a == b && a != 'N') ? 1 : 0;
   else
-    return a == base_complement('b') ? 1 : 0;
+    return a == base_complement(b) ? 1 : 0;
 }
 
 char *kmer_revcomp(char *kmer){
