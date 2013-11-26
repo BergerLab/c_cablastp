@@ -58,6 +58,9 @@ load_compress_args()
     opt_flag_int(conf,
         &compress_flags.max_chunk_size, "max-chunk-size", 10000,
         "The maximum number of bases that are checked before adding a chunk without a match.");
+    opt_flag_int(conf,
+        &compress_flags.min_progress, "min-progress", 50,
+        "The minimum progress that needs to be made in each direction of attempt_ext to consider a seed as a potential match.");
 
 
     return conf;

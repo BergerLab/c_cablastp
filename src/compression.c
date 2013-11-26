@@ -112,7 +112,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     struct cbp_seed_loc *seeds, *seeds_r, *seedLoc;
     struct cbp_alignment alignment;
     char *kmer;
-    int32_t seed_size, ext_seed, resind, mext, new_coarse_seq_id;
+    int32_t seed_size, ext_seed, resind, mext, new_coarse_seq_id, min_progress;
     int32_t last_match, current;
     int32_t id;
 
@@ -128,6 +128,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     seed_size = coarse_db->seeds->seed_size;
     mext = compress_flags.match_extend;
     ext_seed = compress_flags.ext_seed_size;
+    min_progress = compress_flags.min_progress;
 
     max_chunk_size = compress_flags.max_chunk_size;
     overlap = compress_flags.overlap;
@@ -141,10 +142,9 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
 
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
         if(current == 0 && coarse_db->seqs->size == 0){
-            cbp_seeds_add(coarse_db->seeds, cbp_coarse_seq_init(0, org_seq->residues, 0,
-                                                              max_chunk_size));
-            start_of_section += max_chunk_size - overlap;
-            end_of_section = min(start_of_section + 10000,
+            add_without_match(coarse_db, org_seq, 0, max_chunk_size);
+            start_of_section += max_chunk_size - overlap - 1;
+            end_of_section = min(start_of_section + max_chunk_size,
                                  org_seq->length - seed_size - ext_seed);
             current = start_of_section;
             continue;
@@ -158,7 +158,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
-
             if (resind + seed_size + ext_seed > coarse_seq->seq->length)
                 continue;
 
@@ -167,8 +166,14 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;
+            /*printf("%d, %d\n",
+               attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section,
+                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
+               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section,
+                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0));*/
 
-            mlens = extend_match(
+
+            /*mlens = extend_match(
                 mem,
                 coarse_seq->seq->residues, resind, coarse_seq->seq->length,
                 org_seq->residues, current, org_seq->length);
@@ -226,7 +231,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
             current = last_match - 1;
 
             found_match = true;
-            break;
+            break;*/
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
             if(found_match)
@@ -243,7 +248,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
                         ext_seed))
                 continue;
 
-            mlens = extend_match(
+            /*mlens = extend_match(
                 mem,
                 coarse_seq->seq->residues, resind, coarse_seq->seq->length,
                 org_seq->residues, current, org_seq->length);
@@ -300,11 +305,13 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
             last_match = current + mlens.olen;
             current = last_match - 1;
 
-            break;
+            break;*/
         }
 
         cbp_seed_loc_free(seeds);
         cbp_seed_loc_free(seeds_r);
+
+if(current >= end_of_section)break;
     }
 
     if (org_seq->length - last_match > 0) {
@@ -315,7 +322,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
             cbp_link_to_coarse_init_nodiff(
                 new_coarse_seq_id, 0, org_seq->length - last_match));
     }
-print_seeds(coarse_db->seeds);
 fprintf(stderr, "Compress finished\n");
     return cseq;
 }
