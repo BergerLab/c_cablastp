@@ -111,7 +111,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     struct cbp_compressed_seq *cseq;
     struct cbp_seed_loc *seeds, *seeds_r, *seedLoc;
     struct cbp_alignment alignment;
-    char *kmer;
+    char *kmer, *revcomp;
     int32_t seed_size, ext_seed, resind, mext, new_coarse_seq_id, min_progress;
     int32_t last_match, current;
     int32_t id;
@@ -151,8 +151,9 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
             continue;
         }
         kmer = org_seq->residues + current;
+	revcomp = kmer_revcomp(kmer);
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
-        seeds_r = cbp_seeds_lookup(coarse_db->seeds, kmer_revcomp(kmer));
+        seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
         if (seeds == NULL)
             if(current >= end_of_section)
                 break;
@@ -242,8 +243,14 @@ printf(" ");
             break;*/
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
+char *base = revcomp;
             if(found_match)
               break;
+printf("Reverse direction: ");
+for(; base < revcomp+10; base++){
+    printf("%c",*base);
+}
+printf(" ");
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
 
@@ -255,6 +262,12 @@ printf(" ");
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;
+
+            printf("%d, %d\n",
+               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
+               attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0));
 
             /*mlens = extend_match(
                 mem,
