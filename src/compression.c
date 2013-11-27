@@ -151,10 +151,11 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
             continue;
         }
         kmer = org_seq->residues + current;
+
 	revcomp = kmer_revcomp(kmer);
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
-        if (seeds == NULL)
+        if (seeds == NULL && seeds_r == NULL)
             if(current >= end_of_section)
                 break;
             else
@@ -164,6 +165,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
 char *base = kmer;
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
+printf(">");
             if (resind + seed_size + ext_seed > coarse_seq->seq->length)
                 continue;
 for(; base < kmer+10; base++){
@@ -246,22 +248,22 @@ printf(" ");
 char *base = revcomp;
             if(found_match)
               break;
-printf("Reverse direction: ");
 for(; base < revcomp+10; base++){
     printf("%c",*base);
 }
 printf(" ");
+printf("Reverse direction: ");
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
 
             if (resind + seed_size + ext_seed > coarse_seq->seq->length)
                 continue;
 
-            if (0 != strncmp(
+            /*if (0 != strncmp(
                         coarse_seq->seq->residues + seed_size,
                         org_seq->residues + seed_size,
                         ext_seed))
-                continue;
+                continue;*/
 
             printf("%d, %d\n",
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,

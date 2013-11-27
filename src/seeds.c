@@ -185,6 +185,7 @@ static int32_t residue_value(char residue)
 static int32_t hash_kmer(struct cbp_seeds *seeds, char *kmer)
 {
     int32_t i, key;
+
     key = 0;
     for (i = 0; i < seeds->seed_size; i++)
         key += residue_value(kmer[i]) * seeds->powers[i];
