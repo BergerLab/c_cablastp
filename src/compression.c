@@ -165,7 +165,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
 char *base = kmer;
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
-printf(">");
             if (resind + seed_size + ext_seed > coarse_seq->seq->length)
                 continue;
 for(; base < kmer+10; base++){
