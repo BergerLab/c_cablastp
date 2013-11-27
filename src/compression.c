@@ -115,14 +115,16 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     int32_t seed_size, ext_seed, resind, mext, new_coarse_seq_id, min_progress;
     int32_t last_match, current;
     int32_t id;
+    int32_t i;
 
-    int32_t max_chunk_size;
+    int32_t max_chunk_size, max_section_size;
     int32_t overlap;
 
     int32_t start_of_section;
     int32_t end_of_section;
 
     bool has_end, changed, found_match;
+    bool *matches, *matches_temp;
 
     cseq = cbp_compressed_seq_init(org_seq->id, org_seq->name);
     seed_size = coarse_db->seeds->seed_size;
@@ -131,6 +133,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     min_progress = compress_flags.min_progress;
 
     max_chunk_size = compress_flags.max_chunk_size;
+    max_section_size = 2 * max_chunk_size;
     overlap = compress_flags.overlap;
 
     last_match = 0;
@@ -139,6 +142,13 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     end_of_section = start_of_section + max_chunk_size - 1;
 
     found_match = false;
+
+    matches = malloc(max_section_size*sizeof(*matches));
+    matches_temp = malloc(max_section_size*sizeof(*matches_temp));
+    for(i = 0; i < max_section_size; i++){
+        matches[i] = true;
+        matches_temp[i] = true;
+    }
 
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
         if(current == 0 && coarse_db->seqs->size == 0){
@@ -167,20 +177,20 @@ char *base = kmer;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
             if (resind + seed_size + ext_seed > coarse_seq->seq->length)
                 continue;
-for(; base < kmer+10; base++){
-    printf("%c",*base);
-}
-printf(" ");
             if (0 != strncmp(
                         coarse_seq->seq->residues + seed_size,
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;
-            printf("%d, %d\n",
-               attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
+            if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                           resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0));
+                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0)){
+            
+                mlens = extend_match(mem, coarse_seq->seq->residues, resind,
+                                     coarse_seq->seq->length, org_seq->residues,
+                                     current, org_seq->length);
+            }
 
 
             /*mlens = extend_match(
@@ -244,14 +254,8 @@ printf(" ");
             break;*/
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
-char *base = revcomp;
             if(found_match)
               break;
-for(; base < revcomp+10; base++){
-    printf("%c",*base);
-}
-printf(" ");
-printf("Reverse direction: ");
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
 
@@ -264,11 +268,11 @@ printf("Reverse direction: ");
                         ext_seed))
                 continue;*/
 
-            printf("%d, %d\n",
+            /*printf("%d, %d\n",
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
                attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0));
+                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0));*/
 
             /*mlens = extend_match(
                 mem,

@@ -9,9 +9,10 @@
 #include "blosum62.h"
 
 int32_t
-cbp_align_ungapped(int32_t window_size, int32_t kmer_size, int32_t id_threshold,
-                   char *rseq, int32_t rstart, int32_t rend,
-                   char *oseq, int32_t ostart, int32_t oend)
+cbp_align_ungapped(int32_t kmer_size, int32_t dir1, int32_t dir2,
+                   char *rseq, int32_t rstart, int32_t rend, char *oseq,
+                   int32_t ostart, int32_t oend, bool *matches,
+                   bool *matches_past_clump)
 {
     int32_t length, scanned, successive;
     int32_t rlen, olen;
@@ -264,13 +265,14 @@ cbp_align_length_nogaps(char *residues)
 }
 
 /* returns extension distance (but does not move pointers)*/
-int
-attempt_ext(int i1, const int dir1, const char *s1, int len1, int start1,
-            int i2, const int dir2, const char *s2, int len2, int start2)
+int32_t
+attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
+            int32_t start1, int32_t i2, const int32_t dir2, const char *s2,
+            int32_t len2, int32_t start2)
 {
-    const int dir_prod = dir1*dir2;
-    int progress = 0;
-    int consec_mismatch = 0;
+    const int32_t dir_prod = dir1*dir2;
+    int32_t progress = 0;
+    int32_t consec_mismatch = 0;
     i1 += dir1;
     i2 += dir2;
     /*Replace this 3 with the flag for max_consec_mismatch*/
