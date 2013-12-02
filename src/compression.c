@@ -121,6 +121,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     int32_t overlap;
 
     int32_t start_of_section;
+    int32_t end_of_chunk;
     int32_t end_of_section;
 
     bool has_end, changed, found_match;
@@ -139,7 +140,8 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     last_match = 0;
     current = 0;
     start_of_section = 0;
-    end_of_section = start_of_section + max_chunk_size - 1;
+    end_of_chunk = start_of_section + max_chunk_size - 1;
+    end_of_section = start_of_section + max_section_size - 1;
 
     found_match = false;
 
@@ -149,27 +151,27 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches[i] = true;
         matches_temp[i] = true;
     }
-
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
         if(current == 0 && coarse_db->seqs->size == 0){
             add_without_match(coarse_db, org_seq, 0, max_chunk_size);
             start_of_section += max_chunk_size - overlap;
-            end_of_section = min(start_of_section + max_chunk_size,
+            end_of_chunk = min(start_of_section + max_chunk_size,
+                               org_seq->length - seed_size - ext_seed);
+            end_of_section = min(start_of_section + max_section_size,
                                  org_seq->length - seed_size - ext_seed);
             current = start_of_section-1;
 /********print_seeds(coarse_db->seeds);********/
             continue;
         }
         kmer = org_seq->residues + current;
-
+/*char *b = kmer;
+for(; b < kmer+10; b++){
+    printf("%c", *b);
+}
+printf("\n");*/
 	revcomp = kmer_revcomp(kmer);
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
-        if (seeds == NULL && seeds_r == NULL)
-            if(current >= end_of_section)
-                break;
-            else
-                continue;
 
         for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
 char *base = kmer;
@@ -337,7 +339,16 @@ char *base = kmer;
 
         cbp_seed_loc_free(seeds);
         cbp_seed_loc_free(seeds_r);
-if(current >= end_of_section)break;
+if(current >= 29000)break;
+if(current >= end_of_chunk){
+    add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
+    start_of_section = end_of_chunk - overlap;
+    end_of_chunk = min(start_of_section + max_chunk_size,
+                       org_seq->length - seed_size - ext_seed);
+    end_of_section = min(start_of_section + max_section_size,
+                         org_seq->length - seed_size - ext_seed);
+    current = start_of_section - 1;
+}
     }
 
     if (org_seq->length - last_match > 0) {
@@ -405,7 +416,7 @@ extend_match(struct cbp_align_nw_memory *mem,
         current += m * dir2;
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
-        printf("%d@@@%d\n",dp_len1,dp_len2);
+        printf("%d@@@%d\n",dp_len2,dp_len1);
                                                                      break;
         alignment = cbp_align_nw(
             mem,
