@@ -376,6 +376,9 @@ extend_match(struct cbp_align_nw_memory *mem,
     matches_index = compress_flags.gapped_window_size;
     max_section_size = 2 * compress_flags.max_chunk_size;
 
+    resind += dir1;
+    current += dir2;
+
     for(i = 0; i < max_section_size; i++){
         matches[i] = true;
         matches_past_clump[i] = true;
