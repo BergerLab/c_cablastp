@@ -40,8 +40,9 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
             matches_count++;}
 /*printf("matches_index: %d\n", matches_index);
 printf("matches_count: %d\n", matches_count);*/
-    while(i1 >= rstart && i1 < rend && i2 >= ostart && i2 < oend){
 printf("%d < %d < %d ||| %d < %d < %d\n", rstart, i1, rend, ostart, i1, oend);
+    while(i1 >= rstart && i1 < rend && i2 >= ostart && i2 < oend){
+/*printf("%d < %d < %d ||| %d < %d < %d\n", rstart, i1, rend, ostart, i1, oend);*/
         int cur_ismatch;
         i1 += dir1;
         i2 += dir2;

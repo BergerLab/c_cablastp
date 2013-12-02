@@ -153,10 +153,10 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
         if(current == 0 && coarse_db->seqs->size == 0){
             add_without_match(coarse_db, org_seq, 0, max_chunk_size);
-            start_of_section += max_chunk_size - overlap - 1;
+            start_of_section += max_chunk_size - overlap;
             end_of_section = min(start_of_section + max_chunk_size,
                                  org_seq->length - seed_size - ext_seed);
-            current = start_of_section;
+            current = start_of_section-1;
 /********print_seeds(coarse_db->seeds);********/
             continue;
         }
@@ -186,10 +186,11 @@ char *base = kmer;
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){ 
-                /*mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, 1,
-                                          org_seq->residues, start_of_section, end_of_section, current, 1);*/
+                mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
+                                          org_seq->residues, start_of_section, end_of_section, current, -1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
                                           org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
+                printf("%d %d\n", mlens_rev.olen, mlens_fwd.olen);
             }
 
 
@@ -384,7 +385,6 @@ extend_match(struct cbp_align_nw_memory *mem,
         matches_past_clump[i] = true;
     }
 
-
     gwsize = compress_flags.gapped_window_size;
     rlen = rend - rstart;
     olen = oend - ostart;
@@ -398,9 +398,10 @@ extend_match(struct cbp_align_nw_memory *mem,
         m = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
                                oseq, ostart, oend, dir2, current,
                                matches, matches_past_clump, matches_index);
-        printf("%d\n", m);
         mlens.rlen += m;
         mlens.olen += m;
+        resind += m * dir1;
+        current += m * dir2;
                                                                      break;
         alignment = cbp_align_nw(
             mem,
