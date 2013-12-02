@@ -7,59 +7,69 @@
 #include "DNAutils.h"
 #include "align.h"
 #include "blosum62.h"
+#include "flags.h"
 
 int32_t
-cbp_align_ungapped(int32_t kmer_size, int32_t dir1, int32_t dir2,
-                   char *rseq, int32_t rstart, int32_t rend, char *oseq,
-                   int32_t ostart, int32_t oend, bool *matches,
-                   bool *matches_past_clump)
+cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32_t i1,
+                   char *oseq, int32_t ostart, int32_t oend, int32_t dir2, int32_t i2,
+                   bool *matches, bool *matches_past_clump, int matches_index)
 {
     int32_t length, scanned, successive;
     int32_t rlen, olen;
     int32_t id;
     int32_t i, rs, os;
-    bool try_next_window;
+    int32_t consec_matches;
+    int32_t matches_since_last_consec;
+    int consec_match_clump_size;
+    int32_t dir_prod;
+    int matches_count;
+    int temp_index;
 
     length = 0;
     scanned = 0;
-    successive = 0;
+    consec_match_clump_size = compress_flags.consec_match_clump_size;
+    successive = consec_match_clump_size;
     rlen = rend - rstart;
     olen = oend - ostart;
-    try_next_window = true;
+    dir_prod = dir1 * dir2;
+    temp_index = 0;
+    matches_count = 0;
+    matches_since_last_consec = 0;
+    for(i = matches_index - 100; i < matches_count; i++)
+        if(matches[i])
+            matches_count++;
 
-    while (try_next_window) {
-        try_next_window = false;
-        for (i = 0; i < window_size; i++) {
-            if (scanned >= rlen || scanned >= olen)
-                break;
-
-            if (rseq[rstart + scanned] == oseq[ostart + scanned])
-                successive++;
-            else
-                successive = 0;
-
-            scanned++;
-            if (successive == kmer_size) {
-                if ((scanned - kmer_size) - length > 0) {
-                    rs = rstart + length;
-                    os = ostart + length;
-                    id = cbp_align_identity(
-                        rseq, rs, rstart + scanned - kmer_size,
-                        oseq, os, ostart + scanned - kmer_size);
-                    if (id < id_threshold) {
-                        successive--;
-                        continue;
-                    }
-                }
-
-                length = scanned;
-                successive = 0;
-                try_next_window = true;
-                break;
+    while(i1 >= rstart && i1 < rend && i2 >= ostart && i2 < oend){
+        int cur_ismatch;
+        i1 += dir1;
+        i2 += dir2;
+        scanned++;
+        cur_ismatch = bases_match(rseq[i1], oseq[i2], dir_prod);
+        if(cur_ismatch == 1){
+            matches_past_clump[temp_index] = true;
+            temp_index++;
+            successive++;
+            if(successive >= consec_match_clump_size){
+                int update = check_and_update(matches, &matches_index, 
+                                              &matches_count,
+                                              matches_past_clump, temp_index);
+                    length += update;
+                    if(update != temp_index)
+                        return -1 * length;
+                matches_since_last_consec = 0;
             }
+            else
+                matches_since_last_consec++;
+        }
+        else {
+            successive = 0;
+            if(scanned - length >= compress_flags.btwn_match_min_dist_check)
+                if((double)matches_since_last_consec <
+                   (scanned-length)*compress_flags.btwn_match_ident_thresh)
+                    return length;
         }
     }
-    return length;
+    return scanned;
 }
 
 int32_t
@@ -250,6 +260,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     return alignment;
 }
 
+/*Returns the number of non-gap characters in a string*/
 int32_t
 cbp_align_length_nogaps(char *residues)
 {
@@ -286,4 +297,26 @@ attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
         progress++;
     }
     return progress;
+}
+
+/*Takes in as input an array of bools representing data on whether or not previous
+ *pairs of bases matched, an index into that array, the current number of matches,
+ *an array of bools to add to the array of matches, and the number of bools to add.
+ *check_and_update adds bools from the temp array to the matches array until it
+ *either has added all of the matches or a bad window was found.  If a bad window
+ *was found, check_and_update returns false.  Otherwise, check_and_update returns true.
+ */
+int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *temp, int temp_index){
+    int i;
+    for(i = 0; i < temp_index; i++){
+        int hundred_bases_ago = *matches_index - 100;
+        (*matches_index)++;
+        matches[(*matches_index)] = temp[i];
+        
+        if(matches[hundred_bases_ago])
+            num_matches--;
+        if(*num_matches < 85)
+            return i;
+    }
+    return temp_index;
 }

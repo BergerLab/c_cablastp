@@ -13,7 +13,7 @@ load_compress_args()
     cpus = num_cpus();
 
     opt_flag_int(conf, 
-        &compress_flags.gapped_window_size, "gapped-window-size", 75,
+        &compress_flags.gapped_window_size, "gapped-window-size", 100,
         "The size of the gapped match window.");
     opt_flag_int(conf,
         &compress_flags.ungapped_window_size, "ungapped-window-size", 10,
@@ -61,7 +61,18 @@ load_compress_args()
     opt_flag_int(conf,
         &compress_flags.min_progress, "min-progress", 50,
         "The minimum progress that needs to be made in each direction of attempt_ext to consider a seed as a potential match.");
-
+    opt_flag_int(conf,
+        &compress_flags.consec_match_clump_size, "consec-match-clump-size", 4,
+        "The number of consecutive matches needed to check for a bad window in align_ungapped.");
+    opt_flag_int(conf,
+        &compress_flags.window_ident_thresh, "window-ident-thresh", 85,
+        "The minimum number of matches that must be in the array of matches for the current window not to be considered a bad window.");
+    opt_flag_int(conf,
+        &compress_flags.btwn_match_min_dist_check, "btwn-match-min-dist-check", 10,
+        "The number of bases scanned since the last clump of matches in align_ungapped that results in checking for 50%% identity since the last clump.");
+    opt_flag_double(conf,
+        &compress_flags.btwn_match_ident_thresh, "btwn-match-ident_thresh", (double).5,
+        "The identity threshold for continuing align_ungapped if it has been more than 10 bases since the last clump of matches.");
 
     return conf;
 }

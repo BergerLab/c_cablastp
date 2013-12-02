@@ -21,6 +21,10 @@ struct compress_flags {
     int32_t overlap;
     int32_t max_chunk_size;
     int32_t min_progress;
+    int32_t consec_match_clump_size;
+    int32_t window_ident_thresh;
+    int32_t btwn_match_min_dist_check;
+    float   btwn_match_ident_thresh;
 } compress_flags;
 
 struct opt_config *

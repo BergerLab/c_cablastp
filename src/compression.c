@@ -18,8 +18,8 @@ struct extend_match {
 
 struct extend_match
 extend_match(struct cbp_align_nw_memory *mem,
-             char *rseq, int32_t rstart, int32_t rend,
-             char *oseq, int32_t ostart, int32_t oend);
+             char *rseq, int32_t rstart, int32_t rend, int32_t resind,  int32_t dir1,
+             char *oseq, int32_t ostart, int32_t oend, int32_t current, int32_t dir2);
 
 static int32_t
 add_without_match(struct cbp_coarse *coarse_db,
@@ -183,13 +183,11 @@ char *base = kmer;
                         ext_seed))
                 continue;
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                           resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
+                           resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0)){
-            
-                mlens = extend_match(mem, coarse_seq->seq->residues, resind,
-                                     coarse_seq->seq->length, org_seq->residues,
-                                     current, org_seq->length);
+                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){ 
+                mlens = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, 1,
+                                          org_seq->residues, start_of_section, end_of_section, current, 1);
             }
 
 
@@ -353,8 +351,8 @@ fprintf(stderr, "Compress finished\n");
 
 struct extend_match
 extend_match(struct cbp_align_nw_memory *mem,
-             char *rseq, int32_t rstart, int32_t rend,
-             char *oseq, int32_t ostart, int32_t oend)
+             char *rseq, int32_t rstart, int32_t rend, int32_t resind, int32_t dir1,
+             char *oseq, int32_t ostart, int32_t oend, int32_t current, int32_t dir2)
 {
     struct cbp_alignment alignment;
     struct extend_match mlens;
@@ -362,6 +360,15 @@ extend_match(struct cbp_align_nw_memory *mem,
     int32_t gwsize;
     int32_t rlen, olen;
     int32_t m;
+    bool *matches;
+    bool *matches_past_clump;
+    int matches_count;
+    int matches_index;
+
+    matches = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
+    matches_past_clump = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
+    matches_count = compress_flags.gapped_window_size;
+    matches_index = matches_count;
 
     gwsize = compress_flags.gapped_window_size;
     rlen = rend - rstart;
@@ -373,16 +380,13 @@ extend_match(struct cbp_align_nw_memory *mem,
         if (mlens.rlen == rlen || mlens.olen == olen)
             break;
 
-        m = cbp_align_ungapped(
-            compress_flags.ungapped_window_size,
-            compress_flags.match_kmer_size,
-            compress_flags.ext_seq_id_threshold,
-            rseq, rstart + mlens.rlen, rend,
-            oseq, ostart + mlens.olen, oend);
+        m = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
+                               oseq, ostart, oend, dir2, current,
+                               matches, matches_past_clump, matches_index);
 
         mlens.rlen += m;
         mlens.olen += m;
-
+                                                                     break;
         alignment = cbp_align_nw(
             mem,
             rseq, rstart + mlens.rlen, min(rend, rstart + mlens.rlen + gwsize),
