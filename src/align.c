@@ -35,11 +35,13 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
     temp_index = 0;
     matches_count = 0;
     matches_since_last_consec = 0;
-    for(i = matches_index - 100; i < matches_count; i++)
+    for(i = matches_index - 100; i < matches_index; i++){
         if(matches[i])
-            matches_count++;
-
+            matches_count++;}
+/*printf("matches_index: %d\n", matches_index);
+printf("matches_count: %d\n", matches_count);*/
     while(i1 >= rstart && i1 < rend && i2 >= ostart && i2 < oend){
+/*printf("%d < %d < %d ||| %d < %d < %d\n", rstart, i1, rend, ostart, i1, oend);*/
         int cur_ismatch;
         i1 += dir1;
         i2 += dir2;
@@ -54,8 +56,8 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
                                               &matches_count,
                                               matches_past_clump, temp_index);
                     length += update;
-                    if(update != temp_index)
-                        return -1 * length;
+                    if(update != temp_index){/*printf("%d =/= %d Bad window\n", update, temp_index);*/
+                        return -1 * length;}
                 matches_since_last_consec = 0;
             }
             else
@@ -65,8 +67,8 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
             successive = 0;
             if(scanned - length >= compress_flags.btwn_match_min_dist_check)
                 if((double)matches_since_last_consec <
-                   (scanned-length)*compress_flags.btwn_match_ident_thresh)
-                    return length;
+                   (scanned-length)*compress_flags.btwn_match_ident_thresh){printf("< 50% identity\n");
+                    return length;}
         }
     }
     return scanned;
@@ -312,11 +314,12 @@ int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *
         int hundred_bases_ago = *matches_index - 100;
         (*matches_index)++;
         matches[(*matches_index)] = temp[i];
-        
+        if(temp[i])
+            (*num_matches)++;
         if(matches[hundred_bases_ago])
-            num_matches--;
-        if(*num_matches < 85)
-            return i;
+            (*num_matches)--;
+        if(*num_matches < 85){printf("?\n");
+            return i;}
     }
     return temp_index;
 }
