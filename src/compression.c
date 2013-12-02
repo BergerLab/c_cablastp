@@ -392,6 +392,7 @@ extend_match(struct cbp_align_nw_memory *mem,
     mlens.rlen = 0;
     mlens.olen = 0;
     while (true) {
+        int dp_len1, dp_len2;
         if (mlens.rlen == rlen || mlens.olen == olen)
             break;
 
@@ -402,6 +403,9 @@ extend_match(struct cbp_align_nw_memory *mem,
         mlens.olen += m;
         resind += m * dir1;
         current += m * dir2;
+        dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
+        dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
+        printf("%d@@@%d\n",dp_len1,dp_len2);
                                                                      break;
         alignment = cbp_align_nw(
             mem,

@@ -324,3 +324,10 @@ int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *
     }
     return temp_index;
 }
+
+int min(int a, int b){
+    return a<b?a:b;
+}
+int max_dp_len(int i, int dir, int len){
+    return dir == 1 ? min(25, len-i) : min(25, i+1);
+}

@@ -56,4 +56,6 @@ attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
             int32_t len2, int32_t start2);
 
 int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *temp, int temp_index);
+
+int max_dp_len(int i, int dir, int len);
 #endif
