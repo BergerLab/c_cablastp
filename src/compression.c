@@ -192,7 +192,7 @@ char *base = kmer;
                                           org_seq->residues, start_of_section, end_of_section, current, -1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
                                           org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
-                printf("%d %d\n", mlens_rev.olen, mlens_fwd.olen);
+                printf(">>>%d %d\n", mlens_rev.olen, mlens_fwd.olen);
             }
 
 
@@ -271,11 +271,16 @@ char *base = kmer;
                         ext_seed))
                 continue;*/
 
-            /*printf("%d, %d\n",
+            if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
-               attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0));*/
+                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){
+                mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
+                                         org_seq->residues, start_of_section, end_of_section, current, -1);
+                mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
+                                         org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
+                printf("<<<%d %d\n", mlens_rev.olen, mlens_fwd.olen);
+            }
 
             /*mlens = extend_match(
                 mem,
@@ -339,7 +344,7 @@ char *base = kmer;
 
         cbp_seed_loc_free(seeds);
         cbp_seed_loc_free(seeds_r);
-if(current >= 29000)break;
+if(current >= 39000)break;
 if(current >= end_of_chunk){
     add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
     start_of_section = end_of_chunk - overlap;
@@ -413,7 +418,7 @@ extend_match(struct cbp_align_nw_memory *mem,
         mlens.rlen += m;
         mlens.olen += m;
         resind += m * dir1;
-        current += m * dir2;
+        current += m * dir2;break;
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
         printf("%d@@@%d\n",dp_len2,dp_len1);

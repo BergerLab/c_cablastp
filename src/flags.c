@@ -71,7 +71,7 @@ load_compress_args()
         &compress_flags.btwn_match_min_dist_check, "btwn-match-min-dist-check", 10,
         "The number of bases scanned since the last clump of matches in align_ungapped that results in checking for 50%% identity since the last clump.");
     opt_flag_double(conf,
-        &compress_flags.btwn_match_ident_thresh, "btwn-match-ident_thresh", (double).5,
+        &compress_flags.btwn_match_ident_thresh, "btwn-match-ident_thresh", ((double)0.5),
         "The identity threshold for continuing align_ungapped if it has been more than 10 bases since the last clump of matches.");
 
     return conf;

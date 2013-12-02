@@ -39,10 +39,8 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
         if(matches[i])
             matches_count++;}
 /*printf("matches_index: %d\n", matches_index);
-printf("matches_count: %d\n", matches_count);
-printf("%d < %d < %d ||| %d < %d < %d\n", rstart, i1, rend, ostart, i1, oend);*/
+printf("matches_count: %d\n", matches_count);*/
     while(i1 >= rstart && i1 < rend && i2 >= ostart && i2 < oend){
-/*printf("%d < %d < %d ||| %d < %d < %d\n", rstart, i1, rend, ostart, i1, oend);*/
         int cur_ismatch;
         i1 += dir1;
         i2 += dir2;
@@ -59,17 +57,21 @@ printf("%d < %d < %d ||| %d < %d < %d\n", rstart, i1, rend, ostart, i1, oend);*/
                     length += update;
                     if(update != temp_index){/*printf("%d =/= %d Bad window\n", update, temp_index);*/
                         return -1 * length;}
+                temp_index = 0;
                 matches_since_last_consec = 0;
             }
             else
                 matches_since_last_consec++;
         }
         else {
+            matches_past_clump[temp_index] = false;
+            temp_index++;
             successive = 0;
-            if(scanned - length >= compress_flags.btwn_match_min_dist_check)
+            if(scanned - length >= compress_flags.btwn_match_min_dist_check){
                 if((double)matches_since_last_consec <
-                   (scanned-length)*compress_flags.btwn_match_ident_thresh){printf("< 50% identity\n");
+                   (scanned-length)*0.5){/*printf("< 50%% identity\n");*/
                     return length;}
+            }
         }
     }
     return scanned;
