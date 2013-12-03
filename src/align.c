@@ -139,29 +139,29 @@ cbp_align_nw_memory_free(struct cbp_align_nw_memory *mem)
 struct cbp_nw_tables
 make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
                char *oseq, int dp_len2, int i2, int dir2)
-{
+{printf("Entered make_nw_tables\n");
     struct cbp_nw_tables tables;
     int i, j1, j2;
     int dir_prod = dir1*dir2;
-    int **dp_score = malloc((dp_len2+1)*sizeof(int *));
-    int **dp_from = malloc((dp_len2+1)*sizeof(int *));
-    for(i = 0; i < dp_len2+1; i++){
-        dp_score[i] = malloc((dp_len1+1)*sizeof(int *));
-        dp_from[i] = malloc((dp_len1+1)*sizeof(int *));
-    }
+    int **dp_score = malloc((dp_len1+1)*sizeof(int *));
+    int **dp_from = malloc((dp_len1+1)*sizeof(int *));
+    for(i = 0; i < dp_len1+1; i++){
+        dp_score[i] = malloc((dp_len2+1)*sizeof(int));
+        dp_from[i] = malloc((dp_len2+1)*sizeof(int));
+    }printf("!\n");
     for(i = 0; i <= dp_len2; i++){
         dp_score[0][i] = -3*i;
         dp_from[0][i] = 2;
-    }
+    }printf("!!\n");
     for(i = 1; i <= dp_len1; i++){
         dp_score[i][0] = -3*i;
         dp_from[i][0] = 1;
-    }
-    for(j2 = 1; j2 <= dp_len2; j2++)
-        for(j1 = 1; j1 <= dp_len1; j1++){
+    }printf("!!!\n");
+    for(j1 = 1; j1 <= dp_len1; j1++)
+        for(j2 = 1; j2 <= dp_len2; j2++){
             int score0, score1, score2;
             score0 = dp_score[j1-1][j2-1] +
-                     bases_match(rseq[i1+dir1*j1], oseq[i2+dir2*j2], dir_prod) ? 1 : -3;
+                     (bases_match(rseq[i1+dir1*(j1-1)], oseq[i2+dir2*(j2-1)], dir_prod) ? 1 : -3);
             score1 = dp_score[j1-1][j2] - 3;
             score2 = dp_score[j1][j2-1] - 3;
 	    if (score0 >= score1 && score0 >= score2) {
@@ -176,12 +176,13 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
 	        dp_score[j1][j2] = score2;
 	        dp_from[j1][j2] = 2;
             }
-        }
+        }printf("!!!!\n");
     for(j2 = 0; j2 <= dp_len2; j2++){
         for(j1 = 0; j1 <= dp_len1; j1++)
-            printf("%4d", dp_score[j1][j2]);
+            printf("%4d", dp_from[j1][j2]);
         printf("\n");
     }
+printf("!!!!!\n");
     tables.dp_score = dp_score;
     tables.dp_from = dp_from;
     return tables;
@@ -212,9 +213,11 @@ int *best_edge(int **dp_score, int dp_len1, int dp_len2){
 struct cbp_alignment
 cbp_align_nw(struct cbp_align_nw_memory *mem,
              char *rseq, int dp_len1, int i1, int dir1,
-             char *oseq, int dp_len2 ,int i2, int dir2)
-{cbp_alignment align;
-    int j1, j2;
+             char *oseq, int dp_len2, int i2, int dir2)
+{printf("In cbp_align_nw\n");struct cbp_alignment align;
+    make_nw_tables(rseq, dp_len1, i1, dir1, oseq, dp_len2, i2, dir2);
+    return align;
+    /*int i, j1, j2;
     int dir_prod = dir1*dir2;
     int **dp_score = malloc((dp_len2+1)*sizeof(int *));
     int **dp_from = malloc((dp_len2+1)*sizeof(int *));
@@ -254,9 +257,9 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         for(j1 = 0; j1 <= dp_len1; j1++)
             printf("%4d", dp_score[j1][j2]);
         printf("\n");
-    }
+    }printf("________________________________________________________________________________\n");
     struct cbp_alignment alignment;return alignment;
-    /*int32_t *table;
+    *//*int32_t *table;
     int32_t gapi;
     int32_t i, i2, i3, j, r, c, off, tablen;
     int32_t sdiag, sup, sleft, rval, oval;

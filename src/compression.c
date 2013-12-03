@@ -418,14 +418,14 @@ extend_match(struct cbp_align_nw_memory *mem,
         mlens.rlen += m;
         mlens.olen += m;
         resind += m * dir1;
-        current += m * dir2;break;
+        current += m * dir2;
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
         printf("%d@@@%d\n",dp_len2,dp_len1);
         alignment = cbp_align_nw(
             mem,
-            rseq, rstart + mlens.rlen, min(rend, rstart + mlens.rlen + gwsize),
-            oseq, ostart + mlens.olen, min(oend, ostart + mlens.olen + gwsize));
+            rseq, dp_len1, resind, dir1,
+            oseq, dp_len2, current, dir2);
 
                                                                      break;
         id = cbp_align_identity(
