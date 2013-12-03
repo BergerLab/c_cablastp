@@ -35,20 +35,19 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
     temp_index = 0;
     matches_count = 0;
     matches_since_last_consec = 0;
-    for(i = matches_index - 100; i < matches_index; i++){
+    for(i = matches_index - 100; i < matches_index; i++)
         if(matches[i])
-            matches_count++;}
+            matches_count++;
 /*printf("matches_index: %d\n", matches_index);
 printf("matches_count: %d\n", matches_count);*/
     while(i1 >= rstart && i1 < rend && i2 >= ostart && i2 < oend){
-        int cur_ismatch;
+        int cur_ismatch = bases_match(rseq[i1], oseq[i2], dir_prod);
         i1 += dir1;
         i2 += dir2;
         scanned++;
-        cur_ismatch = bases_match(rseq[i1], oseq[i2], dir_prod);
+        temp_index++;
         if(cur_ismatch == 1){
             matches_past_clump[temp_index] = true;
-            temp_index++;
             successive++;
             if(successive >= consec_match_clump_size){
                 int update = check_and_update(matches, &matches_index, 
@@ -65,11 +64,10 @@ printf("matches_count: %d\n", matches_count);*/
         }
         else {
             matches_past_clump[temp_index] = false;
-            temp_index++;
             successive = 0;
             if(scanned - length >= compress_flags.btwn_match_min_dist_check){
                 if((double)matches_since_last_consec <
-                   (scanned-length)*0.5){/*printf("< 50%% identity\n");*/
+                   (scanned-length)*0.5){/*printf("< 50%% identity %d\n", scanned - length);*/
                     return length;}
             }
         }
