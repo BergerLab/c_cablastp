@@ -30,6 +30,16 @@ struct cbp_align_nw_memory {
     char *org;
 };
 
+typedef struct cbp_nw_tables{
+    int **dp_score;
+    int **dp_from;
+};
+
+struct cbp_nw_tables
+make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
+               char *oseq, int dp_len2, int i2, int dir2);
+
+
 struct cbp_align_nw_memory *
 cbp_align_nw_memory_init();
 
@@ -44,8 +54,8 @@ struct cbp_alignment {
 
 struct cbp_alignment
 cbp_align_nw(struct cbp_align_nw_memory *mem,
-             char *rseq, int32_t rstart, int32_t rend,
-             char *oseq, int32_t ostart, int32_t oend);
+             char *rseq, int dp_len1, int i1, int dir1,
+             char *oseq, int dp_len2 ,int i2, int dir2);
 
 int32_t
 cbp_align_length_nogaps(char *residues);

@@ -130,13 +130,108 @@ cbp_align_nw_memory_free(struct cbp_align_nw_memory *mem)
     free(mem);
 }
 
+
+struct cbp_nw_tables
+make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
+               char *oseq, int dp_len2, int i2, int dir2)
+{
+    struct cbp_nw_tables tables;
+    int i, j1, j2;
+    int dir_prod = dir1*dir2;
+    int **dp_score = malloc((dp_len2+1)*sizeof(int *));
+    int **dp_from = malloc((dp_len2+1)*sizeof(int *));
+    for(i = 0; i < dp_len2+1; i++){
+        dp_score[i] = malloc((dp_len1+1)*sizeof(int *));
+        dp_from[i] = malloc((dp_len1+1)*sizeof(int *));
+    }
+    for(i = 0; i <= dp_len2; i++){
+        dp_score[0][i] = -3*i;
+        dp_from[0][i] = 2;
+    }
+    for(i = 1; i <= dp_len1; i++){
+        dp_score[i][0] = -3*i;
+        dp_from[i][0] = 1;
+    }
+    for(j2 = 1; j2 <= dp_len2; j2++)
+        for(j1 = 1; j1 <= dp_len1; j1++){
+            int score0, score1, score2;
+            score0 = dp_score[j1-1][j2-1] +
+                     bases_match(rseq[i1+dir1*j1], oseq[i2+dir2*j2], dir_prod) ? 1 : -3;
+            score1 = dp_score[j1-1][j2] - 3;
+            score2 = dp_score[j1][j2-1] - 3;
+	    if (score0 >= score1 && score0 >= score2) {
+	        dp_score[j1][j2] = score0;
+	        dp_from[j1][j2] = 0;
+	    }
+	    else if (score1 >= score2) {
+	        dp_score[j1][j2] = score1;
+	        dp_from[j1][j2] = 1;
+	    }
+	    else {
+	        dp_score[j1][j2] = score2;
+	        dp_from[j1][j2] = 2;
+            }
+        }
+    for(j2 = 0; j2 <= dp_len2; j2++){
+        for(j1 = 0; j1 <= dp_len1; j1++)
+            printf("%4d", dp_score[j1][j2]);
+        printf("\n");
+    }
+    tables.dp_score = dp_score;
+    tables.dp_from = dp_from;
+    return tables;
+}
+
+
+
 struct cbp_alignment
 cbp_align_nw(struct cbp_align_nw_memory *mem,
-             char *rseq, int32_t rstart, int32_t rend,
-             char *oseq, int32_t ostart, int32_t oend)
-{
-    struct cbp_alignment alignment;
-    int32_t *table;
+             char *rseq, int dp_len1, int i1, int dir1,
+             char *oseq, int dp_len2 ,int i2, int dir2)
+{cbp_alignment align;
+    int j1, j2;
+    int dir_prod = dir1*dir2;
+    int **dp_score = malloc((dp_len2+1)*sizeof(int *));
+    int **dp_from = malloc((dp_len2+1)*sizeof(int *));
+    for(i = 0; i < dp_len2+1; i++){
+        dp_score[i] = malloc((dp_len1+1)*sizeof(int *));
+        dp_from[i] = malloc((dp_len1+1)*sizeof(int *));
+    }
+    for(i = 0; i <= dp_len2; i++){
+        dp_score[0][i] = -3*i;
+        dp_from[0][i] = 2;
+    }
+    for(i = 1; i <= dp_len1; i++){
+        dp_score[i][0] = -3*i;
+        dp_from[i][0] = 1;
+    }
+    for(j2 = 1; j2 <= dp_len2; j2++)
+        for(j1 = 1; j1 <= dp_len1; j1++){
+            int score0, score1, score2;
+            score0 = dp_score[j1-1][j2-1] +
+                     bases_match(rseq[i1+dir1*j1], oseq[i2+dir2*j2], dir_prod) ? 1 : -3;
+            score1 = dp_score[j1-1][j2] - 3;
+            score2 = dp_score[j1][j2-1] - 3;
+	    if (score0 >= score1 && score0 >= score2) {
+	        dp_score[j1][j2] = score0;
+	        dp_from[j1][j2] = 0;
+	    }
+	    else if (score1 >= score2) {
+	        dp_score[j1][j2] = score1;
+	        dp_from[j1][j2] = 1;
+	    }
+	    else {
+	        dp_score[j1][j2] = score2;
+	        dp_from[j1][j2] = 2;
+            }
+        }
+    for(j2 = 0; j2 <= dp_len2; j2++){
+        for(j1 = 0; j1 <= dp_len1; j1++)
+            printf("%4d", dp_score[j1][j2]);
+        printf("\n");
+    }
+    struct cbp_alignment alignment;return alignment;
+    /*int32_t *table;
     int32_t gapi;
     int32_t i, i2, i3, j, r, c, off, tablen;
     int32_t sdiag, sup, sleft, rval, oval;
@@ -146,8 +241,8 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     char tmp;
 
     gapi = BLOSUM62_SIZE - 1;
-    r = rend - rstart + 1; /* include gap penalty */
-    c = oend - ostart + 1; /* include gap penalty */
+    r = rend - rstart + 1; *//* include gap penalty *//*
+    c = oend - ostart + 1; *//* include gap penalty *//*
     tablen = r * c;
     off = 0;
 
@@ -165,7 +260,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         for (i = 0; i < tablen; i++)
             table[i] = 0;
 
-        /* for (i = 0; i < r; i++) */
+        *//* for (i = 0; i < r; i++) */
             /* for (j = 0; j < c; j++) { */
                 /* We need to be slightly more relaxed on our contraint
                  * here as opposed to below. Namely, we need to make sure to
@@ -174,7 +269,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
                     /* ((i-j-1) > constraint || (j-i-1) > constraint)) */
                     /* continue; */
                 /* table[i * c + j] = 0; */
-            /* } */
+            /* } *//*
     }
 
     for (i = 1; i < r; i++) {
@@ -260,7 +355,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     alignment.ref[alignment.length] = '\0';
     alignment.org[alignment.length] = '\0';
 
-    return alignment;
+    return alignment;*/
 }
 
 /*Returns the number of non-gap characters in a string*/

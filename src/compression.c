@@ -422,12 +422,12 @@ extend_match(struct cbp_align_nw_memory *mem,
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
         printf("%d@@@%d\n",dp_len2,dp_len1);
-                                                                     break;
         alignment = cbp_align_nw(
             mem,
             rseq, rstart + mlens.rlen, min(rend, rstart + mlens.rlen + gwsize),
             oseq, ostart + mlens.olen, min(oend, ostart + mlens.olen + gwsize));
 
+                                                                     break;
         id = cbp_align_identity(
             alignment.ref, 0, alignment.length,
             alignment.org, 0, alignment.length);
