@@ -130,7 +130,12 @@ cbp_align_nw_memory_free(struct cbp_align_nw_memory *mem)
     free(mem);
 }
 
-
+/*Makes the tables used in Needleman-Wunsch alignment; takes in two sequences,
+ *the lengths of the sections of the sequences that we are aligning, indices
+ *into these sequences, and the directions of the sequences and returns a
+ *struct containing a table of the scores in the alignment and a table of
+ *directions for backtracking to the start of the alignment.
+ */
 struct cbp_nw_tables
 make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
                char *oseq, int dp_len2, int i2, int dir2)
@@ -182,6 +187,9 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
     return tables;
 }
 
+/*Finds the space on the bottom and right edges of a Needleman-Wunsch score
+ *table with the best score, returning it as an array of two ints.
+ */
 int *best_edge(int **dp_score, int dp_len1, int dp_len2){
     int j1, j2;
     int max_dp_score = -1000;
