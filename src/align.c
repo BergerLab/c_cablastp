@@ -182,7 +182,24 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
     return tables;
 }
 
-
+int *best_edge(int **dp_score, int dp_len1, int dp_len2){
+    int j1, j2;
+    int max_dp_score = -1000;
+    int *best = malloc(2*sizeof(int));
+    best[0] = -1;
+    best[1] = -1;
+    for (j1 = 0; j1 <= dp_len1; j1++)
+        if (dp_score[j1][dp_len2] >= max_dp_score) {
+            max_dp_score = dp_score[j1][dp_len2];
+            best[0] = j1; best[1] = dp_len2;
+        }
+    for (j2 = 0; j2 <= dp_len2; j2++)
+        if (dp_score[dp_len1][j2] >= max_dp_score) {
+            max_dp_score = dp_score[dp_len1][j2];
+            best[0] = dp_len1; best[1] = j2;
+        }
+   return best; 
+}
 
 struct cbp_alignment
 cbp_align_nw(struct cbp_align_nw_memory *mem,
