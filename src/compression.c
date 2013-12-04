@@ -164,11 +164,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
             continue;
         }
         kmer = org_seq->residues + current;
-/*char *b = kmer;
-for(; b < kmer+10; b++){
-    printf("%c", *b);
-}
-printf("\n");*/
 	revcomp = kmer_revcomp(kmer);
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
@@ -414,7 +409,7 @@ extend_match(struct cbp_align_nw_memory *mem,
 
         m = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
                                oseq, ostart, oend, dir2, current,
-                               matches, matches_past_clump, matches_index);
+                               matches, matches_past_clump, &matches_index);
         mlens.rlen += m;
         mlens.olen += m;
         resind += m * dir1;
@@ -425,7 +420,8 @@ extend_match(struct cbp_align_nw_memory *mem,
         alignment = cbp_align_nw(
             mem,
             rseq, dp_len1, resind, dir1,
-            oseq, dp_len2, current, dir2);
+            oseq, dp_len2, current, dir2,
+            matches, &matches_index);
 
                                                                      break;
         id = cbp_align_identity(
