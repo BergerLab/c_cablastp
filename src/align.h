@@ -36,6 +36,7 @@ struct cbp_nw_tables{
 };
 
 int *best_edge(int **dp_score, int dp_len1, int dp_len2);
+int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos);
 
 struct cbp_nw_tables
 make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,

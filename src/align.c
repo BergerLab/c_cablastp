@@ -38,8 +38,6 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
     for(i = matches_index - 100; i < matches_index; i++)
         if(matches[i])
             matches_count++;
-/*printf("matches_index: %d\n", matches_index);
-printf("matches_count: %d\n", matches_count);*/
     while(i1 >= rstart && i1 < rend && i2 >= ostart && i2 < oend){
         int cur_ismatch = bases_match(rseq[i1], oseq[i2], dir_prod);
         i1 += dir1;
@@ -204,182 +202,52 @@ int *best_edge(int **dp_score, int dp_len1, int dp_len2){
    return best; 
 }
 
+int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
+    int consec_matches = 0;
+    int **dp_score = tables.dp_score;
+    int **dp_from = tables.dp_from;
+    int consec_match_clump_size = compress_flags.consec_match_clump_size;
+    while(pos[0] != 0 && pos[1] != 0){
+        int prev_j1, prev_j2;
+        if(consec_matches == consec_match_clump_size){ /*found chunk; stop*/
+            pos[0] += consec_match_clump_size;
+            pos[1] += consec_match_clump_size;
+            break;
+        }
+        switch(dp_from[pos[0]][pos[1]]){ /*backtrack to previous cell*/
+            case 0: prev_j1 = pos[0]-1; prev_j2 = pos[1]-1; break;
+            case 1: prev_j1 = pos[0]-1; prev_j2 = pos[1]; break;
+            default: prev_j1 = pos[0]; prev_j2 = pos[1]-1;
+        }
+        if(dp_from[pos[0]][pos[1]] == 0)
+            if(dp_score[pos[0]][pos[1]] > dp_score[prev_j1][prev_j2]) /*match*/
+	        consec_matches++;
+	    else
+	        consec_matches = 0;
+        else
+            consec_matches = 0;
+        pos[0] = prev_j1;
+        pos[1] = prev_j2;
+    }
+    /*Couldn't find a 4-mer clump*/
+    if(consec_matches < consec_match_clump_size){
+        pos[0] = -1;
+        pos[1] = -1;
+    }
+    printf("%d ### %d\n", pos[0], pos[1]);
+    return pos;
+}
+
 struct cbp_alignment
 cbp_align_nw(struct cbp_align_nw_memory *mem,
              char *rseq, int dp_len1, int i1, int dir1,
              char *oseq, int dp_len2, int i2, int dir2)
-{struct cbp_alignment align;
+{
+    struct cbp_alignment align;
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq, dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);    
-
+    int *clump = backtrack_to_clump(tables, best);   
     return align;
-    /*int i, j1, j2;
-    int dir_prod = dir1*dir2;
-    int **dp_score = malloc((dp_len2+1)*sizeof(int *));
-    int **dp_from = malloc((dp_len2+1)*sizeof(int *));
-    for(i = 0; i < dp_len2+1; i++){
-        dp_score[i] = malloc((dp_len1+1)*sizeof(int *));
-        dp_from[i] = malloc((dp_len1+1)*sizeof(int *));
-    }
-    for(i = 0; i <= dp_len2; i++){
-        dp_score[0][i] = -3*i;
-        dp_from[0][i] = 2;
-    }
-    for(i = 1; i <= dp_len1; i++){
-        dp_score[i][0] = -3*i;
-        dp_from[i][0] = 1;
-    }
-    for(j2 = 1; j2 <= dp_len2; j2++)
-        for(j1 = 1; j1 <= dp_len1; j1++){
-            int score0, score1, score2;
-            score0 = dp_score[j1-1][j2-1] +
-                     bases_match(rseq[i1+dir1*j1], oseq[i2+dir2*j2], dir_prod) ? 1 : -3;
-            score1 = dp_score[j1-1][j2] - 3;
-            score2 = dp_score[j1][j2-1] - 3;
-	    if (score0 >= score1 && score0 >= score2) {
-	        dp_score[j1][j2] = score0;
-	        dp_from[j1][j2] = 0;
-	    }
-	    else if (score1 >= score2) {
-	        dp_score[j1][j2] = score1;
-	        dp_from[j1][j2] = 1;
-	    }
-	    else {
-	        dp_score[j1][j2] = score2;
-	        dp_from[j1][j2] = 2;
-            }
-        }
-    for(j2 = 0; j2 <= dp_len2; j2++){
-        for(j1 = 0; j1 <= dp_len1; j1++)
-            printf("%4d", dp_score[j1][j2]);
-        printf("\n");
-    }printf("________________________________________________________________________________\n");
-    struct cbp_alignment alignment;return alignment;
-    *//*int32_t *table;
-    int32_t gapi;
-    int32_t i, i2, i3, j, r, c, off, tablen;
-    int32_t sdiag, sup, sleft, rval, oval;
-    int32_t constraint;
-    bool constrained;
-    bool allocated = false;
-    char tmp;
-
-    gapi = BLOSUM62_SIZE - 1;
-    r = rend - rstart + 1; *//* include gap penalty *//*
-    c = oend - ostart + 1; *//* include gap penalty *//*
-    tablen = r * c;
-    off = 0;
-
-    constrained = true;
-    constraint = r / 4;
-    if (r <= 11 || c <= 11)
-        constrained = false;
-
-    if (tablen > CABLASTP_ALIGN_SEQ_SIZE * CABLASTP_ALIGN_SEQ_SIZE) {
-        table = malloc(tablen * sizeof(*table));
-        assert(table);
-        allocated = true;
-    } else {
-        table = mem->table;
-        for (i = 0; i < tablen; i++)
-            table[i] = 0;
-
-        *//* for (i = 0; i < r; i++) */
-            /* for (j = 0; j < c; j++) { */
-                /* We need to be slightly more relaxed on our contraint
-                 * here as opposed to below. Namely, we need to make sure to
-                 * zero out the boundary cells, which could still be used. */
-                /* if (constrained && */
-                    /* ((i-j-1) > constraint || (j-i-1) > constraint)) */
-                    /* continue; */
-                /* table[i * c + j] = 0; */
-            /* } *//*
-    }
-
-    for (i = 1; i < r; i++) {
-        i2 = (i - 1) * c;
-        i3 = i * c;
-        for (j = 1; j < c; j++) {
-            if (constrained && ((i-j) > constraint || (j-i) > constraint))
-                continue;
-
-            rval = BLOSUM62_RESIDUE_TO_INDEX[rseq[rstart + i - 1] - 'A'];
-            oval = BLOSUM62_RESIDUE_TO_INDEX[oseq[ostart + j - 1] - 'A'];
-
-            off = i2 + (j - 1);
-            sdiag = table[off] + BLOSUM62_MATRIX[rval][oval];
-            sup = table[off+1] + BLOSUM62_MATRIX[rval][gapi];
-            sleft = table[off+c] + BLOSUM62_MATRIX[gapi][oval];
-            
-            if (sdiag > sup && sdiag > sleft)
-                table[i3+j] = sdiag;
-            else if (sup > sleft)
-                table[i3+j] = sup;
-            else
-                table[i3+j] = sleft;
-        }
-    }
-
-    alignment.ref = mem->ref;
-    alignment.org = mem->org;
-    alignment.length = 0;
-
-    i = r - 1;
-    j = c - 1;
-    while (i > 0 && j > 0) {
-        rval = BLOSUM62_RESIDUE_TO_INDEX[rseq[rstart + i - 1] - 'A'];
-        oval = BLOSUM62_RESIDUE_TO_INDEX[oseq[ostart + j - 1] - 'A'];
-
-        sdiag = table[(i-1) * c + (j-1)] + BLOSUM62_MATRIX[rval][oval];
-        sup = table[(i-1) * c + j] + BLOSUM62_MATRIX[gapi][oval];
-        sleft = table[i * c + (j-1)] + BLOSUM62_MATRIX[rval][gapi];
-
-        if (sdiag > sup && sdiag > sleft) {
-            i--;
-            j--;
-            alignment.ref[alignment.length] = rseq[rstart + i];
-            alignment.org[alignment.length] = oseq[ostart + j];
-            alignment.length++;
-        } else if (sup > sleft) {
-            i--;
-            alignment.ref[alignment.length] = rseq[rstart + i];
-            alignment.org[alignment.length] = '-';
-            alignment.length++;
-        } else {
-            j--;
-            alignment.ref[alignment.length] = '-';
-            alignment.org[alignment.length] = oseq[ostart + j];
-            alignment.length++;
-        }
-    }
-    for ( ; i > 0; i--) {
-        alignment.ref[alignment.length] = rseq[rstart + i - 1];
-        alignment.org[alignment.length] = '-';
-        alignment.length++;
-    }
-    for ( ; j > 0; j--) {
-        alignment.ref[alignment.length] = '-';
-        alignment.org[alignment.length] = oseq[ostart + j - 1];
-        alignment.length++;
-    }
-
-    for (i = 0, j = alignment.length - 1; i < j; i++, j--) {
-        tmp = alignment.ref[i];
-        alignment.ref[i] = alignment.ref[j];
-        alignment.ref[j] = tmp;
-
-        tmp = alignment.org[i];
-        alignment.org[i] = alignment.org[j];
-        alignment.org[j] = tmp;
-    }
-
-    if (allocated)
-        free(table);
-
-    alignment.ref[alignment.length] = '\0';
-    alignment.org[alignment.length] = '\0';
-
-    return alignment;*/
 }
 
 /*Returns the number of non-gap characters in a string*/
