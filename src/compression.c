@@ -116,6 +116,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     int32_t last_match, current;
     int32_t id;
     int32_t i;
+    int chunks;
 
     int32_t max_chunk_size, max_section_size;
     int32_t overlap;
@@ -142,6 +143,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     start_of_section = 0;
     end_of_chunk = start_of_section + max_chunk_size - 1;
     end_of_section = start_of_section + max_section_size - 1;
+    chunks = 0;
 
     found_match = false;
 
@@ -152,7 +154,9 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
+if(chunks >= 4)break;
         if(current == 0 && coarse_db->seqs->size == 0){
+            printf("START OF CHUNK offset = 0\n");
             add_without_match(coarse_db, org_seq, 0, max_chunk_size);
             start_of_section += max_chunk_size - overlap;
             end_of_chunk = min(start_of_section + max_chunk_size,
@@ -161,6 +165,8 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
                                  org_seq->length - seed_size - ext_seed);
             current = start_of_section-1;
 /********print_seeds(coarse_db->seeds);********/
+            chunks++;
+            printf("START OF CHUNK offset = %d\n", start_of_section);
             continue;
         }
         kmer = org_seq->residues + current;
@@ -168,7 +174,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
 
-        for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
+        for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {/*printf("%d####%d\n", current, seedLoc->residue_index);*/
 char *base = kmer;
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
@@ -187,7 +193,7 @@ char *base = kmer;
                                           org_seq->residues, start_of_section, end_of_section, current, -1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
                                           org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
-                printf(">>>%d %d\n", mlens_rev.olen, mlens_fwd.olen);
+                /*printf(">>>%d %d\n", mlens_rev.olen, mlens_fwd.olen);*/
             }
 
 
@@ -274,7 +280,7 @@ char *base = kmer;
                                          org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
                                          org_seq->residues, start_of_section, end_of_section, current, -1);
-                printf("<<<%d %d\n", mlens_rev.olen, mlens_fwd.olen);
+                /*printf("<<<%d %d\n", mlens_rev.olen, mlens_fwd.olen);*/
             }
 
             /*mlens = extend_match(
@@ -339,7 +345,6 @@ char *base = kmer;
 
         cbp_seed_loc_free(seeds);
         cbp_seed_loc_free(seeds_r);
-if(current >= 39000)break;
 if(current >= end_of_chunk){
     add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
     start_of_section = end_of_chunk - overlap;
@@ -348,6 +353,8 @@ if(current >= end_of_chunk){
     end_of_section = min(start_of_section + max_section_size,
                          org_seq->length - seed_size - ext_seed);
     current = start_of_section - 1;
+    printf("START OF CHUNK offset = %d\n", start_of_section);
+    chunks++;
 }
     }
 
@@ -368,7 +375,7 @@ extend_match(struct cbp_align_nw_memory *mem,
              char *rseq, int32_t rstart, int32_t rend, int32_t resind, int32_t dir1,
              char *oseq, int32_t ostart, int32_t oend, int32_t current, int32_t dir2)
 {
-/*printf("%d %d\n", current, resind);*/
+/*printf("_____\n");*/printf("Entering extend_match: current = %d, resind = %d\n", current, resind);
     struct cbp_alignment alignment;
     struct extend_match mlens;
     int32_t id;
@@ -417,11 +424,11 @@ extend_match(struct cbp_align_nw_memory *mem,
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
         printf("%d@@@%d\n",dp_len2,dp_len1);
-        alignment = cbp_align_nw(
-            mem,
-            rseq, dp_len1, resind, dir1,
-            oseq, dp_len2, current, dir2,
-            matches, &matches_index);
+        alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
+                                      oseq, dp_len2, current, dir2,
+                                 matches, &matches_index);
+        printf("%s\n%s\n", alignment.org, alignment.ref);
+        /*printf("_____\n%s %d\n%s\n-----\n", alignment.org, alignment.length, alignment.ref);*/
 
                                                                      break;
         id = cbp_align_identity(
@@ -433,7 +440,7 @@ extend_match(struct cbp_align_nw_memory *mem,
         mlens.rlen += cbp_align_length_nogaps(alignment.ref);
         mlens.olen += cbp_align_length_nogaps(alignment.org);
     }
-
+/*printf("-----\n\n");*/
     return mlens;
 }
 

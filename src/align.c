@@ -231,10 +231,10 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
     }
     /*Couldn't find a 4-mer clump*/
     if(consec_matches < consec_match_clump_size){
-        pos[0] = 0;
-        pos[1] = 0;
+        pos[0] = -1;
+        pos[1] = -1;
     }
-    printf("%d ### %d\n", pos[0], pos[1]);
+    /*printf("%d ### %d\n", pos[0], pos[1]);*/
     return pos;
 }
 
@@ -244,6 +244,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
              char *oseq, int dp_len2, int i2, int dir2,
              bool *matches, int *matches_index)
 {
+    /**printf("i1 = %d   i2 = %d\n", i1, i2);**/
     struct cbp_alignment align;
     bool *current_match;
     int matches_count = 0;
@@ -251,10 +252,12 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);    
     int *clump = backtrack_to_clump(tables, best);
     int i = 0;
-    int j1 = 0;
-    int j2 = 0;
-    if(clump[0] <= 0)
+    if(clump[0] <= 0){
+        align.ref = "\0";
+        align.org = "\0";
+        align.length = -1;
         return align;
+    }
     int cur_j1 = clump[0];
     int cur_j2 = clump[1];
     int dir_prod = dir1*dir2;
@@ -264,31 +267,34 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     char *subs1_dp = malloc((cur_j1 + cur_j2)*sizeof(char));
     char *subs2_dp = malloc((cur_j1 + cur_j2)*sizeof(char));
     int num_steps = 0;
-    align.ref = "";
-    align.org = "";
+    align.ref = "\0";
+    align.org = "\0";
     align.length = -1;
-    while (!(cur_j1 > 0 && cur_j2 > 0)) {printf("!");
+    while(!(cur_j1 == 0 && cur_j2 == 0)) {
         int prev_j1, prev_j2;
         switch (dp_from[cur_j1][cur_j2]) {
 	    char c1, c2;
         case 0:
             prev_j1 = cur_j1-1; prev_j2 = cur_j2-1; /* match or substitution */
-	    c1 = oseq[i1+dir1*prev_j1]; /* comp if antisense */
-	    if (dir_prod == -1) c1 = base_complement(c1);
-	    c2 = rseq[i2+dir2*prev_j2];
+	    c1 = rseq[i1+dir1*prev_j1]; /* comp if antisense */
+	    c2 = oseq[i2+dir2*prev_j2];
+	    if (dir_prod == -1) c2 = base_complement(c2);
 	    subs1_dp[num_steps] = c1;
 	    subs2_dp[num_steps] = c2;
+printf("%c %c\\     %d %d\n", c1, c2, i1+dir1*prev_j1, i2+dir2*prev_j2);
 	    break;
         case 1: prev_j1 = cur_j1-1; prev_j2 = cur_j2; /* advance 1; gap in 2 */
-	    c1 = oseq[i1+dir1*prev_j1];
-            if (dir_prod == -1) c1 = base_complement(c1); /* comp if antisense */
+	    c1 = rseq[i1+dir1*prev_j1];
             subs1_dp[num_steps] = c1;
             subs2_dp[num_steps] = '-';
+printf("%c %c^     %d %d\n", c1, '-', i1+dir1*prev_j1, i2+dir2*prev_j2);
             break;
         default: prev_j1 = cur_j1; prev_j2 = cur_j2-1; /* advance 2; gap in 1 */
-            c2 = rseq[i2+dir2*prev_j2];
+            c2 = oseq[i2+dir2*prev_j2];
+            if (dir_prod == -1) c2 = base_complement(c2); /* comp if antisense */
             subs1_dp[num_steps] = '-';
             subs2_dp[num_steps] = c2;
+printf("%c %c<     %d %d\n", '-', c2, i1+dir1*prev_j1, i2+dir2*prev_j2);
         }
         matches_to_add[num_steps] = dp_score[cur_j1][cur_j2] >
                                     dp_score[prev_j1][prev_j2];
@@ -306,18 +312,19 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     for(i = *matches_index - 100; i < *matches_index; i++)
         if(matches[i])
             matches_count++;
-    if(check_and_update(matches, &matches_index, &matches_count, matches_to_add, num_steps) != num_steps){
+    if(check_and_update(matches, matches_index, &matches_count, matches_to_add, num_steps) != num_steps)
         align.length = -1;
-    }
     else{
         align.length = num_steps;
-        align.org = malloc(align.length*sizeof(char));
-        align.ref = malloc(align.length*sizeof(char));
+        align.org = malloc((align.length+1)*sizeof(char));
+        align.ref = malloc((align.length+1)*sizeof(char));
         for(i = 0; i < align.length; i++){
             matches[(*matches_index)+i] = matches_to_add[i];
-            align.org[i] = subs1_dp[align.length-i-1];
-            align.ref[i] = subs2_dp[align.length-i-1];
+            align.ref[i] = subs1_dp[align.length-i-1];
+            align.org[i] = subs2_dp[align.length-i-1];
         }
+        align.org[align.length] = '\0';
+        align.ref[align.length] = '\0';
     }
 
     free(matches_to_add);
@@ -380,7 +387,7 @@ int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *
             (*num_matches)++;
         if(matches[hundred_bases_ago])
             (*num_matches)--;
-        if(*num_matches < 85){printf("?\n");
+        if(*num_matches < 85){/*printf("?\n");*/
             return i;}
     }
     return temp_index;
