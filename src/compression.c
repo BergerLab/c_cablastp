@@ -156,7 +156,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
 if(chunks >= 4)break;
         if(current == 0 && coarse_db->seqs->size == 0){
-            printf("START OF CHUNK offset = 0\n");
+            /*printf("START OF CHUNK offset = 0\n");*/
             add_without_match(coarse_db, org_seq, 0, max_chunk_size);
             start_of_section += max_chunk_size - overlap;
             end_of_chunk = min(start_of_section + max_chunk_size,
@@ -166,7 +166,7 @@ if(chunks >= 4)break;
             current = start_of_section-1;
 /********print_seeds(coarse_db->seeds);********/
             chunks++;
-            printf("START OF CHUNK offset = %d\n", start_of_section);
+            /*printf("START OF CHUNK offset = %d\n", start_of_section);*/
             continue;
         }
         kmer = org_seq->residues + current;
@@ -389,7 +389,6 @@ extend_match(struct cbp_align_nw_memory *mem,
 
     matches = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
     matches_past_clump = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
-    matches_count = compress_flags.gapped_window_size;
     matches_index = compress_flags.gapped_window_size;
     max_section_size = 2 * compress_flags.max_chunk_size;
 
@@ -408,7 +407,7 @@ extend_match(struct cbp_align_nw_memory *mem,
     mlens.rlen = 0;
     mlens.olen = 0;
     while (true) {
-        int dp_len1, dp_len2;
+        int dp_len1, dp_len2, i, r_align_len, o_align_len;
         if (mlens.rlen == rlen || mlens.olen == olen)
             break;
 
@@ -424,17 +423,23 @@ extend_match(struct cbp_align_nw_memory *mem,
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
+        if(alignment.length == -1)
+            break;
         printf("%s\n%s\n", alignment.org, alignment.ref);
-
-                                                                     break;
-        id = cbp_align_identity(
-            alignment.ref, 0, alignment.length,
-            alignment.org, 0, alignment.length);
-        if (id < compress_flags.ext_seq_id_threshold)
+        matches_count = 0;
+        for(i = matches_index - 100; i < matches_index; i++)
+            if(matches[i])
+                matches_count++;
+        if(matches_count < compress_flags.window_ident_thresh)
             break;
 
-        mlens.rlen += cbp_align_length_nogaps(alignment.ref);
-        mlens.olen += cbp_align_length_nogaps(alignment.org);
+        r_align_len = cbp_align_length_nogaps(alignment.ref);
+        o_align_len = cbp_align_length_nogaps(alignment.org);
+        
+        mlens.rlen += r_align_len;
+        mlens.olen += o_align_len;
+        resind += r_align_len * dir1;
+        current += o_align_len * dir2;
     }
     return mlens;
 }
