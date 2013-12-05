@@ -174,7 +174,7 @@ if(chunks >= 4)break;
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
 
-        for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {/*printf("%d####%d\n", current, seedLoc->residue_index);*/
+        for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
 char *base = kmer;
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
@@ -353,7 +353,6 @@ if(current >= end_of_chunk){
     end_of_section = min(start_of_section + max_section_size,
                          org_seq->length - seed_size - ext_seed);
     current = start_of_section - 1;
-    printf("START OF CHUNK offset = %d\n", start_of_section);
     chunks++;
 }
     }
@@ -375,7 +374,6 @@ extend_match(struct cbp_align_nw_memory *mem,
              char *rseq, int32_t rstart, int32_t rend, int32_t resind, int32_t dir1,
              char *oseq, int32_t ostart, int32_t oend, int32_t current, int32_t dir2)
 {
-/*printf("_____\n");*/printf("Entering extend_match: current = %d, resind = %d\n", current, resind);
     struct cbp_alignment alignment;
     struct extend_match mlens;
     int32_t id;
@@ -423,12 +421,10 @@ extend_match(struct cbp_align_nw_memory *mem,
         current += m * dir2;
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
-        printf("%d@@@%d\n",dp_len2,dp_len1);
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
         printf("%s\n%s\n", alignment.org, alignment.ref);
-        /*printf("_____\n%s %d\n%s\n-----\n", alignment.org, alignment.length, alignment.ref);*/
 
                                                                      break;
         id = cbp_align_identity(
@@ -440,7 +436,6 @@ extend_match(struct cbp_align_nw_memory *mem,
         mlens.rlen += cbp_align_length_nogaps(alignment.ref);
         mlens.olen += cbp_align_length_nogaps(alignment.org);
     }
-/*printf("-----\n\n");*/
     return mlens;
 }
 

@@ -234,7 +234,6 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
         pos[0] = -1;
         pos[1] = -1;
     }
-    /*printf("%d ### %d\n", pos[0], pos[1]);*/
     return pos;
 }
 
@@ -244,7 +243,6 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
              char *oseq, int dp_len2, int i2, int dir2,
              bool *matches, int *matches_index)
 {
-    /**printf("i1 = %d   i2 = %d\n", i1, i2);**/
     struct cbp_alignment align;
     bool *current_match;
     int matches_count = 0;
@@ -281,20 +279,17 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
 	    if (dir_prod == -1) c2 = base_complement(c2);
 	    subs1_dp[num_steps] = c1;
 	    subs2_dp[num_steps] = c2;
-printf("%c %c\\     %d %d\n", c1, c2, i1+dir1*prev_j1, i2+dir2*prev_j2);
 	    break;
         case 1: prev_j1 = cur_j1-1; prev_j2 = cur_j2; /* advance 1; gap in 2 */
 	    c1 = rseq[i1+dir1*prev_j1];
             subs1_dp[num_steps] = c1;
             subs2_dp[num_steps] = '-';
-printf("%c %c^     %d %d\n", c1, '-', i1+dir1*prev_j1, i2+dir2*prev_j2);
             break;
         default: prev_j1 = cur_j1; prev_j2 = cur_j2-1; /* advance 2; gap in 1 */
             c2 = oseq[i2+dir2*prev_j2];
             if (dir_prod == -1) c2 = base_complement(c2); /* comp if antisense */
             subs1_dp[num_steps] = '-';
             subs2_dp[num_steps] = c2;
-printf("%c %c<     %d %d\n", '-', c2, i1+dir1*prev_j1, i2+dir2*prev_j2);
         }
         matches_to_add[num_steps] = dp_score[cur_j1][cur_j2] >
                                     dp_score[prev_j1][prev_j2];
