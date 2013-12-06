@@ -3,16 +3,19 @@
 #include <stdbool.h>
 #include "edit_scripts.h"
 
+/* Converts an integer to its octal representation */
 char *to_octal_str(int i) {
   char *buf = malloc(16*sizeof(char));
   sprintf(buf, "%o", i);
   return buf;
 }
 
-char *make_edit_script(char **axt, char dir, int length){ 
+/* Takes in as input two strings, a character representing whether or not they
+ * are in the same direction, and the length of the strings and returns an edit
+ * script that can convert the reference string to the original string.
+ */
+char *make_edit_script(char *str, char *ref, char dir, int length){ 
     char direction = dir == '+' ? '0' : '1';
-    char *str = axt[0]; /* strings are aligned and include gaps */
-    char *ref = axt[2];
     bool insert_open = false, subdel_open = false;
     int last_edit = 0;
     char *edit_script = malloc(3*length*sizeof(char));

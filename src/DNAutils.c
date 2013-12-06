@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "DNAutils.h"
 
 char base_complement(char base){
   switch (base){
