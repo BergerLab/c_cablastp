@@ -3,7 +3,7 @@ CFLAGS=-g -O3 -ansi -Wall -Wextra -pedantic -lpthread -I.
 LDLIBS=-lds -lpthread -lopt
 
 COMPRESS_OBJS=align.o blosum62.o blosum62_matrix.o \
-							coarse.o compressed.o compression.o database.o DNAutils.o fasta.o flags.o \
+							coarse.o compressed.o compression.o database.o DNAutils.o edit_scripts.o fasta.o flags.o \
 							seeds.o seq.o util.o
 COMPRESS_HEADERS=align.o blosum62.h coarse.h compressed.h compression.h \
 								 database.h fasta.h flags.h seeds.h seq.h util.h
@@ -22,6 +22,7 @@ compressed.o: compressed.c compressed.h
 compression.o: compression.c compression.h align.h coarse.h compressed.h seq.h
 database.o: database.c database.h coarse.h compressed.h
 DNAutils.o: DNAutils.c DNAutils.h
+edit_scripts.o: edit_scripts.c edit_scripts.h
 fasta.o: fasta.c fasta.h util.h
 flags.o: flags.c flags.h util.h
 seeds.o: seeds.c seeds.h
