@@ -1,3 +1,4 @@
+#include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
@@ -14,7 +15,7 @@ char *to_octal_str(int i) {
  * are in the same direction, and the length of the strings and returns an edit
  * script that can convert the reference string to the original string.
  */
-char *make_edit_script(char *str, char *ref, char dir, int length){ 
+char *make_edit_script(char *str, char *ref, char dir, int length){
     char direction = dir == '+' ? '0' : '1';
     bool insert_open = false, subdel_open = false;
     int last_edit = 0;
@@ -60,4 +61,62 @@ char *make_edit_script(char *str, char *ref, char dir, int length){
     edit_script = realloc(edit_script, current+1*sizeof(char));
     edit_script[current] = '\0';
     return edit_script;
+}
+
+/* reads one edit worth of info (or fails if current decoded char is digit)
+   moves pos accordingly */
+bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
+    int editLength = 0;
+    int i = 0;
+    if(isdigit(edit_script[(*pos)]) || edit_script[(*pos)] == '\0')
+        return false;
+    edit->is_subdel = edit_script[(*pos)++] == 's';
+    edit->last_dist = 0;
+    edit->str = "";
+    while(isdigit(edit_script[(*pos)])){
+        edit->last_dist *= 8; /* octal encoding */
+        edit->last_dist += edit_script[(*pos)++] - '0';
+    }
+    while(isupper(edit_script[(*pos)+editLength]) ||
+                  edit_script[(*pos)+editLength] == '-')
+        editLength++;
+    edit->str = malloc((editLength+1)*sizeof(char));
+    edit->str_length = editLength;
+    while (isupper(edit_script[(*pos)]) || edit_script[(*pos)] == '-')
+        edit->str[i++] = edit_script[(*pos)++];
+    return true;
+}
+
+char *read_edit_script(char *edit_script, char *orig, int length){
+    char *str = malloc((2*length+1)*sizeof(char));
+    int i;
+    struct edit_info edit;
+    int orig_pos = 0, last_edit_str_len = 0; /* length of last edit str */
+    int current = 0;
+    int script_pos = 1;
+
+    while(next_edit(edit_script, &script_pos, &edit)){
+        /* chunk after previous edit */
+        for(i = 0; i < edit.last_dist - last_edit_str_len; i++)
+            str[current++] = orig[orig_pos+i];
+
+        /* update position in original string */
+        orig_pos += edit.last_dist - last_edit_str_len;
+
+        /* append replacement string in edit script; get rid of dashes */
+        for(i = 0; i < edit.str_length; i++)
+            if(edit.str[i] != '-')
+	        str[current++] = edit.str[i];
+
+        /* skip subdel along original string */
+        if (edit.is_subdel) orig_pos += edit.str_length;
+
+        last_edit_str_len = edit.str_length;
+    }
+    while(orig_pos < length)
+        str[current++] = orig[orig_pos++];
+    str = realloc(str, current+1*sizeof(char));
+    str[current] = '\0';
+    printf("Exited read_edit_script\n");
+    return str;
 }
