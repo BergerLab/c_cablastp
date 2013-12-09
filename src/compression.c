@@ -154,7 +154,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 4)break;
+if(chunks >= 7)break;
         if(current == 0 && coarse_db->seqs->size == 0){
             /*printf("START OF CHUNK offset = 0\n");*/
             add_without_match(coarse_db, org_seq, 0, max_chunk_size);
@@ -188,7 +188,7 @@ char *base = kmer;
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){ 
+                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
                                           org_seq->residues, start_of_section, end_of_section, current, -1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
@@ -423,8 +423,9 @@ extend_match(struct cbp_align_nw_memory *mem,
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
+        /*printf("---%d---\n", alignment.length);*/
         if(alignment.length == -1)
-            break;
+            break;/*printf("===%d===\n", alignment.length);*/
         printf("%s\n%s\n", alignment.org, alignment.ref);
         matches_count = 0;
         for(i = matches_index - 100; i < matches_index; i++)

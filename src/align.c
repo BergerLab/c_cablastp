@@ -147,14 +147,17 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
         dp_score[i] = malloc((dp_len2+1)*sizeof(int));
         dp_from[i] = malloc((dp_len2+1)*sizeof(int));
     }
+/*printf("\n");*/
     for(i = 0; i <= dp_len2; i++){
         dp_score[0][i] = -3*i;
         dp_from[0][i] = 2;
-    }
+/*if(i<dp_len2)printf("%c",dir2 == 1 ? oseq[i2+dir2*i] : base_complement(oseq[i2+dir2*i]));*/
+    }/*printf("\n");*/
     for(i = 1; i <= dp_len1; i++){
         dp_score[i][0] = -3*i;
         dp_from[i][0] = 1;
-    }
+/*printf("%c",rseq[i1+dir1*(i-1)]);*/
+    }/*printf("\n");*/
     for(j1 = 1; j1 <= dp_len1; j1++)
         for(j2 = 1; j2 <= dp_len2; j2++){
             int score0, score1, score2;
@@ -175,6 +178,7 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
 	        dp_from[j1][j2] = 2;
             }
         }
+
     tables.dp_score = dp_score;
     tables.dp_from = dp_from;
     return tables;
@@ -189,15 +193,15 @@ int *best_edge(int **dp_score, int dp_len1, int dp_len2){
     int *best = malloc(2*sizeof(int));
     best[0] = -1;
     best[1] = -1;
-    for (j1 = 0; j1 <= dp_len1; j1++)
-        if (dp_score[j1][dp_len2] >= max_dp_score) {
-            max_dp_score = dp_score[j1][dp_len2];
-            best[0] = j1; best[1] = dp_len2;
-        }
     for (j2 = 0; j2 <= dp_len2; j2++)
         if (dp_score[dp_len1][j2] >= max_dp_score) {
             max_dp_score = dp_score[dp_len1][j2];
             best[0] = dp_len1; best[1] = j2;
+        }
+    for (j1 = 0; j1 <= dp_len1; j1++)
+        if (dp_score[j1][dp_len2] >= max_dp_score) {
+            max_dp_score = dp_score[j1][dp_len2];
+            best[0] = j1; best[1] = dp_len2;
         }
    return best; 
 }
@@ -206,6 +210,7 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
     int consec_matches = 0;
     int **dp_score = tables.dp_score;
     int **dp_from = tables.dp_from;
+
     int consec_match_clump_size = compress_flags.consec_match_clump_size;
     while(pos[0] != 0 && pos[1] != 0){
         int prev_j1, prev_j2;
@@ -214,6 +219,7 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
             pos[1] += consec_match_clump_size;
             break;
         }
+
         switch(dp_from[pos[0]][pos[1]]){ /*backtrack to previous cell*/
             case 0: prev_j1 = pos[0]-1; prev_j2 = pos[1]-1; break;
             case 1: prev_j1 = pos[0]-1; prev_j2 = pos[1]; break;
@@ -250,7 +256,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);    
     int *clump = backtrack_to_clump(tables, best);
     int i = 0;
-    if(clump[0] <= 0){
+    if(clump[0] <= 0){/*printf("COULDN'T FIND CLUMP\n");*/
         align.ref = "\0";
         align.org = "\0";
         align.length = -1;
