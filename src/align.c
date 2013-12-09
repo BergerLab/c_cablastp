@@ -162,17 +162,17 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
                      (bases_match(rseq[i1+dir1*(j1-1)], oseq[i2+dir2*(j2-1)], dir_prod) ? 1 : -3);
             score1 = dp_score[j1-1][j2] - 3;
             score2 = dp_score[j1][j2-1] - 3;
-	    if (score0 >= score1 && score0 >= score2) {
-	        dp_score[j1][j2] = score0;
-	        dp_from[j1][j2] = 0;
-	    }
-	    else if (score1 >= score2) {
-	        dp_score[j1][j2] = score1;
-	        dp_from[j1][j2] = 1;
-	    }
-	    else {
-	        dp_score[j1][j2] = score2;
-	        dp_from[j1][j2] = 2;
+            if (score0 >= score1 && score0 >= score2){
+                dp_score[j1][j2] = score0;
+                dp_from[j1][j2] = 0;
+            }
+            else if(score2 >= score1){
+                dp_score[j1][j2] = score2;
+                dp_from[j1][j2] = 2;
+            }
+            else{
+                dp_score[j1][j2] = score1;
+                dp_from[j1][j2] = 1;
             }
         }
     tables.dp_score = dp_score;
@@ -218,8 +218,8 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
 
         switch(dp_from[pos[0]][pos[1]]){ /*backtrack to previous cell*/
             case 0: prev_j1 = pos[0]-1; prev_j2 = pos[1]-1; break;
-            case 1: prev_j1 = pos[0]-1; prev_j2 = pos[1]; break;
-            default: prev_j1 = pos[0]; prev_j2 = pos[1]-1;
+            case 2: prev_j1 = pos[0]; prev_j2 = pos[1]-1;break;
+            default: prev_j1 = pos[0]-1; prev_j2 = pos[1];
         }
         if(dp_from[pos[0]][pos[1]] == 0)
             if(dp_score[pos[0]][pos[1]] > dp_score[prev_j1][prev_j2]) /*match*/
@@ -236,6 +236,7 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
         pos[0] = -1;
         pos[1] = -1;
     }
+/*printf("===%d %d===\n", pos[0], pos[1]);*/
     return pos;
 }
 
@@ -249,7 +250,20 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     bool *current_match;
     int matches_count = 0;
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq, dp_len2, i2, dir2);
-    int *best = best_edge(tables.dp_score, dp_len1, dp_len2);    
+    int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
+int j1, j2;
+/*for(j2 = 0; j2 <= dp_len2; j2++){
+    for(j1 = 0; j1 <= dp_len1; j1++)
+        printf("%4d", tables.dp_score[j1][j2]);
+    printf("\n");
+}
+printf("\n");
+for(j2 = 0; j2 <= dp_len2; j2++){
+    for(j1 = 0; j1 <= dp_len1; j1++)
+        printf("   %c", tables.dp_from[j1][j2] == 0 ? '\\' : tables.dp_from[j1][j2] == 1 ? '<' : '^');
+    printf("\n");
+}*/
+
     int *clump = backtrack_to_clump(tables, best);
     int i = 0;
     if(clump[0] <= 0){
@@ -282,16 +296,16 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
 	    subs1_dp[num_steps] = c1;
 	    subs2_dp[num_steps] = c2;
 	    break;
-        case 1: prev_j1 = cur_j1-1; prev_j2 = cur_j2; /* advance 1; gap in 2 */
-	    c1 = rseq[i1+dir1*prev_j1];
-            subs1_dp[num_steps] = c1;
-            subs2_dp[num_steps] = '-';
-            break;
-        default: prev_j1 = cur_j1; prev_j2 = cur_j2-1; /* advance 2; gap in 1 */
+        case 2: prev_j1 = cur_j1; prev_j2 = cur_j2-1; /* advance 2; gap in 1 */
             c2 = oseq[i2+dir2*prev_j2];
             if (dir_prod == -1) c2 = base_complement(c2); /* comp if antisense */
             subs1_dp[num_steps] = '-';
             subs2_dp[num_steps] = c2;
+            break;
+        default: prev_j1 = cur_j1-1; prev_j2 = cur_j2; /* advance 1; gap in 2 */
+	    c1 = rseq[i1+dir1*prev_j1];
+            subs1_dp[num_steps] = c1;
+            subs2_dp[num_steps] = '-';
         }
         matches_to_add[num_steps] = dp_score[cur_j1][cur_j2] >
                                     dp_score[prev_j1][prev_j2];
