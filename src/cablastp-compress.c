@@ -74,5 +74,6 @@ main(int argc, char **argv)
     opt_config_free(conf);
     opt_args_free(args);
     cbp_compress_free_workers(workers);
+
     return 0;
 }

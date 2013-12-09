@@ -52,8 +52,8 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
                                               &matches_count,
                                               matches_past_clump, temp_index);
                     length += update;
-                    if(update != temp_index){/*printf("%d =/= %d Bad window\n", update, temp_index);*/
-                        return -1 * length;}
+                    if(update != temp_index)
+                        return -1 * length;
                 temp_index = 0;
                 matches_since_last_consec = 0;
             }
@@ -65,7 +65,7 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
             successive = 0;
             if(scanned - length >= compress_flags.btwn_match_min_dist_check){
                 if((double)matches_since_last_consec <
-                   (scanned-length)*0.5){/*printf("< 50%% identity %d\n", scanned - length);*/
+                   (scanned-length)*0.5){
                     return length;}
             }
         }
@@ -147,17 +147,14 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
         dp_score[i] = malloc((dp_len2+1)*sizeof(int));
         dp_from[i] = malloc((dp_len2+1)*sizeof(int));
     }
-/*printf("\n");*/
     for(i = 0; i <= dp_len2; i++){
         dp_score[0][i] = -3*i;
         dp_from[0][i] = 2;
-/*if(i<dp_len2)printf("%c",dir2 == 1 ? oseq[i2+dir2*i] : base_complement(oseq[i2+dir2*i]));*/
-    }/*printf("\n");*/
+    }
     for(i = 1; i <= dp_len1; i++){
         dp_score[i][0] = -3*i;
         dp_from[i][0] = 1;
-/*printf("%c",rseq[i1+dir1*(i-1)]);*/
-    }/*printf("\n");*/
+    }
     for(j1 = 1; j1 <= dp_len1; j1++)
         for(j2 = 1; j2 <= dp_len2; j2++){
             int score0, score1, score2;
@@ -256,7 +253,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);    
     int *clump = backtrack_to_clump(tables, best);
     int i = 0;
-    if(clump[0] <= 0){/*printf("COULDN'T FIND CLUMP\n");*/
+    if(clump[0] <= 0){
         align.ref = "\0";
         align.org = "\0";
         align.length = -1;
@@ -313,8 +310,8 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     for(i = *matches_index - 100; i < *matches_index; i++)
         if(matches[i])
             matches_count++;
-    if(check_and_update(matches, matches_index, &matches_count, matches_to_add, num_steps) != num_steps)
-        align.length = -1;
+    if(check_and_update(matches, matches_index, &matches_count, matches_to_add, num_steps) != num_steps){
+        align.length = -1;}
     else{
         align.length = num_steps;
         align.org = malloc((align.length+1)*sizeof(char));
@@ -388,7 +385,7 @@ int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *
             (*num_matches)++;
         if(matches[hundred_bases_ago])
             (*num_matches)--;
-        if(*num_matches < 85){/*printf("?\n");*/
+        if(*num_matches < 85){
             return i;}
     }
     return temp_index;

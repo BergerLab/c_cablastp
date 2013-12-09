@@ -154,9 +154,8 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 7)break;
+if(chunks >= 10)break;
         if(current == 0 && coarse_db->seqs->size == 0){
-            /*printf("START OF CHUNK offset = 0\n");*/
             add_without_match(coarse_db, org_seq, 0, max_chunk_size);
             start_of_section += max_chunk_size - overlap;
             end_of_chunk = min(start_of_section + max_chunk_size,
@@ -166,7 +165,6 @@ if(chunks >= 7)break;
             current = start_of_section-1;
 /********print_seeds(coarse_db->seeds);********/
             chunks++;
-            /*printf("START OF CHUNK offset = %d\n", start_of_section);*/
             continue;
         }
         kmer = org_seq->residues + current;
@@ -386,6 +384,7 @@ extend_match(struct cbp_align_nw_memory *mem,
     int matches_index;
     int max_section_size;
     int i;
+    bool found_bad_window;
 
     matches = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
     matches_past_clump = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
@@ -410,22 +409,25 @@ extend_match(struct cbp_align_nw_memory *mem,
         int dp_len1, dp_len2, i, r_align_len, o_align_len;
         if (mlens.rlen == rlen || mlens.olen == olen)
             break;
-
         m = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
                                oseq, ostart, oend, dir2, current,
                                matches, matches_past_clump, &matches_index);
+        found_bad_window = m < 0;
+        if(m < 0)
+	    m *= -1;
         mlens.rlen += m;
         mlens.olen += m;
         resind += m * dir1;
         current += m * dir2;
+        if(found_bad_window)
+            break;
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
-        /*printf("---%d---\n", alignment.length);*/
         if(alignment.length == -1)
-            break;/*printf("===%d===\n", alignment.length);*/
+            break;
         printf("%s\n%s\n", alignment.org, alignment.ref);
         matches_count = 0;
         for(i = matches_index - 100; i < matches_index; i++)
