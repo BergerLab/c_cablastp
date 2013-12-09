@@ -175,7 +175,6 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
 	        dp_from[j1][j2] = 2;
             }
         }
-
     tables.dp_score = dp_score;
     tables.dp_from = dp_from;
     return tables;
@@ -209,7 +208,7 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
     int **dp_from = tables.dp_from;
 
     int consec_match_clump_size = compress_flags.consec_match_clump_size;
-    while(pos[0] != 0 && pos[1] != 0){
+    while(!(pos[0] == 0 && pos[1] == 0)){
         int prev_j1, prev_j2;
         if(consec_matches == consec_match_clump_size){ /*found chunk; stop*/
             pos[0] += consec_match_clump_size;
