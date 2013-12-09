@@ -187,6 +187,8 @@ char *base = kmer;
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){
+
+printf("-->\n");
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
                                           org_seq->residues, start_of_section, end_of_section, current, -1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
@@ -274,6 +276,7 @@ char *base = kmer;
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){
+printf("<--\n");
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
                                          org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
@@ -377,6 +380,7 @@ extend_match(struct cbp_align_nw_memory *mem,
     int32_t id;
     int32_t gwsize;
     int32_t rlen, olen;
+    struct ungapped_alignment ungapped;
     int32_t m;
     bool *matches;
     bool *matches_past_clump;
@@ -409,12 +413,11 @@ extend_match(struct cbp_align_nw_memory *mem,
         int dp_len1, dp_len2, i, r_align_len, o_align_len;
         if (mlens.rlen == rlen || mlens.olen == olen)
             break;
-        m = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
+        ungapped = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
                                oseq, ostart, oend, dir2, current,
                                matches, matches_past_clump, &matches_index);
-        found_bad_window = m < 0;
-        if(m < 0)
-	    m *= -1;
+        m = ungapped.length;
+        found_bad_window = ungapped.found_bad_window;
         mlens.rlen += m;
         mlens.olen += m;
         resind += m * dir1;
@@ -423,6 +426,7 @@ extend_match(struct cbp_align_nw_memory *mem,
             break;
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
+printf("%d@@@%d\n", dp_len2, dp_len1);
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);

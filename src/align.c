@@ -9,7 +9,7 @@
 #include "blosum62.h"
 #include "flags.h"
 
-int32_t
+struct ungapped_alignment
 cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32_t i1,
                    char *oseq, int32_t ostart, int32_t oend, int32_t dir2, int32_t i2,
                    bool *matches, bool *matches_past_clump, int *matches_index)
@@ -24,7 +24,10 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
     int32_t dir_prod;
     int matches_count;
     int temp_index;
+    struct ungapped_alignment ungapped;
 
+    ungapped.length = -1;
+    ungapped.found_bad_window = false;
     length = 0;
     scanned = 0;
     consec_match_clump_size = compress_flags.consec_match_clump_size;
@@ -35,6 +38,7 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
     temp_index = 0;
     matches_count = 0;
     matches_since_last_consec = 0;
+
     for(i = *matches_index - 100; i < *matches_index; i++)
         if(matches[i])
             matches_count++;
@@ -43,17 +47,20 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
         i1 += dir1;
         i2 += dir2;
         scanned++;
-        temp_index++;
         if(cur_ismatch == 1){
             matches_past_clump[temp_index] = true;
+            temp_index++;
             successive++;
             if(successive >= consec_match_clump_size){
                 int update = check_and_update(matches, matches_index, 
                                               &matches_count,
                                               matches_past_clump, temp_index);
                     length += update;
-                    if(update != temp_index)
-                        return -1 * length;
+                    if(update != temp_index){
+                        ungapped.length = length;
+                        ungapped.found_bad_window = true;
+                        return ungapped;
+                    }
                 temp_index = 0;
                 matches_since_last_consec = 0;
             }
@@ -62,15 +69,18 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
         }
         else {
             matches_past_clump[temp_index] = false;
+            temp_index++;
             successive = 0;
             if(scanned - length >= compress_flags.btwn_match_min_dist_check){
-                if((double)matches_since_last_consec <
-                   (scanned-length)*0.5){
-                    return length;}
+                if((double)matches_since_last_consec < (scanned-length)*0.5){
+                    ungapped.length = length;
+                    return ungapped;
+                }
             }
         }
     }
-    return scanned;
+    ungapped.length = scanned;
+    return ungapped;
 }
 
 int32_t
@@ -251,8 +261,9 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     int matches_count = 0;
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq, dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
-int j1, j2;
-/*for(j2 = 0; j2 <= dp_len2; j2++){
+
+/*int j1, j2;
+for(j2 = 0; j2 <= dp_len2; j2++){
     for(j1 = 0; j1 <= dp_len1; j1++)
         printf("%4d", tables.dp_score[j1][j2]);
     printf("\n");
@@ -323,8 +334,8 @@ for(j2 = 0; j2 <= dp_len2; j2++){
     for(i = *matches_index - 100; i < *matches_index; i++)
         if(matches[i])
             matches_count++;
-    if(check_and_update(matches, matches_index, &matches_count, matches_to_add, num_steps) != num_steps){
-        align.length = -1;}
+    if(check_and_update(matches, matches_index, &matches_count, matches_to_add, num_steps) != num_steps)
+        align.length = -1;
     else{
         align.length = num_steps;
         align.org = malloc((align.length+1)*sizeof(char));
@@ -392,14 +403,14 @@ int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *
     int i;
     for(i = 0; i < temp_index; i++){
         int hundred_bases_ago = *matches_index - 100;
-        (*matches_index)++;
         matches[(*matches_index)] = temp[i];
         if(temp[i])
             (*num_matches)++;
         if(matches[hundred_bases_ago])
             (*num_matches)--;
-        if(*num_matches < 85){
-            return i;}
+        (*matches_index)++;
+        if(*num_matches < 85)
+            return i;
     }
     return temp_index;
 }

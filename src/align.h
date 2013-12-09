@@ -14,7 +14,12 @@ type.
 
 #define CABLASTP_ALIGN_SEQ_SIZE 10000
 
-int32_t
+struct ungapped_alignment{
+    int32_t length;
+    bool found_bad_window;
+};
+
+struct ungapped_alignment
 cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32_t i1,
                    char *oseq, int32_t ostart, int32_t oend, int32_t dir2, int32_t i2,
                    bool *matches, bool *matches_past_clump, int *matches_index);
