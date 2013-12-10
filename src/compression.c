@@ -238,34 +238,41 @@ printf("-->\n");
                                          org_match, original_align_len, 0, 1,
                                          matches, NULL);
                 
+                /*Make a new chunk for the parts of the chunk before the
+                  match.*/
                 if (current - start_of_section > 0) {
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section, current);
-                    /*Make a new chunk for the parts of the chunk before the
-                      match.*/
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                                                new_coarse_seq_id, 0,
                                                current - start_of_section,
                                                true));
-
-                    /*Add a link to the coarse sequence in the compressed
-                      sequence.*/
-                    cbp_compressed_seq_addlink(cseq,
-                        cbp_link_to_coarse_init(coarse_seq->id,
-                                                resind - mlens_rev.rlen,
-                                                resind + mlens_fwd.rlen,
-                                                alignment, true));
-
-                    /*Add a link to the compressed sequence in the coarse
-                      sequence.*/
-                    cbp_coarse_seq_addlink(coarse_seq,
-                                           cbp_link_to_compressed_init(
-                                           org_seq->id,
-                                           resind - mlens_rev.rlen,
-                                           resind + mlens_fwd.rlen, true));
- 
                 }
+
+                /*Add a link to the coarse sequence in the compressed
+                  sequence.*/
+                cbp_compressed_seq_addlink(cseq,
+                    cbp_link_to_coarse_init(coarse_seq->id,
+                                            resind - mlens_rev.rlen,
+                                            resind + mlens_fwd.rlen,
+                                            alignment, true));
+
+                /*Add a link to the compressed sequence in the coarse
+                  sequence.*/
+                cbp_coarse_seq_addlink(coarse_seq,
+                                       cbp_link_to_compressed_init(
+                                       org_seq->id,
+                                       resind - mlens_rev.rlen,
+                                       resind + mlens_fwd.rlen, true));
+
+                /*Update the current position in the sequence*/
+                start_of_section = current + mlens_fwd.olen
+                                           - compress_flags.overlap;
+                end_of_chunk = min(start_of_section + max_chunk_size,
+                                   org_seq->length-seed_size-ext_seed);
+                end_of_section = min(start_of_section + max_section_size,
+                                     org_seq->length-seed_size-ext_seed);
             }
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
@@ -332,35 +339,41 @@ printf("<--\n");
                                          original_align_len-1, -1,
                                          matches, NULL);
 
-                /*printf("<<<%d %d\n", mlens_rev.olen, mlens_fwd.olen);*/
-                if (current - start_of_section > 0) {
+                /*Make a new chunk for the parts of the chunk before the
+                  match.*/
+                if (current - start_of_section > 0){
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section, current);
-
-                    /*Make a new chunk for the parts of the chunk before the
-                      match.*/
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                                                new_coarse_seq_id, 0,
                                                current - start_of_section,
                                                true));
-
-                    /*Add a link to the coarse sequence in the compressed
-                      sequence.*/
-                    cbp_compressed_seq_addlink(cseq,
-                        cbp_link_to_coarse_init(coarse_seq->id,
-                                                resind - mlens_fwd.rlen,
-                                                resind + mlens_rev.rlen,
-                                                alignment, false));
-
-                    /*Add a link to the compressed sequence in the coarse
-                      sequence.*/
-                    cbp_coarse_seq_addlink(coarse_seq,
-                                           cbp_link_to_compressed_init(
-                                           org_seq->id,
-                                           resind - mlens_fwd.rlen,
-                                           resind + mlens_rev.rlen, false));
                 }
+
+                /*Add a link to the coarse sequence in the compressed
+                  sequence.*/
+                cbp_compressed_seq_addlink(cseq,
+                    cbp_link_to_coarse_init(coarse_seq->id,
+                                            resind - mlens_fwd.rlen,
+                                            resind + mlens_rev.rlen,
+                                            alignment, false));
+
+                /*Add a link to the compressed sequence in the coarse
+                  sequence.*/
+                cbp_coarse_seq_addlink(coarse_seq,
+                                       cbp_link_to_compressed_init(
+                                       org_seq->id,
+                                       resind - mlens_fwd.rlen,
+                                       resind + mlens_rev.rlen, false));
+
+                /*Update the current position in the sequence*/
+                start_of_section = current + mlens_rev.olen
+                                           - compress_flags.overlap;
+                end_of_chunk = min(start_of_section + max_chunk_size,
+                                   org_seq->length-seed_size-ext_seed);
+                end_of_section = min(start_of_section + max_section_size,
+                                     org_seq->length-seed_size-ext_seed);
             }
         }
 
