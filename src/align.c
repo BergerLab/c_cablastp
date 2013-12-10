@@ -246,7 +246,6 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
         pos[0] = -1;
         pos[1] = -1;
     }
-/*printf("===%d %d===\n", pos[0], pos[1]);*/
     return pos;
 }
 
@@ -330,18 +329,28 @@ for(j2 = 0; j2 <= dp_len2; j2++){
     }
 
     /* note: need to flip order */
-
-    for(i = *matches_index - 100; i < *matches_index; i++)
-        if(matches[i])
-            matches_count++;
-    if(check_and_update(matches, matches_index, &matches_count, matches_to_add, num_steps) != num_steps)
+    if(dp_len1 < compress_flags.min_match_len)
+        for(i = *matches_index - 100; i < *matches_index; i++)
+            if(matches[i])
+                matches_count++;
+   /* Make sure we don't have a bad window unless we are running
+      Needleman-Wunsch alignment on a match.  If we have a bad window, then
+      throw out this alignment.  Otherwise, copy the alignment into align.org
+      and align.ref. */
+    if(dp_len1 < compress_flags.min_match_len &&
+       check_and_update(matches, matches_index, &matches_count,
+                        matches_to_add, num_steps) != num_steps)
         align.length = -1;
     else{
         align.length = num_steps;
         align.org = malloc((align.length+1)*sizeof(char));
         align.ref = malloc((align.length+1)*sizeof(char));
         for(i = 0; i < align.length; i++){
-            matches[(*matches_index)+i] = matches_to_add[i];
+            /*Don't update the matches array if we are running Needleman-Wunsch
+              alignment on a match.*/
+            if(dp_len1 < compress_flags.min_match_len)
+                matches[(*matches_index)+i] = matches_to_add[i];
+
             align.ref[i] = subs1_dp[align.length-i-1];
             align.org[i] = subs2_dp[align.length-i-1];
         }

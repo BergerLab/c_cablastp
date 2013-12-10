@@ -154,7 +154,12 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 42)break;
+if(chunks >= 43)break;
+
+       /*If we are at the beginning of the first chunk of the first sequence,
+        *add the first chunk without a match and skip ahead to the start of
+        *the second chunk.
+        */
         if(current == 0 && coarse_db->seqs->size == 0){
             add_without_match(coarse_db, org_seq, 0, max_chunk_size);
             start_of_section += max_chunk_size - overlap;
@@ -169,19 +174,30 @@ if(chunks >= 42)break;
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
+        /*The locations of all seeds in the database that start with the
+          current k-mer.*/
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
+        /*The locations of all seeds in the database that start with the
+          current k-mer's reverse complement.*/
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
 
         for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
-char *base = kmer;
+            int coarse_align_len, original_align_len,
+                start_coarse_align, end_coarse_align,
+                start_original_align, end_original_align;
+            char *cor_match, *org_match;
+            int i1, i2;
+
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
+
             if (resind + seed_size + ext_seed > coarse_seq->seq->length)
                 continue;
             if (0 != strncmp(
                         coarse_seq->seq->residues + seed_size,
                         org_seq->residues + seed_size,
                         ext_seed))
+
                 continue;
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
@@ -193,71 +209,46 @@ printf("-->\n");
                                           org_seq->residues, start_of_section, end_of_section, current, -1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
                                           org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
-                /*printf(">>>%d %d\n", mlens_rev.olen, mlens_fwd.olen);*/
+
+              /*If the match was too short, try the next seed*/                
+                if(mlens_rev.olen+seed_size+mlens_fwd.olen < compress_flags.min_match_len)
+                    continue;
+
+                found_match = true;
+                printf("MATCH\n");
+                coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
+                original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
+
+                start_coarse_align = resind - mlens_rev.rlen;
+                end_coarse_align = start_coarse_align + mlens_fwd.rlen;
+                start_original_align = current - mlens_rev.olen;
+                end_original_align = end_original_align + mlens_fwd.olen;
+                
+                cor_match = malloc(coarse_align_len * sizeof(char));
+                org_match = malloc(original_align_len * sizeof(char));
+
+              /*Copy the matching parts of the coarse and original sequences*/
+                for(i1 = start_coarse_align; i1 < end_coarse_align; i1++)
+                    cor_match[i1-start_coarse_align] = org_seq->residues[i1]; 
+                for(i2 = start_original_align; i2 < end_original_align; i2++)
+                    org_match[i2-start_original_align] =
+                                               coarse_seq->seq->residues[i2];
+
+              /*Get an alignment of the matching sequences*/
+                alignment = cbp_align_nw(mem,
+                                         cor_match, coarse_align_len, 0, 1,
+                                         org_match, original_align_len, 0, 1,
+                                         matches, NULL);
             }
-
-
-            /*mlens = extend_match(
-                mem,
-                coarse_seq->seq->residues, resind, coarse_seq->seq->length,
-                org_seq->residues, current, org_seq->length);
-
-            has_end = mlens.olen + mext >= org_seq->length - current;
-            if (mlens.olen < compress_flags.min_match_len && !has_end)
-                continue;
-
-            alignment = cbp_align_nw(
-                mem,
-                coarse_seq->seq->residues, resind, resind + mlens.rlen,
-                org_seq->residues, current, current + mlens.olen);
-            id = cbp_align_identity(
-                alignment.ref, 0, alignment.length,
-                alignment.org, 0, alignment.length);
-            if (id < compress_flags.match_seq_id_threshold)
-                continue;
-
-            changed = false;
-            if (has_end) {
-                mlens.olen = org_seq->length - current;
-                changed = true;
-            }
-            if (current - last_match <= mext) {
-                mlens.olen += current - last_match;
-                current = last_match;
-                changed = true;
-            }
-
-            if (changed)
-                alignment = cbp_align_nw(
-                    mem,
-                    coarse_seq->seq->residues, resind, resind + mlens.rlen,
-                    org_seq->residues, current, current + mlens.olen);
-
-            if (current - last_match > 0) {
-                new_coarse_seq_id = add_without_match(
-                    coarse_db, org_seq, last_match, current);
-                cbp_compressed_seq_addlink(
-                    cseq,
-                    cbp_link_to_coarse_init_nodiff(
-                        new_coarse_seq_id, 0, current - last_match));
-            }
-
-            cbp_compressed_seq_addlink(
-                cseq,
-                cbp_link_to_coarse_init(
-                    coarse_seq->id, resind, resind + mlens.rlen, alignment));
-            cbp_coarse_seq_addlink(
-                coarse_seq,
-                cbp_link_to_compressed_init(
-                    org_seq->id, resind, resind + mlens.rlen));
-
-            last_match = current + mlens.olen;
-            current = last_match - 1;
-
-            found_match = true;
-            break;*/
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
+            int coarse_align_len, original_align_len,
+                start_coarse_align, end_coarse_align,
+                start_original_align, end_original_align;
+            char *cor_match, *org_match;
+            int i1, i2;
+
+
             if(found_match)
               break;
             resind = seedLoc->residue_index;
@@ -281,81 +272,58 @@ printf("<--\n");
                                          org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
                                          org_seq->residues, start_of_section, end_of_section, current, -1);
+
+              /*If the match was too short, try the next seed*/                
+                if(mlens_rev.olen+seed_size+mlens_fwd.olen < compress_flags.min_match_len)
+                    continue;
+
+                found_match = true;
+                printf("MATCH\n");
+                coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
+                original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
+
+                start_coarse_align = resind - mlens_fwd.rlen;
+                end_coarse_align = start_coarse_align + seed_size + mlens_rev.rlen;
+                start_original_align = current - mlens_fwd.olen;
+                end_original_align = end_original_align + seed_size + mlens_rev.olen;
+                
+                cor_match = malloc(coarse_align_len * sizeof(char));
+                org_match = malloc(original_align_len * sizeof(char));
+
+              /*Copy the matching parts of the coarse and original sequences*/
+                for(i1 = start_coarse_align; i1 < end_coarse_align; i1++)
+                    cor_match[i1-start_coarse_align] = org_seq->residues[i1]; 
+                for(i2 = start_original_align; i2 < end_original_align; i2++)
+                    org_match[i2-start_original_align] =
+                                               coarse_seq->seq->residues[i2];
+
+              /*Get an alignment of the matching sequences*/
+                alignment = cbp_align_nw(mem,
+                                         cor_match, coarse_align_len, 0, 1,
+                                         org_match, original_align_len,
+                                         original_align_len-1, -1,
+                                         matches, NULL);
+
                 /*printf("<<<%d %d\n", mlens_rev.olen, mlens_fwd.olen);*/
             }
-
-            /*mlens = extend_match(
-                mem,
-                coarse_seq->seq->residues, resind, coarse_seq->seq->length,
-                org_seq->residues, current, org_seq->length);
-
-            has_end = mlens.olen + mext >= org_seq->length - current;
-            if (mlens.olen < compress_flags.min_match_len && !has_end)
-                continue;
-
-            alignment = cbp_align_nw(
-                mem,
-                coarse_seq->seq->residues, resind, resind + mlens.rlen,
-                org_seq->residues, current, current + mlens.olen);
-            id = cbp_align_identity(
-                alignment.ref, 0, alignment.length,
-                alignment.org, 0, alignment.length);
-            if (id < compress_flags.match_seq_id_threshold)
-                continue;
-
-            changed = false;
-            if (has_end) {
-                mlens.olen = org_seq->length - current;
-                changed = true;
-            }
-            if (current - last_match <= mext) {
-                mlens.olen += current - last_match;
-                current = last_match;
-                changed = true;
-            }
-
-            if (changed)
-                alignment = cbp_align_nw(
-                    mem,
-                    coarse_seq->seq->residues, resind, resind + mlens.rlen,
-                    org_seq->residues, current, current + mlens.olen);
-
-            if (current - last_match > 0) {
-                new_coarse_seq_id = add_without_match(
-                    coarse_db, org_seq, last_match, current);
-                cbp_compressed_seq_addlink(
-                    cseq,
-                    cbp_link_to_coarse_init_nodiff(
-                        new_coarse_seq_id, 0, current - last_match));
-            }
-
-            cbp_compressed_seq_addlink(
-                cseq,
-                cbp_link_to_coarse_init(
-                    coarse_seq->id, resind, resind + mlens.rlen, alignment));
-            cbp_coarse_seq_addlink(
-                coarse_seq,
-                cbp_link_to_compressed_init(
-                    org_seq->id, resind, resind + mlens.rlen));
-
-            last_match = current + mlens.olen;
-            current = last_match - 1;
-
-            break;*/
         }
 
         cbp_seed_loc_free(seeds);
         cbp_seed_loc_free(seeds_r);
-if(current >= end_of_chunk){
-    add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
-    start_of_section = end_of_chunk - overlap;
-    end_of_chunk = min(start_of_section + max_chunk_size,
-                       org_seq->length - seed_size - ext_seed);
-    end_of_section = min(start_of_section + max_section_size,
-                         org_seq->length - seed_size - ext_seed);
-    current = start_of_section - 1;
-    chunks++;
-}
+
+      /*If we have traversed an entire chunk of bases without finding a match,
+        then add the whole chunk as a sequence in the database and update
+        start_of_section, end_of_chunk, and end_of_section*/
+        if(current >= end_of_chunk && !found_match){
+            add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
+            start_of_section = end_of_chunk - overlap;
+            end_of_chunk = min(start_of_section + max_chunk_size,
+                               org_seq->length - seed_size - ext_seed);
+            end_of_section = min(start_of_section + max_section_size,
+                                 org_seq->length - seed_size - ext_seed);
+            current = start_of_section - 1;
+            chunks++;
+        }
     }
 
     if (org_seq->length - last_match > 0) {
