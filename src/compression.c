@@ -155,7 +155,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
 if(chunks >= 43)break;
-
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
         *the second chunk.
@@ -168,7 +167,6 @@ if(chunks >= 43)break;
             end_of_section = min(start_of_section + max_section_size,
                                  org_seq->length - seed_size - ext_seed);
             current = start_of_section-1;
-/********print_seeds(coarse_db->seeds);********/
             chunks++;
             continue;
         }
@@ -239,6 +237,35 @@ printf("-->\n");
                                          cor_match, coarse_align_len, 0, 1,
                                          org_match, original_align_len, 0, 1,
                                          matches, NULL);
+                
+                if (current - start_of_section > 0) {
+                    new_coarse_seq_id = add_without_match(coarse_db, org_seq,
+                                                    start_of_section, current);
+                    /*Make a new chunk for the parts of the chunk before the
+                      match.*/
+                    cbp_compressed_seq_addlink(cseq,
+                        cbp_link_to_coarse_init_nodiff(
+                                               new_coarse_seq_id, 0,
+                                               current - start_of_section,
+                                               true));
+
+                    /*Add a link to the coarse sequence in the compressed
+                      sequence.*/
+                    cbp_compressed_seq_addlink(cseq,
+                        cbp_link_to_coarse_init(coarse_seq->id,
+                                                resind - mlens_rev.rlen,
+                                                resind + mlens_fwd.rlen,
+                                                alignment, true));
+
+                    /*Add a link to the compressed sequence in the coarse
+                      sequence.*/
+                    cbp_coarse_seq_addlink(coarse_seq,
+                                           cbp_link_to_compressed_init(
+                                           org_seq->id,
+                                           resind - mlens_rev.rlen,
+                                           resind + mlens_fwd.rlen, true));
+ 
+                }
             }
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
@@ -248,7 +275,8 @@ printf("-->\n");
             char *cor_match, *org_match;
             int i1, i2;
 
-
+          /*If we found a match in the seed locations for the k-mer, then there
+            is no need to check the locations for the reverse complement.*/
             if(found_match)
               break;
             resind = seedLoc->residue_index;
@@ -305,6 +333,34 @@ printf("<--\n");
                                          matches, NULL);
 
                 /*printf("<<<%d %d\n", mlens_rev.olen, mlens_fwd.olen);*/
+                if (current - start_of_section > 0) {
+                    new_coarse_seq_id = add_without_match(coarse_db, org_seq,
+                                                    start_of_section, current);
+
+                    /*Make a new chunk for the parts of the chunk before the
+                      match.*/
+                    cbp_compressed_seq_addlink(cseq,
+                        cbp_link_to_coarse_init_nodiff(
+                                               new_coarse_seq_id, 0,
+                                               current - start_of_section,
+                                               true));
+
+                    /*Add a link to the coarse sequence in the compressed
+                      sequence.*/
+                    cbp_compressed_seq_addlink(cseq,
+                        cbp_link_to_coarse_init(coarse_seq->id,
+                                                resind - mlens_fwd.rlen,
+                                                resind + mlens_rev.rlen,
+                                                alignment, false));
+
+                    /*Add a link to the compressed sequence in the coarse
+                      sequence.*/
+                    cbp_coarse_seq_addlink(coarse_seq,
+                                           cbp_link_to_compressed_init(
+                                           org_seq->id,
+                                           resind - mlens_fwd.rlen,
+                                           resind + mlens_rev.rlen, false));
+                }
             }
         }
 
@@ -332,7 +388,7 @@ printf("<--\n");
         cbp_compressed_seq_addlink(
             cseq,
             cbp_link_to_coarse_init_nodiff(
-                new_coarse_seq_id, 0, org_seq->length - last_match));
+                new_coarse_seq_id, 0, org_seq->length - last_match, true));
     }
 fprintf(stderr, "Compress finished\n");
     return cseq;
@@ -345,7 +401,6 @@ extend_match(struct cbp_align_nw_memory *mem,
 {
     struct cbp_alignment alignment;
     struct extend_match mlens;
-    int32_t id;
     int32_t gwsize;
     int32_t rlen, olen;
     struct ungapped_alignment ungapped;
@@ -428,7 +483,7 @@ add_without_match(struct cbp_coarse *coarse_db,
     coarse_seq = cbp_coarse_add(coarse_db, org_seq->residues, ostart, oend);
     cbp_coarse_seq_addlink(
         coarse_seq,
-        cbp_link_to_compressed_init(org_seq->id, 0, oend - ostart));
+        cbp_link_to_compressed_init(org_seq->id, 0, oend - ostart, true));
     return coarse_seq->id;
 }
 

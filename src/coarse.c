@@ -163,7 +163,7 @@ cbp_coarse_seq_addlink(struct cbp_coarse_seq *seq,
 
 struct cbp_link_to_compressed *
 cbp_link_to_compressed_init(int32_t org_seq_id,
-                            int16_t coarse_start, int16_t coarse_end)
+                            int16_t coarse_start, int16_t coarse_end, bool dir)
 {
     struct cbp_link_to_compressed *link;
 
@@ -173,6 +173,7 @@ cbp_link_to_compressed_init(int32_t org_seq_id,
     link->org_seq_id = org_seq_id;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
+    link->dir = dir ? '+':'-';
     link->next = NULL;
 
     return link;

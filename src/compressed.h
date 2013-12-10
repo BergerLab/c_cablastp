@@ -7,9 +7,11 @@
 #include "ds.h"
 
 #include "align.h"
+#include "stdbool.h"
 
 struct cbp_link_to_coarse {
     char *diff;
+    char dir;
     int32_t coarse_seq_id;
     int16_t coarse_start;
     int16_t coarse_end;
@@ -19,11 +21,11 @@ struct cbp_link_to_coarse {
 struct cbp_link_to_coarse *
 cbp_link_to_coarse_init(int32_t coarse_seq_id,
                         int16_t coarse_start, int16_t coarse_end,
-                        struct cbp_alignment alignment);
+                        struct cbp_alignment alignment, bool dir);
 
 struct cbp_link_to_coarse *
-cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id,
-                               int16_t coarse_start, int16_t coarse_end);
+cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id, int16_t coarse_start,
+                               int16_t coarse_end, bool dir);
 
 void
 cbp_link_to_coarse_free(struct cbp_link_to_coarse *link);

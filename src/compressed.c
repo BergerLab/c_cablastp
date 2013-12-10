@@ -136,14 +136,15 @@ cbp_compressed_seq_addlink(struct cbp_compressed_seq *seq,
 
 
 struct cbp_link_to_coarse *
-cbp_link_to_coarse_init(int32_t coarse_seq_id,
-                        int16_t coarse_start, int16_t coarse_end,
-                        struct cbp_alignment alignment) {
+cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
+                        int16_t coarse_end, struct cbp_alignment alignment,
+                        bool dir) {
     struct cbp_link_to_coarse *link;
 
     link = malloc(sizeof(*link));
     assert(link);
 
+    link->dir = dir ? '+':'-';
     link->coarse_seq_id = coarse_seq_id;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
@@ -157,13 +158,14 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id,
 }
 
 struct cbp_link_to_coarse *
-cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id,
-                               int16_t coarse_start, int16_t coarse_end) {
+cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id, int16_t coarse_start,
+                               int16_t coarse_end, bool dir) {
     struct cbp_link_to_coarse *link;
 
     link = malloc(sizeof(*link));
     assert(link);
 
+    link->dir = dir ? '+':'-';
     link->diff = NULL;
     link->coarse_seq_id = coarse_seq_id;
     link->coarse_start = coarse_start;
