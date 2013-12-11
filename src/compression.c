@@ -154,7 +154,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 43)break;
+if(chunks >= 44){break;}
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
         *the second chunk.
@@ -172,6 +172,11 @@ if(chunks >= 43)break;
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
+int base = 0;
+for(; base < 10; base++){
+    printf("%c", kmer[base]);
+}
+printf("\n");
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
@@ -304,11 +309,12 @@ printf("-->\n");
 
                 /*Update the current position in the sequence*/
                 start_of_section = current + mlens_fwd.olen
-                                           - compress_flags.overlap;
+                                           - compress_flags.overlap + seed_size;
                 end_of_chunk = min(start_of_section + max_chunk_size,
                                    org_seq->length-seed_size-ext_seed);
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-seed_size-ext_seed);
+                current = start_of_section - 1;
                 chunks++;
             }
         }
@@ -443,11 +449,12 @@ printf("<--\n");
 
                 /*Update the current position in the sequence*/
                 start_of_section = current + mlens_rev.olen
-                                           - compress_flags.overlap;
+                                           - compress_flags.overlap + seed_size;
                 end_of_chunk = min(start_of_section + max_chunk_size,
                                    org_seq->length-seed_size-ext_seed);
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-seed_size-ext_seed);
+                current = start_of_section - 1;
                 chunks++;
             }
         }
@@ -460,7 +467,7 @@ printf("<--\n");
         start_of_section, end_of_chunk, and end_of_section*/
         if(current >= end_of_chunk && !found_match){
             add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
-            start_of_section = end_of_chunk - overlap;
+            start_of_section = end_of_chunk - overlap + seed_size;
             end_of_chunk = min(start_of_section + max_chunk_size,
                                org_seq->length - seed_size - ext_seed);
             end_of_section = min(start_of_section + max_section_size,
