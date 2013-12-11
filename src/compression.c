@@ -145,7 +145,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     end_of_section = start_of_section + max_section_size - 1;
     chunks = 0;
 
-    found_match = false;
 
     matches = malloc(max_section_size*sizeof(*matches));
     matches_temp = malloc(max_section_size*sizeof(*matches_temp));
@@ -155,6 +154,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
 if(chunks >= 44){break;}
+        found_match = false;
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
         *the second chunk.
@@ -177,13 +177,17 @@ for(; base < 10; base++){
     printf("%c", kmer[base]);
 }
 printf("\n");
+/*base = 0;
+for(base = 9; base >= 0; base--){
+    printf("%c", base_complement(kmer[base]));
+}
+*/
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
         /*The locations of all seeds in the database that start with the
           current k-mer's reverse complement.*/
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
-
         for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
             int coarse_align_len, original_align_len,
                 start_coarse_align, end_coarse_align,
@@ -202,6 +206,12 @@ printf("\n");
                         ext_seed))
 
                 continue;
+/***************************************************************************************************************/
+printf("%d\n", attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                           resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
+               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) );
+/***************************************************************************************************************/
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -212,7 +222,6 @@ printf("-->\n");
                                           org_seq->residues, start_of_section, end_of_section, current, -1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
                                           org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
-
               /*If the match was too short, try the next seed*/                
                 if(mlens_rev.olen+seed_size+mlens_fwd.olen < compress_flags.min_match_len)
                     continue;
@@ -324,7 +333,6 @@ printf("-->\n");
                 start_original_align, end_original_align;
             char *cor_match, *org_match;
             int i1, i2;
-
           /*If we found a match in the seed locations for the k-mer, then there
             is no need to check the locations for the reverse complement.*/
             if(found_match)
@@ -340,7 +348,12 @@ printf("-->\n");
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;*/
-
+printf("%d\n", 
+attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
+               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) 
+);
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -467,7 +480,7 @@ printf("<--\n");
         start_of_section, end_of_chunk, and end_of_section*/
         if(current >= end_of_chunk && !found_match){
             add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
-            start_of_section = end_of_chunk - overlap + seed_size;
+            start_of_section = end_of_chunk - overlap;
             end_of_chunk = min(start_of_section + max_chunk_size,
                                org_seq->length - seed_size - ext_seed);
             end_of_section = min(start_of_section + max_section_size,
