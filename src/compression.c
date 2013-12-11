@@ -153,7 +153,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 44){break;}
+if(chunks >= 50){break;}
         found_match = false;
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
@@ -172,11 +172,11 @@ if(chunks >= 44){break;}
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
-int base = 0;
+/*int base = 0;
 for(; base < 10; base++){
     printf("%c", kmer[base]);
 }
-printf("\n");
+printf("\n");*/
 /*base = 0;
 for(base = 9; base >= 0; base--){
     printf("%c", base_complement(kmer[base]));
@@ -207,10 +207,10 @@ for(base = 9; base >= 0; base--){
 
                 continue;
 /***************************************************************************************************************/
-printf("%d\n", attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+/*printf("%d\n", attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) );
+                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) );*/
 /***************************************************************************************************************/
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
@@ -323,7 +323,7 @@ printf("-->\n");
                                    org_seq->length-seed_size-ext_seed);
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-seed_size-ext_seed);
-                current = start_of_section - 1;
+                current = start_of_section-1;
                 chunks++;
             }
         }
@@ -348,12 +348,12 @@ printf("-->\n");
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;*/
-printf("%d\n", 
+/*printf("%d\n", 
 attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) 
-);
+);*/
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -467,7 +467,7 @@ printf("<--\n");
                                    org_seq->length-seed_size-ext_seed);
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-seed_size-ext_seed);
-                current = start_of_section - 1;
+                current = start_of_section-1;
                 chunks++;
             }
         }
