@@ -237,6 +237,42 @@ printf("-->\n");
                                          cor_match, coarse_align_len, 0, 1,
                                          org_match, original_align_len, 0, 1,
                                          matches, NULL);
+
+                /*If we are close to the end of the section, extend the match
+                  to the end of the sequence.*/
+                if(current + mlens_fwd.olen + compress_flags.match_extend >=
+                                                            org_seq->length){
+                   mlens_fwd.olen = org_seq->length - current - seed_size;
+                   changed = true;
+                }
+
+                /*If we are close to the start of the section, extend the match
+                  to the start of the sequence.*/
+                if(current - mlens_rev.olen - start_of_section <=
+                                    compress_flags.match_extend){
+                   mlens_rev.olen = current - start_of_section;
+                   changed = true;
+                }
+
+                /*If the match was extended, update the alignment*/
+                if(changed){
+                    original_align_len = mlens_rev.olen + seed_size +
+                                                              mlens_fwd.olen;
+                    start_original_align = current - mlens_fwd.olen;
+                    end_original_align = end_original_align + seed_size +
+                                                              mlens_rev.olen;
+
+                    org_match = malloc(original_align_len*sizeof(char));
+                    for(i2 = start_original_align; i2<end_original_align; i2++)
+                        org_match[i2-start_original_align] =
+                                                   coarse_seq->seq->residues[i2];
+
+
+                    alignment = cbp_align_nw(mem,
+                                             cor_match, coarse_align_len, 0, 1,
+                                             org_match, original_align_len,
+                                             0, 1, matches, NULL);
+                }
                 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
@@ -273,6 +309,7 @@ printf("-->\n");
                                    org_seq->length-seed_size-ext_seed);
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-seed_size-ext_seed);
+                chunks++;
             }
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
@@ -339,6 +376,43 @@ printf("<--\n");
                                          original_align_len-1, -1,
                                          matches, NULL);
 
+
+                /*If we are close to the end of the section, extend the match
+                  to the end of the sequence.*/
+                if(current + mlens_fwd.olen + compress_flags.match_extend >=
+                                                            org_seq->length){
+                   mlens_rev.olen = org_seq->length - current - seed_size;
+                   changed = true;
+                }
+
+                /*If we are close to the start of the section, extend the match
+                  to the start of the sequence.*/
+                if(current - mlens_rev.olen - start_of_section <=
+                                    compress_flags.match_extend){
+                   mlens_fwd.olen = current - start_of_section;
+                   changed = true;
+                }
+
+                /*If the match was extended, update the alignment*/
+                if(changed){
+                    original_align_len = mlens_rev.olen + seed_size +
+                                                              mlens_fwd.olen;
+                    start_original_align = current - mlens_fwd.olen;
+                    end_original_align = end_original_align + seed_size +
+                                                              mlens_rev.olen;
+                    org_match = malloc(original_align_len*sizeof(char));
+                    for(i2 = start_original_align; i2<end_original_align; i2++)
+                        org_match[i2-start_original_align] =
+                                                   coarse_seq->seq->residues[i2];
+
+
+                    alignment = cbp_align_nw(mem,
+                                             cor_match, coarse_align_len, 0, 1,
+                                             org_match, original_align_len,
+                                             original_align_len-1, -1,
+                                             matches, NULL);
+                }
+
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
                 if (current - start_of_section > 0){
@@ -374,6 +448,7 @@ printf("<--\n");
                                    org_seq->length-seed_size-ext_seed);
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-seed_size-ext_seed);
+                chunks++;
             }
         }
 
