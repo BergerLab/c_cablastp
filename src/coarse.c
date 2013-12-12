@@ -95,8 +95,9 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
         fprintf(coarse_db->file_links, "> %d\n", i);
         for (link = seq->links; link != NULL; link = link->next)
             fprintf(coarse_db->file_links,
-                "original sequence id: %d, reference range: (%d, %d)\n",
-                link->org_seq_id, link->coarse_start, link->coarse_end);
+                "original sequence id: %d, reference range: (%d, %d), direction: %c\n",
+                link->org_seq_id, link->coarse_start, link->coarse_end,
+                (link->dir==1?'+':'-'));
     }
 }
 
@@ -145,6 +146,7 @@ void
 cbp_coarse_seq_addlink(struct cbp_coarse_seq *seq,
                        struct cbp_link_to_compressed *newlink)
 {
+printf("addlink %d %d %d %d\n", (newlink -> dir == 1 ? 1:-1), newlink->org_seq_id, newlink->coarse_start, newlink->coarse_end);
     struct cbp_link_to_compressed *link;
 
     assert(newlink->next == NULL);
