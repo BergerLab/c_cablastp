@@ -153,7 +153,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 50){break;}
+if(chunks >= 56){break;}
         found_match = false;
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
@@ -172,8 +172,8 @@ if(chunks >= 50){break;}
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
-/*int base = 0;
-for(; base < 10; base++){
+int base = 0;
+/*for(; base < 10; base++){
     printf("%c", kmer[base]);
 }
 printf("\n");*/
@@ -227,24 +227,23 @@ printf("-->\n");
                     continue;
 
                 found_match = true;
-                printf("MATCH\n");
+                printf("MATCH -->\n");
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
 
                 start_coarse_align = resind - mlens_rev.rlen;
-                end_coarse_align = start_coarse_align + mlens_fwd.rlen;
+                end_coarse_align = resind + seed_size + mlens_fwd.rlen;
                 start_original_align = current - mlens_rev.olen;
-                end_original_align = end_original_align + mlens_fwd.olen;
+                end_original_align = current + seed_size + mlens_fwd.olen;
                 
                 cor_match = malloc(coarse_align_len * sizeof(char));
                 org_match = malloc(original_align_len * sizeof(char));
 
               /*Copy the matching parts of the coarse and original sequences*/
                 for(i1 = start_coarse_align; i1 < end_coarse_align; i1++)
-                    cor_match[i1-start_coarse_align] = org_seq->residues[i1]; 
+                    cor_match[i1-start_coarse_align] = coarse_seq->seq->residues[i1]; 
                 for(i2 = start_original_align; i2 < end_original_align; i2++)
-                    org_match[i2-start_original_align] =
-                                               coarse_seq->seq->residues[i2];
+                    org_match[i2-start_original_align] = org_seq->residues[i2];
 
               /*Get an alignment of the matching sequences*/
                 alignment = cbp_align_nw(mem,
@@ -273,13 +272,12 @@ printf("-->\n");
                     original_align_len = mlens_rev.olen + seed_size +
                                                               mlens_fwd.olen;
                     start_original_align = current - mlens_fwd.olen;
-                    end_original_align = end_original_align + seed_size +
-                                                              mlens_rev.olen;
+                    end_original_align = current + seed_size + mlens_rev.olen;
 
                     org_match = malloc(original_align_len*sizeof(char));
                     for(i2 = start_original_align; i2<end_original_align; i2++)
                         org_match[i2-start_original_align] =
-                                                   coarse_seq->seq->residues[i2];
+                                                   org_seq->residues[i2];
 
 
                     alignment = cbp_align_nw(mem,
@@ -369,24 +367,23 @@ printf("<--\n");
                     continue;
 
                 found_match = true;
-                printf("MATCH\n");
+                printf("MATCH <--\n");
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
 
                 start_coarse_align = resind - mlens_fwd.rlen;
-                end_coarse_align = start_coarse_align + seed_size + mlens_rev.rlen;
+                end_coarse_align = resind + seed_size + mlens_rev.rlen;
                 start_original_align = current - mlens_fwd.olen;
-                end_original_align = end_original_align + seed_size + mlens_rev.olen;
+                end_original_align = current + seed_size + mlens_rev.olen;
                 
                 cor_match = malloc(coarse_align_len * sizeof(char));
                 org_match = malloc(original_align_len * sizeof(char));
 
               /*Copy the matching parts of the coarse and original sequences*/
                 for(i1 = start_coarse_align; i1 < end_coarse_align; i1++)
-                    cor_match[i1-start_coarse_align] = org_seq->residues[i1]; 
+                    cor_match[i1-start_coarse_align] = coarse_seq->seq->residues[i1]; 
                 for(i2 = start_original_align; i2 < end_original_align; i2++)
-                    org_match[i2-start_original_align] =
-                                               coarse_seq->seq->residues[i2];
+                    org_match[i2-start_original_align] = org_seq->residues[i2];
 
               /*Get an alignment of the matching sequences*/
                 alignment = cbp_align_nw(mem,
@@ -417,13 +414,10 @@ printf("<--\n");
                     original_align_len = mlens_rev.olen + seed_size +
                                                               mlens_fwd.olen;
                     start_original_align = current - mlens_fwd.olen;
-                    end_original_align = end_original_align + seed_size +
-                                                              mlens_rev.olen;
+                    end_original_align = current + seed_size + mlens_rev.olen;
                     org_match = malloc(original_align_len*sizeof(char));
                     for(i2 = start_original_align; i2<end_original_align; i2++)
-                        org_match[i2-start_original_align] =
-                                                   coarse_seq->seq->residues[i2];
-
+                        org_match[i2-start_original_align] = org_seq->residues[i2];
 
                     alignment = cbp_align_nw(mem,
                                              cor_match, coarse_align_len, 0, 1,

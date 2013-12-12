@@ -199,11 +199,11 @@ int *best_edge(int **dp_score, int dp_len1, int dp_len2){
     int *best = malloc(2*sizeof(int));
     best[0] = -1;
     best[1] = -1;
-    for (j2 = 0; j2 <= dp_len2; j2++)
+    for (j2 = 0; j2 <= dp_len2; j2++){
         if (dp_score[dp_len1][j2] >= max_dp_score) {
             max_dp_score = dp_score[dp_len1][j2];
             best[0] = dp_len1; best[1] = j2;
-        }
+        }}
     for (j1 = 0; j1 <= dp_len1; j1++)
         if (dp_score[j1][dp_len2] >= max_dp_score) {
             max_dp_score = dp_score[j1][dp_len2];
@@ -216,7 +216,6 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
     int consec_matches = 0;
     int **dp_score = tables.dp_score;
     int **dp_from = tables.dp_from;
-
     int consec_match_clump_size = compress_flags.consec_match_clump_size;
     while(!(pos[0] == 0 && pos[1] == 0)){
         int prev_j1, prev_j2;
@@ -273,7 +272,6 @@ for(j2 = 0; j2 <= dp_len2; j2++){
         printf("   %c", tables.dp_from[j1][j2] == 0 ? '\\' : tables.dp_from[j1][j2] == 1 ? '<' : '^');
     printf("\n");
 }*/
-
     int *clump = backtrack_to_clump(tables, best);
     int i = 0;
     if(clump[0] <= 0){
