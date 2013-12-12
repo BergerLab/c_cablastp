@@ -486,11 +486,11 @@ printf("<--\n");
 
     if (org_seq->length - last_match > 0) {
         new_coarse_seq_id = add_without_match(
-            coarse_db, org_seq, last_match, org_seq->length);
+            coarse_db, org_seq, start_of_section, org_seq->length);
         cbp_compressed_seq_addlink(
             cseq,
             cbp_link_to_coarse_init_nodiff(
-                new_coarse_seq_id, 0, org_seq->length - last_match, true));
+                new_coarse_seq_id, 0, org_seq->length - start_of_section, true));
     }
 fprintf(stderr, "Compress finished\n");
     return cseq;
