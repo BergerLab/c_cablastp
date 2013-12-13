@@ -56,7 +56,7 @@ char *edit_script_to_half_bytes(char *edit_script){
     int length = 0;
     int odd;
     char *half_bytes;
-    while (edit_script[length] == '\0')
+    while (edit_script[length] != '\0')
         length++;
     odd = length % 2;
     length = length / 2 + odd;
@@ -79,6 +79,23 @@ char *edit_script_to_half_bytes(char *edit_script){
         half_bytes[i/2] |= (char)1;
     }
     return half_bytes;
+}
+
+/* Converts an edit script in half-byte format to ASCII */
+char *half_bytes_to_ASCII(char *half_bytes, int length){
+    int i;
+    char *edit_script = malloc((length+1)*sizeof(*edit_script));
+    for (i = 0; i < length; i++)
+        if (i % 2 == 0) { /* Copy the left half-byte of the current byte */
+            char left = half_bytes[i/2] & (((char)15) << 4);
+            left >>= 4;
+            left &= (char)15;
+            edit_script[i] = half_byte_to_char(left);
+        }
+        else /* Copy the right half-byte of the current byte */
+            edit_script[i] = half_byte_to_char(half_bytes[i/2] & (char)15);
+    edit_script[length] = '\0';
+    return edit_script;
 }
 
 /* Takes in as input two strings, a character representing whether or not they

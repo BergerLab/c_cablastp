@@ -172,8 +172,8 @@ if(chunks >= 105){break;}
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
-int base = 0;
-/*for(; base < 10; base++){
+/*int base = 0;
+for(; base < 10; base++){
     printf("%c", kmer[base]);
 }
 printf("\n");*/
