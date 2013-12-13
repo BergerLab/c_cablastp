@@ -14,39 +14,71 @@ char *to_octal_str(int i) {
 /* Converts a character in an edit script to a half-byte */
 char to_half_byte(char c){
     switch(c){
-        case '0':
-            return (char)0;
-        case '1':
-            return (char)1;
-        case '2':
-            return (char)2;
-        case '3':
-            return (char)3;
-        case '4':
-            return (char)4;
-        case '5':
-            return (char)5;
-        case '6':
-            return (char)6;
-        case '7':
-            return (char)7;
-        case 'A':
-            return (char)8;
-        case 'C':
-            return (char)9;
-        case 'G':
-            return (char)10;
-        case 'T':
-            return (char)11;
-        case '-':
-            return (char)12;
-        case 'i':
-            return (char)13;
-        case 's':
-            return (char)14;
-        default:
-            return (char)15;
+        case '0': return (char)0;
+        case '1': return (char)1;
+        case '2': return (char)2;
+        case '3': return (char)3;
+        case '4': return (char)4;
+        case '5': return (char)5;
+        case '6': return (char)6;
+        case '7': return (char)7;
+        case 'A': return (char)8;
+        case 'C': return (char)9;
+        case 'G': return (char)10;
+        case 'T': return (char)11;
+        case '-': return (char)12;
+        case 'i': return (char)13;
+        case 's': return (char)14;
+        /*'N' is represented as the half byte 1111*/
+        default:  return (char)15;
     }
+}
+
+/* Converts a half-byte to an edit script character */
+char half_byte_to_char(char h){
+    if(h < 8) /*h is an octal digit*/
+        return '0' + h;
+    switch(h){
+        case (char)8:  return 'A';
+        case (char)9:  return 'C';
+        case (char)10: return 'G';
+        case (char)11: return 'T';
+        case (char)12: return '-';
+        case (char)13: return 'i';
+        case (char)14: return 's';
+        default:       return 'N';
+    }
+}
+
+/* Converts the string for an edit script to half-byte format */
+char *edit_script_to_half_bytes(char *edit_script){
+    int i = 0;
+    int length = 0;
+    int odd;
+    char *half_bytes;
+    while (edit_script[length] == '\0')
+        length++;
+    odd = length % 2;
+    length = length / 2 + odd;
+    half_bytes = malloc(length*sizeof(*half_bytes));
+ 
+    while (edit_script[i] != '\0') {
+        if(i%2 == 0)
+            half_bytes[i/2] = (char)0;
+        else
+            half_bytes[i/2] <<= 4;
+        /*Insert the current half byte into the current byte*/
+        half_bytes[i/2] |= to_half_byte(edit_script[i]);
+    }
+    /*If the length of the edit script is odd, to signify the end of the edit
+     *script add a 1 to signify the end of the script since this is incorrect
+     *edit script syntax.
+     */
+    if (odd) {
+        half_bytes[i/2] <<= 4;
+        half_bytes[i/2] |= (char)1;
+    }
+    return half_bytes;
 }
 
 /* Takes in as input two strings, a character representing whether or not they
