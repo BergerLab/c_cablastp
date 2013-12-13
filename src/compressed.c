@@ -5,6 +5,7 @@
 #include "ds.h"
 
 #include "compressed.h"
+#include "edit_scripts.h"
 
 static struct cbp_compressed_seq *
 seq_at(struct cbp_compressed *com_db, int32_t i);
@@ -150,9 +151,9 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
     link->coarse_end = coarse_end;
     link->next = NULL;
 
-    link->diff = malloc((1 + alignment.length) * sizeof(*link->diff));
+    link->diff = make_edit_script(alignment.org, alignment.ref, link->dir, alignment.length);/*malloc((1 + alignment.length) * sizeof(*link->diff));*/
     assert(link->diff);
-    strcpy(link->diff, alignment.ref);
+    /*strcpy(link->diff, alignment.ref);*/
 
     return link;
 }
@@ -165,7 +166,7 @@ cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id, int16_t coarse_start,
     link = malloc(sizeof(*link));
     assert(link);
 
-    link->dir = dir ? '+':'-';
+    link->dir = dir ? '+' : '-';
     link->diff = NULL;
     link->coarse_seq_id = coarse_seq_id;
     link->coarse_start = coarse_start;

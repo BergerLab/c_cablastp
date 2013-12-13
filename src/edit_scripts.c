@@ -6,9 +6,47 @@
 
 /* Converts an integer to its octal representation */
 char *to_octal_str(int i) {
-  char *buf = malloc(16*sizeof(char));
-  sprintf(buf, "%o", i);
-  return buf;
+    char *buf = malloc(16*sizeof(char));
+    sprintf(buf, "%o", i);
+    return buf;
+}
+
+/* Converts a character in an edit script to a half-byte */
+char to_half_byte(char c){
+    switch(c){
+        case '0':
+            return (char)0;
+        case '1':
+            return (char)1;
+        case '2':
+            return (char)2;
+        case '3':
+            return (char)3;
+        case '4':
+            return (char)4;
+        case '5':
+            return (char)5;
+        case '6':
+            return (char)6;
+        case '7':
+            return (char)7;
+        case 'A':
+            return (char)8;
+        case 'C':
+            return (char)9;
+        case 'G':
+            return (char)10;
+        case 'T':
+            return (char)11;
+        case '-':
+            return (char)12;
+        case 'i':
+            return (char)13;
+        case 's':
+            return (char)14;
+        default:
+            return (char)15;
+    }
 }
 
 /* Takes in as input two strings, a character representing whether or not they

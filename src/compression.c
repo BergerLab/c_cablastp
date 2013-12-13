@@ -227,7 +227,7 @@ printf("-->\n");
                     continue;
 
                 found_match = true;
-                printf("MATCH -->\n");
+                printf("MATCH!!!\n");
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
 
@@ -367,7 +367,7 @@ printf("<--\n");
                     continue;
 
                 found_match = true;
-                printf("MATCH <--\n");
+                printf("MATCH\n");
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
 

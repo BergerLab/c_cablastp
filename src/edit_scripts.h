@@ -8,6 +8,7 @@ struct edit_info{
     int str_length;
 };
 
+char to_half_byte(char c);
 char *to_octal_str(int i);
 char *make_edit_script(char *str, char *ref, char dir, int length);
 char *read_edit_script(char *edit_script, char *orig, int length);

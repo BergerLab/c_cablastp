@@ -146,7 +146,7 @@ void
 cbp_coarse_seq_addlink(struct cbp_coarse_seq *seq,
                        struct cbp_link_to_compressed *newlink)
 {
-printf("addlink %d %d %d %d\n", (newlink -> dir == 1 ? 1:-1), newlink->org_seq_id, newlink->coarse_start, newlink->coarse_end);
+/*printf("addlink %d %d %d %d\n", (newlink -> dir == 1 ? 1:-1), newlink->org_seq_id, newlink->coarse_start, newlink->coarse_end);*/
     struct cbp_link_to_compressed *link;
 
     assert(newlink->next == NULL);
