@@ -60,7 +60,7 @@ char *edit_script_to_half_bytes(char *edit_script){
         length++;
     odd = length % 2;
     length = length / 2 + odd;
-    half_bytes = malloc(length*sizeof(*half_bytes));
+    half_bytes = malloc(length*sizeof(char));
  
     while (edit_script[i] != '\0') {
         if(i%2 == 0)
@@ -69,6 +69,7 @@ char *edit_script_to_half_bytes(char *edit_script){
             half_bytes[i/2] <<= 4;
         /*Insert the current half byte into the current byte*/
         half_bytes[i/2] |= to_half_byte(edit_script[i]);
+        i++;
     }
     /*If the length of the edit script is odd, to signify the end of the edit
      *script add a 1 to signify the end of the script since this is incorrect
@@ -83,9 +84,9 @@ char *edit_script_to_half_bytes(char *edit_script){
 
 /* Converts an edit script in half-byte format to ASCII */
 char *half_bytes_to_ASCII(char *half_bytes, int length){
-    int i;
-    char *edit_script = malloc((length+1)*sizeof(*edit_script));
-    for (i = 0; i < length; i++)
+    int i = 0;
+    char *edit_script = malloc((length+1)*sizeof(char));
+    for (i = 0; i < length; i++){
         if (i % 2 == 0) { /* Copy the left half-byte of the current byte */
             char left = half_bytes[i/2] & (((char)15) << 4);
             left >>= 4;
@@ -93,7 +94,7 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
             edit_script[i] = half_byte_to_char(left);
         }
         else /* Copy the right half-byte of the current byte */
-            edit_script[i] = half_byte_to_char(half_bytes[i/2] & (char)15);
+            edit_script[i] = half_byte_to_char(half_bytes[i/2] & (char)15);}
     edit_script[length] = '\0';
     return edit_script;
 }

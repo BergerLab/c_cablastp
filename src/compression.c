@@ -5,6 +5,7 @@
 #include "compression.h"
 #include "flags.h"
 #include "DNAutils.h"
+#include "edit_scripts.h"
 
 struct worker_args {
     struct cbp_database *db;
@@ -492,6 +493,7 @@ printf("<--\n");
             cbp_link_to_coarse_init_nodiff(
                 new_coarse_seq_id, 0, org_seq->length - start_of_section, true));
     }
+
 fprintf(stderr, "Compress finished\n");
     return cseq;
 }
