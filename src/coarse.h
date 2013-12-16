@@ -70,6 +70,9 @@ struct cbp_coarse_seq *
 cbp_coarse_get(struct cbp_coarse *coarse_db, int32_t i);
 
 void
+cbp_coarse_save_binary(struct cbp_coarse *coarse_db);
+
+void
 cbp_coarse_save_plain(struct cbp_coarse *coarse_db);
 
 #endif

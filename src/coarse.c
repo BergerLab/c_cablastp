@@ -82,6 +82,38 @@ cbp_coarse_get(struct cbp_coarse *coarse_db, int32_t i)
 }
 
 void
+cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
+{
+    struct cbp_coarse_seq *seq;
+    struct cbp_link_to_compressed *link;
+    int32_t i;
+    
+    int16_t mask = (((int16_t)1)<<8)-1;
+
+    for (i = 0; i < coarse_db->seqs->size; i++) {
+        seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
+        fprintf(coarse_db->file_fasta, "> %d\n%s\n", i, seq->seq->residues);
+
+        fprintf(coarse_db->file_links, "> %d\n", i);
+        for (link = seq->links; link != NULL; link = link->next){
+            /*Convert the start and end indices for the link to two
+              characters.*/
+            int16_t start = (int16_t)link->coarse_start;
+            int16_t end   = (int16_t)link->coarse_end;
+            char start_left  = (start >> 8) & mask;
+            char start_right = start & mask;
+            char end_left    = (end >> 8) & mask;
+            char end_right   = end & mask;
+
+            fprintf(coarse_db->file_links, "%d,%c%c%c%c%c%c",
+                link->org_seq_id, start_left, start_right, end_left, end_right,
+                (link->dir==1?'+':'-'));
+        }
+    }
+}
+
+
+void
 cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
 {
     struct cbp_coarse_seq *seq;
