@@ -3,7 +3,7 @@ CFLAGS=-g -O3 -ansi -Wall -Wextra -pedantic -lpthread -I.
 LDLIBS=-lds -lpthread -lopt
 
 COMPRESS_OBJS=align.o blosum62.o blosum62_matrix.o \
-							coarse.o compressed.o compression.o database.o DNAutils.o edit_scripts.o fasta.o flags.o \
+							bitpack.o coarse.o compressed.o compression.o database.o DNAutils.o edit_scripts.o fasta.o flags.o \
 							seeds.o seq.o util.o
 COMPRESS_HEADERS=align.o blosum62.h coarse.h compressed.h compression.h \
 								 database.h fasta.h flags.h seeds.h seq.h util.h
@@ -17,7 +17,7 @@ cablastp-compress.o: cablastp-compress.c blosum62.h database.h fasta.h
 
 
 DECOMPRESS_OBJS=align.o blosum62.o blosum62_matrix.o \
-							coarse.o compressed.o compression.o database.o DNAutils.o edit_scripts.o fasta.o flags.o \
+							bitpack.o coarse.o compressed.o compression.o database.o DNAutils.o edit_scripts.o fasta.o flags.o \
 							seeds.o seq.o util.o
 DECOMPRESS_HEADERS=align.o blosum62.h coarse.h compressed.h compression.h \
 								 database.h fasta.h flags.h seeds.h seq.h util.h
@@ -29,6 +29,7 @@ cablastp-decompress: cablastp-decompress.o $(DECOMPRESS_HEADERS) $(DECOMPRESS_OB
 cablastp-decompress.o: cablastp-decompress.c blosum62.h database.h fasta.h
 
 align.o: align.c align.h blosum62.h
+bitpack.o: bitpack.c bitpack.h
 blosum62.o: blosum62.c blosum62.h
 blosum62_matrix.o: blosum62_matrix.c blosum62.h
 coarse.o: coarse.c coarse.h seq.h

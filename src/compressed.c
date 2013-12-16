@@ -6,6 +6,7 @@
 
 #include "compressed.h"
 #include "edit_scripts.h"
+#include "bitpack.h"
 
 static struct cbp_compressed_seq *
 seq_at(struct cbp_compressed *com_db, int32_t i);
@@ -83,6 +84,14 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
             char *edit_script = link->diff;
             char *script;
             int j;
+
+            /*Output the ID of the current chunk as 8 characters*/
+            int coarse_seq_id = link->coarse_seq_id;
+            for(j = 7; j >= 0; j--){
+                char b = shift_right(coarse_seq_id, j*8) & mask;
+                fprintf(com_db->file_compressed, "%c", b);
+            }
+
             /*Represent the length of the edit script as two characters and get
               the edit script as a sequence of half-bytes*/
             int16_t script_length = (int16_t)0;
@@ -92,12 +101,11 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
             script_right = script_length & mask;
             script = edit_script_to_half_bytes(edit_script);
 
-            /*Output the ID of the chunk, a comma, and the indices of the start
-             *and end of the sequence being linked to and the length of the
-             *edit script represented in 16 bits, and the length of the edit
-             *script.
+            /*Output the indices of the start and end of the sequence being
+             *linked to and the length of the edit script represented in 16
+             *bits, and the length of the edit script.
              */
-            fprintf(com_db->file_compressed, "%d,%c%c%c%c%c%c,",
+            fprintf(com_db->file_compressed, "%c%c%c%c%c%c,",
                 link->coarse_seq_id, start_left, start_right,
                 end_left, end_right, script_left, script_right);
 
@@ -123,7 +131,7 @@ cbp_compressed_save_plain(struct cbp_compressed *com_db)
             fprintf(com_db->file_compressed,
                 "reference sequence id: %d, reference range: (%d, %d)\n%s\n",
                 link->coarse_seq_id, link->coarse_start, link->coarse_end,
-                link->diff == NULL ? "N/A" : link->diff);
+                link->diff);
     }
 }
 
