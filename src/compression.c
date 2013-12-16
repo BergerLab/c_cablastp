@@ -473,8 +473,10 @@ printf("<--\n");
             chunks++;
         }
     }
-
-    if (org_seq->length - last_match > 0) {
+    
+    /*If there are bases left at the end of the last chunk, add a chunk for the
+      remaining bases and a link to the chunk in the compressed sequence.*/
+    if (org_seq->length - start_of_section > 0) {
         new_coarse_seq_id = add_without_match(
             coarse_db, org_seq, start_of_section, org_seq->length);
         cbp_compressed_seq_addlink(
@@ -505,18 +507,19 @@ extend_match(struct cbp_align_nw_memory *mem,
     int i;
     bool found_bad_window;
 
+    /*Initialize the matches and matches_past_clump arrays.*/
     matches = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
     matches_past_clump = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
     matches_index = compress_flags.gapped_window_size;
-    max_section_size = 2 * compress_flags.max_chunk_size;
-
-    resind += dir1;
-    current += dir2;
-
     for(i = 0; i < max_section_size; i++){
         matches[i] = true;
         matches_past_clump[i] = true;
     }
+
+    max_section_size = 2 * compress_flags.max_chunk_size;
+
+    resind += dir1;
+    current += dir2;
 
     gwsize = compress_flags.gapped_window_size;
     rlen = rend - rstart;
@@ -528,6 +531,9 @@ extend_match(struct cbp_align_nw_memory *mem,
         int dp_len1, dp_len2, i, r_align_len, o_align_len;
         if (mlens.rlen == rlen || mlens.olen == olen)
             break;
+
+        /*Get the maximum length for ungapped alignment and extend the match
+          by that distance.*/
         ungapped = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
                                oseq, ostart, oend, dir2, current,
                                matches, matches_past_clump, &matches_index);
@@ -537,8 +543,12 @@ extend_match(struct cbp_align_nw_memory *mem,
         mlens.olen += m;
         resind += m * dir1;
         current += m * dir2;
+        /*End the extension if we found a bad window in ungapped alignment.*/
         if(found_bad_window)
             break;
+
+        /*Carry out Needleman-Wunsch alignment and end the extension if we
+          found a bad window or couldn't find a 4-mer match in the alignment.*/
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
 printf("%d@@@%d\n", dp_len2, dp_len1);
@@ -547,8 +557,11 @@ printf("%d@@@%d\n", dp_len2, dp_len1);
                                  matches, &matches_index);
         if(alignment.length == -1)
             break;
+
         printf("%s\n%s\n", alignment.org, alignment.ref);
         matches_count = 0;
+        /*Check for a bad window manually and end the extension if a bad
+          window is found.*/
         for(i = matches_index - 100; i < matches_index; i++)
             if(matches[i])
                 matches_count++;
@@ -557,7 +570,9 @@ printf("%d@@@%d\n", dp_len2, dp_len1);
 
         r_align_len = cbp_align_length_nogaps(alignment.ref);
         o_align_len = cbp_align_length_nogaps(alignment.org);
-        
+
+        /*Update the lengths of the alignments and the indices of the
+          sequences.*/
         mlens.rlen += r_align_len;
         mlens.olen += o_align_len;
         resind += r_align_len * dir1;

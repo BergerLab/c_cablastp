@@ -175,6 +175,9 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
     return true;
 }
 
+/*Takes in as input an edit script in ASCII format, a sequence to read, and
+  the length of the sequence and applies the edit script to the sequence to
+  produce a new sequence.*/
 char *read_edit_script(char *edit_script, char *orig, int length){
     char *str = malloc((2*length+1)*sizeof(char));
     int i;
