@@ -66,6 +66,9 @@ cbp_compressed_add(struct cbp_compressed *com_db,
                    struct cbp_compressed_seq *seq);
 
 void
+cbp_compressed_save_binary(struct cbp_compressed *com_db);
+
+void
 cbp_compressed_save_plain(struct cbp_compressed *com_db);
 
 void
