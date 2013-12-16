@@ -507,6 +507,8 @@ extend_match(struct cbp_align_nw_memory *mem,
     int i;
     bool found_bad_window;
 
+    max_section_size = 2 * compress_flags.max_chunk_size;
+
     /*Initialize the matches and matches_past_clump arrays.*/
     matches = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
     matches_past_clump = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
@@ -516,7 +518,6 @@ extend_match(struct cbp_align_nw_memory *mem,
         matches_past_clump[i] = true;
     }
 
-    max_section_size = 2 * compress_flags.max_chunk_size;
 
     resind += dir1;
     current += dir2;
