@@ -4,6 +4,12 @@ cablastp-compress: src/cablastp-compress
 src/cablastp-compress:
 	(cd src && make compress)
 
+cablastp-decompress: src/cablastp-decompress
+	cp src/cablastp-decompress .
+
+src/cablastp-decompress:
+	(cd src && make decompress)
+
 clean:
 	(cd src && make clean)
 	rm -f cablastp-*
