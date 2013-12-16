@@ -53,6 +53,62 @@ cbp_compressed_add(struct cbp_compressed *com_db,
     ds_vector_append(com_db->seqs, (void*) seq);
 }
 
+/*Takes in as input the compressed database and converts its sequences to a
+ *binary output format, which is printed to the file pointed to by
+ *com_db->file_compressed.
+ */
+void
+cbp_compressed_save_binary(struct cbp_compressed *com_db)
+{
+    int i;
+    struct cbp_compressed_seq *seq;
+    struct cbp_link_to_coarse *link;
+
+    int16_t mask = (((int16_t)1)<<8)-1;
+
+    for (i = 0; i < com_db->seqs->size; i++) {
+        seq = seq_at(com_db, i);
+        fprintf(com_db->file_compressed, "> %d; %s\n", seq->id, seq->name);
+        for (link = seq->links; link != NULL; link = link->next){
+            /*Convert the start and end indices for the link to two
+              characters.*/
+            int16_t start = (int16_t)link->coarse_start;
+            int16_t end   = (int16_t)link->coarse_end;
+            char start_left  = (start >> 8) & mask;
+            char start_right = start & mask;
+            char end_left    = (end >> 8) & mask;
+            char end_right   = end & mask;
+
+            char script_left, script_right;
+            char *edit_script = link->diff;
+            char *script;
+            int j;
+            /*Represent the length of the edit script as two characters and get
+              the edit script as a sequence of half-bytes*/
+            int16_t script_length = (int16_t)0;
+            while(edit_script[script_length] != '\0')
+                script_length++;
+            script_left  = (script_length >> 8) & mask;
+            script_right = script_length & mask;
+            script = edit_script_to_half_bytes(edit_script);
+
+            /*Output the ID of the chunk, a comma, and the indices of the start
+             *and end of the sequence being linked to and the length of the
+             *edit script represented in 16 bits, and the length of the edit
+             *script.
+             */
+            fprintf(com_db->file_compressed, "%d,%c%c%c%c%c%c,",
+                link->coarse_seq_id, start_left, start_right,
+                end_left, end_right, script_left, script_right);
+
+            /*Output all of the characters of the edit script as half-bytes*/
+            for(j = 0; j < script_length/2+1; j++)
+                fprintf(com_db->file_compressed, "%c", script[j]);
+        }
+    }
+}
+
+
 void
 cbp_compressed_save_plain(struct cbp_compressed *com_db)
 {
@@ -151,9 +207,18 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
     link->coarse_end = coarse_end;
     link->next = NULL;
 
-    link->diff = make_edit_script(alignment.org, alignment.ref, link->dir, alignment.length);/*malloc((1 + alignment.length) * sizeof(*link->diff));*/
+    link->diff = make_edit_script(alignment.org, alignment.ref, link->dir, alignment.length);
+int i;
+for(i = 0; i < alignment.length; i++)
+    if(alignment.org[i] != '-')
+        fprintf(stderr, "%c", alignment.org[i]);
+fprintf(stderr, "\n");
+
+for(i = 0; i < alignment.length; i++)
+    if(alignment.ref[i] != '-')
+        fprintf(stderr, "%c", alignment.ref[i]);
+fprintf(stderr, "\n");
     assert(link->diff);
-    /*strcpy(link->diff, alignment.ref);*/
 
     return link;
 }

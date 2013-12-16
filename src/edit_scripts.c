@@ -205,6 +205,5 @@ char *read_edit_script(char *edit_script, char *orig, int length){
         str[current++] = orig[orig_pos++];
     str = realloc(str, current+1*sizeof(char));
     str[current] = '\0';
-    printf("Exited read_edit_script\n");
     return str;
 }

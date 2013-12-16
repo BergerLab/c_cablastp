@@ -207,12 +207,7 @@ for(base = 9; base >= 0; base--){
                         ext_seed))
 
                 continue;
-/***************************************************************************************************************/
-/*printf("%d\n", attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                           resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
-               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) );*/
-/***************************************************************************************************************/
+
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -347,12 +342,6 @@ printf("-->\n");
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;*/
-/*printf("%d\n", 
-attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
-               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) 
-);*/
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -493,7 +482,6 @@ printf("<--\n");
             cbp_link_to_coarse_init_nodiff(
                 new_coarse_seq_id, 0, org_seq->length - start_of_section, true));
     }
-
 fprintf(stderr, "Compress finished\n");
     return cseq;
 }
