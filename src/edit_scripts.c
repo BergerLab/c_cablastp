@@ -103,8 +103,8 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
  * are in the same direction, and the length of the strings and returns an edit
  * script that can convert the reference string to the original string.
  */
-char *make_edit_script(char *str, char *ref, char dir, int length){
-    char direction = dir == '+' ? '0' : '1';
+char *make_edit_script(char *str, char *ref, bool dir, int length){
+    char direction = dir ? '0' : '1';
     bool insert_open = false, subdel_open = false;
     int last_edit = 0;
     char *edit_script = malloc(3*length*sizeof(char));

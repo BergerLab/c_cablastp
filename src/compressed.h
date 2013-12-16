@@ -11,7 +11,6 @@
 
 struct cbp_link_to_coarse {
     char *diff;
-    char dir;
     int32_t coarse_seq_id;
     int16_t coarse_start;
     int16_t coarse_end;

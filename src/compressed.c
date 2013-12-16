@@ -201,13 +201,12 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
     link = malloc(sizeof(*link));
     assert(link);
 
-    link->dir = dir ? '+':'-';
     link->coarse_seq_id = coarse_seq_id;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
     link->next = NULL;
 
-    link->diff = make_edit_script(alignment.org, alignment.ref, link->dir, alignment.length);
+    link->diff = make_edit_script(alignment.org, alignment.ref, dir, alignment.length);
 int i;
 for(i = 0; i < alignment.length; i++)
     if(alignment.org[i] != '-')
@@ -231,8 +230,9 @@ cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id, int16_t coarse_start,
     link = malloc(sizeof(*link));
     assert(link);
 
-    link->dir = dir ? '+' : '-';
-    link->diff = NULL;
+    link->diff = malloc(2*sizeof(char));
+    link->diff[0] = dir ? '+' : '-';
+    link->diff[1] = '\0';
     link->coarse_seq_id = coarse_seq_id;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
