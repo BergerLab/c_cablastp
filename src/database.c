@@ -7,7 +7,9 @@
 #include <sys/types.h>
 #include <unistd.h>
 
+#include "coarse.h"
 #include "database.h"
+#include "fasta.h"
 
 static FILE * open_db_file(char *path, char *fopen_mode);
 
@@ -86,9 +88,8 @@ cbp_database_read(char *dir, int32_t seed_size)
     struct cbp_database *db;
     struct stat buf;
     FILE *ffasta, *fseeds, *flinks, *fcompressed, *findex;
-    char *pfasta, *pseeds, *plinks, *pcompressed, *pindex;
-
-    pfasta = path_join(dir, CABLASTP_COARSE_FASTA);
+    char *pseeds, *plinks, *pcompressed, *pindex;
+    const char *pfasta  = path_join(dir, CABLASTP_COARSE_FASTA);
     pseeds = path_join(dir, CABLASTP_COARSE_SEEDS);
     plinks = path_join(dir, CABLASTP_COARSE_LINKS);
     pcompressed = path_join(dir, CABLASTP_COMPRESSED);
@@ -112,6 +113,7 @@ cbp_database_read(char *dir, int32_t seed_size)
 
     db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks);
     db->com_db = cbp_compressed_init(fcompressed, findex);
+    cbp_database_populate(db, pfasta);
 
     free(pfasta);
     free(pseeds);
@@ -120,6 +122,17 @@ cbp_database_read(char *dir, int32_t seed_size)
     free(pindex);
 
     return db;
+}
+
+void cbp_database_populate(struct cbp_database *db, const char *pfasta){
+    struct fasta_seq_gen *fsg = fasta_generator_start(pfasta, "JOU", 100);
+    struct fasta_seq *seq;
+    while (NULL != (seq = fasta_generator_next(fsg))){
+        int len = 0;
+        char *residues = seq->seq;
+        while (residues[len] != '\0') len++;
+        cbp_coarse_add(db->coarse_db, residues, 0, len);
+    }
 }
 
 void
