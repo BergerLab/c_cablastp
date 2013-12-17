@@ -105,9 +105,9 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             char end_left    = (end >> 8) & mask;
             char end_right   = end & mask;
 
-            fprintf(coarse_db->file_links, "%d,%c%c%c%c%c%c",
+            fprintf(coarse_db->file_links, "%d,%c%c%c%c%c",
                 link->org_seq_id, start_left, start_right, end_left, end_right,
-                (link->dir==1?'+':'-'));
+                (link->dir?'0':'1'));
         }
     }
 }
@@ -129,7 +129,7 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
             fprintf(coarse_db->file_links,
                 "original sequence id: %d, reference range: (%d, %d), direction: %c\n",
                 link->org_seq_id, link->coarse_start, link->coarse_end,
-                (link->dir==1?'+':'-'));
+                (link->dir?'0':'1'));
     }
 }
 
@@ -207,7 +207,7 @@ cbp_link_to_compressed_init(int32_t org_seq_id,
     link->org_seq_id = org_seq_id;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
-    link->dir = dir ? '+':'-';
+    link->dir = dir;
     link->next = NULL;
 
     return link;
