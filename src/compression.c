@@ -146,7 +146,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     end_of_section = start_of_section + max_section_size - 1;
     chunks = 0;
 
-
     matches = malloc(max_section_size*sizeof(*matches));
     matches_temp = malloc(max_section_size*sizeof(*matches_temp));
     for(i = 0; i < max_section_size; i++){

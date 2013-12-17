@@ -116,7 +116,6 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
     }
 }
 
-
 void
 cbp_compressed_save_plain(struct cbp_compressed *com_db)
 {
@@ -239,7 +238,7 @@ cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id, int16_t coarse_start,
     assert(link);
 
     link->diff = malloc(2*sizeof(char));
-    link->diff[0] = dir ? '+' : '-';
+    link->diff[0] = dir ? '0' : '1';
     link->diff[1] = '\0';
     link->coarse_seq_id = coarse_seq_id;
     link->coarse_start = coarse_start;
