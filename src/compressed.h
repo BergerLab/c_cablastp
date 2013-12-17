@@ -74,4 +74,8 @@ void
 cbp_compressed_write(struct cbp_compressed *com_db,
                      struct cbp_compressed_seq *seq);
 
+void
+cbp_compressed_write_binary(struct cbp_compressed *com_db,
+                            struct cbp_compressed_seq *seq);
+
 #endif
