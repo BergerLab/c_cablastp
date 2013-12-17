@@ -8,6 +8,8 @@ COMPRESS_OBJS=align.o blosum62.o blosum62_matrix.o \
 COMPRESS_HEADERS=align.o blosum62.h coarse.h compressed.h compression.h \
 								 database.h fasta.h flags.h seeds.h seq.h util.h
 
+all: cablastp-compress cablastp-decompress
+
 compress: blosum62.h cablastp-compress
 
 cablastp-compress: cablastp-compress.o $(COMPRESS_HEADERS) $(COMPRESS_OBJS)

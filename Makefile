@@ -1,3 +1,5 @@
+all: cablastp-compress cablastp-decompress
+
 cablastp-compress: src/cablastp-compress
 	cp src/cablastp-compress .
 
