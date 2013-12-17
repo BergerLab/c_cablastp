@@ -9,7 +9,7 @@
 
 #include "database.h"
 
-static FILE * open_db_file(char *path);
+static FILE * open_db_file(char *path, char *fopen_mode);
 
 static char * path_join(char *a, char *b);
 
@@ -62,11 +62,53 @@ cbp_database_init(char *dir, int32_t seed_size, bool add)
     assert(db);
     db->name = basename(dir);
 
-    ffasta = open_db_file(pfasta);
-    fseeds = open_db_file(pseeds);
-    flinks = open_db_file(plinks);
-    fcompressed = open_db_file(pcompressed);
-    findex = open_db_file(pindex);
+    ffasta = open_db_file(pfasta, "r+");
+    fseeds = open_db_file(pseeds, "r+");
+    flinks = open_db_file(plinks, "r+");
+    fcompressed = open_db_file(pcompressed, "r+");
+    findex = open_db_file(pindex, "r+");
+
+    db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks);
+    db->com_db = cbp_compressed_init(fcompressed, findex);
+
+    free(pfasta);
+    free(pseeds);
+    free(plinks);
+    free(pcompressed);
+    free(pindex);
+
+    return db;
+}
+
+struct cbp_database *
+cbp_database_read(char *dir, int32_t seed_size)
+{
+    struct cbp_database *db;
+    struct stat buf;
+    FILE *ffasta, *fseeds, *flinks, *fcompressed, *findex;
+    char *pfasta, *pseeds, *plinks, *pcompressed, *pindex;
+
+    pfasta = path_join(dir, CABLASTP_COARSE_FASTA);
+    pseeds = path_join(dir, CABLASTP_COARSE_SEEDS);
+    plinks = path_join(dir, CABLASTP_COARSE_LINKS);
+    pcompressed = path_join(dir, CABLASTP_COMPRESSED);
+    pindex = path_join(dir, CABLASTP_INDEX);
+
+    /* Make sure the database directory exists. */
+    if (0 != stat(dir, &buf)) {
+        fprintf(stderr, "Could not open '%s' database for reading.", dir);
+        exit(1);
+    }
+
+    db = malloc(sizeof(*db));
+    assert(db);
+    db->name = basename(dir);
+
+    ffasta = open_db_file(pfasta, "r");
+    fseeds = open_db_file(pseeds, "r");
+    flinks = open_db_file(plinks, "r");
+    fcompressed = open_db_file(pcompressed, "r");
+    findex = open_db_file(pindex, "r");
 
     db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks);
     db->com_db = cbp_compressed_init(fcompressed, findex);
@@ -91,7 +133,7 @@ cbp_database_free(struct cbp_database *db)
 }
 
 static FILE *
-open_db_file(char *path)
+open_db_file(char *path, char *fopen_mode)
 {
     struct stat buf;
     FILE *fp;
@@ -102,7 +144,7 @@ open_db_file(char *path)
                 path, strerror(errno));
             exit(1);
         }
-    if (NULL == (fp = fopen(path, "r+"))) {
+    if (NULL == (fp = fopen(path, fopen_mode))) {
         fprintf(stderr, "open_db_file: 'fopen %s' failed: %s\n",
             path, strerror(errno));
         exit(1);

@@ -51,7 +51,7 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    /*db = cbp_database_init(args->args[0], compress_flags.map_seed_size, false);*/
+    db = cbp_database_read(args->args[0], compress_flags.map_seed_size);
 
     org_seq_id = 0;
     gettimeofday(&start, NULL);

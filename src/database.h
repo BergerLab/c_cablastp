@@ -21,6 +21,9 @@ struct cbp_database {
 struct cbp_database *
 cbp_database_init(char *dir, int32_t seed_size, bool add);
 
+struct cbp_database *
+cbp_database_read(char *dir, int32_t seed_size);
+
 void
 cbp_database_free(struct cbp_database *db);
 
