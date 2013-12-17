@@ -8,6 +8,7 @@
 #include <unistd.h>
 
 #include "coarse.h"
+#include "compressed.h"
 #include "database.h"
 #include "fasta.h"
 
@@ -88,12 +89,11 @@ cbp_database_read(char *dir, int32_t seed_size)
     struct cbp_database *db;
     struct stat buf;
     FILE *ffasta, *fseeds, *flinks, *fcompressed, *findex;
-    char *pseeds, *plinks, *pcompressed, *pindex;
-    const char *pfasta  = path_join(dir, CABLASTP_COARSE_FASTA);
-    pseeds = path_join(dir, CABLASTP_COARSE_SEEDS);
-    plinks = path_join(dir, CABLASTP_COARSE_LINKS);
-    pcompressed = path_join(dir, CABLASTP_COMPRESSED);
-    pindex = path_join(dir, CABLASTP_INDEX);
+    char *pfasta  = path_join(dir, CABLASTP_COARSE_FASTA);
+    char *pseeds = path_join(dir, CABLASTP_COARSE_SEEDS);
+    char *plinks = path_join(dir, CABLASTP_COARSE_LINKS);
+    char *pcompressed = path_join(dir, CABLASTP_COMPRESSED);
+    char *pindex = path_join(dir, CABLASTP_INDEX);
 
     /* Make sure the database directory exists. */
     if (0 != stat(dir, &buf)) {
@@ -115,12 +115,6 @@ cbp_database_read(char *dir, int32_t seed_size)
     db->com_db = cbp_compressed_init(fcompressed, findex);
     cbp_database_populate(db, pfasta);
 
-    free(pfasta);
-    free(pseeds);
-    free(plinks);
-    free(pcompressed);
-    free(pindex);
-
     return db;
 }
 
@@ -131,7 +125,7 @@ void cbp_database_populate(struct cbp_database *db, const char *pfasta){
         int len = 0;
         char *residues = seq->seq;
         while (residues[len] != '\0') len++;
-        cbp_coarse_add(db->coarse_db, residues, 0, len);
+        cbp_coarse_add(db->coarse_db, residues, 0, len-1);
     }
 }
 

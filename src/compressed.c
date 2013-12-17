@@ -112,6 +112,16 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
             /*Output all of the characters of the edit script as half-bytes*/
             for(j = 0; j < script_length/2+1; j++)
                 fprintf(com_db->file_compressed, "%c", script[j]);
+            /*If there are more links for this sequence, the character after
+             *the edit script is a space.  Otherwise, the character after the
+             *edit script is the > of the FASTA header.  If we are printing the
+             *last link of the last sequence, print a newline.
+             */
+            if(link->next)
+                fprintf(com_db->file_compressed, "%c", ' ');
+            else
+                if(i == com_db->seqs->size-1)
+                    fprintf(com_db->file_compressed, "%c", '\n');
         }
     }
 }
