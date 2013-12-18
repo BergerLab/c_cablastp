@@ -4,7 +4,7 @@
 
 #include "ds.h"
 
-#include "decompression.h"
+#include "read_compressed.h"
 
 /*A function for getting the header for an entry in the compressed links file.
   Returns NULL if EOF is found before a newline.*/
@@ -20,14 +20,14 @@ char *get_header(FILE *f){
             i++;
             if(i == header_length-1){
                 header_length *= 2;
-                realloc(header, header_length*sizeof(*header));
+                header = realloc(header, header_length*sizeof(*header));
             }
         }
         else
             return NULL;
     }
     header[i] = '\0';
-    realloc(header, (i+1)*sizeof(*header));
+    header = realloc(header, (i+1)*sizeof(*header));
     return header;
 }
 
@@ -40,9 +40,10 @@ struct cbp_link_to_coarse *read_link(FILE *f){
     uint64_t coarse_seq_id = (uint64_t)0;
     int16_t coarse_start = (int16_t)0;
     int16_t coarse_end = (int16_t)0;
-    int16_t script_length;
+    int16_t script_length = (int16_t)0;
     int chars_to_read;
     char *half_bytes;
+    char *diff;
     char indices[6];
 
     for(i = 0; i < 8; i++){
@@ -85,9 +86,9 @@ struct cbp_link_to_coarse *read_link(FILE *f){
         }
         half_bytes[i] = (char)c;
     }
-    edit_script = half_bytes_to_ASCII(half_bytes, script_length);
+    diff = half_bytes_to_ASCII(half_bytes, script_length);
 
-    link->diff = edit_script;
+    link->diff = diff;
     link->coarse_seq_id = coarse_seq_id;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
