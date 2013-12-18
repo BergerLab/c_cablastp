@@ -8,10 +8,6 @@
 #include "compressed.h"
 #include "edit_scripts.h"
 
-/*These will only temporarily be here*/
-char *edit_script_to_half_bytes(char *edit_script);
-char *make_edit_script(char *str, char *ref, bool dir, int length);
-
 static struct cbp_compressed_seq *
 seq_at(struct cbp_compressed *com_db, int32_t i);
 

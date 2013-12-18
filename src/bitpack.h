@@ -1,7 +1,7 @@
 #include <stdint.h>
 
-#ifndef __CABLASTP_EDITSCRIPTS_H__
-#define __CABLASTP_EDITSCRIPTS_H__
+#ifndef __CABLASTP_BITPACK_H__
+#define __CABLASTP_BITPACK_H__
 
 uint64_t make_mask(int bytes);
 uint64_t shift_left(uint64_t x, int bits);
