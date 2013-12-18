@@ -82,6 +82,8 @@ cbp_coarse_get(struct cbp_coarse *coarse_db, int32_t i)
     return seq;
 }
 
+/*Outputs the sequences in the coarse database to a FASTA file in plain text
+  and outputs the links to the compressed database in a binary format*/
 void
 cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
 {
@@ -109,18 +111,19 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             char start_right = start & mask;
             char end_left    = (end >> 8) & mask;
             char end_right   = end & mask;
+            /*Prints the binary representations of the indices and the
+              direction of the link to the links file*/
             putc(start_left, coarse_db->file_links);
             putc(start_right, coarse_db->file_links);
             putc(end_left, coarse_db->file_links);
             putc(end_right, coarse_db->file_links);
             putc((link->dir?'0':'1'), coarse_db->file_links);
-
-            /*fprintf(coarse_db->file_links, "%d,%c%c%c%c%c",
-                link->org_seq_id, start_left, start_right, end_left, end_right,
-                (link->dir?'0':'1'));*/
+            /*0 is used as a delimiter to signify that there are more links
+              for this sequence*/
             if(link->next != NULL)
                 putc(0, coarse_db->file_links);
         }
+        /*'#' is used as a delimiter to signify the last link of the sequence*/
         if(i+1 < coarse_db->seqs->size)
             putc('#', coarse_db->file_links);
     }
