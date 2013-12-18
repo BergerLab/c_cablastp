@@ -258,6 +258,7 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
 
         free(script);
     }
+    putc('\n', com_db->file_compressed);
 }
 
 

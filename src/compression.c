@@ -161,6 +161,10 @@ if(chunks >= 105){break;}
         */
         if(current == 0 && coarse_db->seqs->size == 0){
             add_without_match(coarse_db, org_seq, 0, max_chunk_size);
+            cbp_compressed_seq_addlink(cseq, cbp_link_to_coarse_init_nodiff(
+                                                 new_coarse_seq_id, 0,
+                                                 end_of_chunk, true));
+
             start_of_section += max_chunk_size - overlap;
             end_of_chunk = min(start_of_section + max_chunk_size,
                                org_seq->length - seed_size - ext_seed);
@@ -273,7 +277,6 @@ printf("-->\n");
                     for(i2 = start_original_align; i2<end_original_align; i2++)
                         org_match[i2-start_original_align] =
                                                    org_seq->residues[i2];
-
 
                     alignment = cbp_align_nw(mem,
                                              cor_match, coarse_align_len, 0, 1,
@@ -463,6 +466,10 @@ printf("<--\n");
         start_of_section, end_of_chunk, and end_of_section*/
         if(current >= end_of_chunk && !found_match){
             add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
+            cbp_compressed_seq_addlink(cseq, cbp_link_to_coarse_init_nodiff(
+                                                 new_coarse_seq_id,
+                                                 start_of_section,
+                                                 end_of_chunk, true));
             start_of_section = end_of_chunk - overlap;
             end_of_chunk = min(start_of_section + max_chunk_size,
                                org_seq->length - seed_size - ext_seed);

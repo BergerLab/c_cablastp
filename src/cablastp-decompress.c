@@ -16,8 +16,7 @@
 #include "util.h"
 
 /*This function will only be here temporarily*/
-static char *
-path_join(char *a, char *b)
+static char *path_join(char *a, char *b)
 {
     char *joined;
 
@@ -27,7 +26,6 @@ path_join(char *a, char *b)
     sprintf(joined, "%s/%s", a, b);
     return joined;
 }
-
 
 int
 main(int argc, char **argv)
