@@ -188,13 +188,19 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
     int i;
     struct cbp_link_to_coarse *link;
     int16_t mask = (((int16_t)1)<<8)-1;
-    char *id_bytes = read_int_to_bytes(seq->id, 64);
+    /*char *id_bytes = read_int_to_bytes(seq->id, 64);*/
+    char *id_string = malloc(20*sizeof(*id_string));
+    sprintf(id_string, "%ld", seq->id);
     putc('>', com_db->file_compressed);
     putc(' ', com_db->file_compressed);
-    for(i = 0; i < 8; i++)
-        putc(id_bytes[i], com_db->file_compressed);
+    for(i = 0; id_string[i] != '\0'; i++)
+        putc(id_string[i], com_db->file_compressed);
     putc(';', com_db->file_compressed);
     putc(' ', com_db->file_compressed);
+    for(i = 0; seq->name[i] != '\0'; i++)
+        putc(seq->name[i], com_db->file_compressed);
+    putc('\n', com_db->file_compressed);
+    free(id_string);
 
     /*fprintf(com_db->file_compressed, "> %d; %s\n", seq->id, seq->name);*/
 
