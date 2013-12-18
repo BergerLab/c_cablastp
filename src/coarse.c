@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "bitpack.h"
 #include "coarse.h"
 
 struct cbp_coarse *
@@ -86,7 +87,7 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
 {
     struct cbp_coarse_seq *seq;
     struct cbp_link_to_compressed *link;
-    int32_t i;
+    int64_t i;
     
     int16_t mask = (((int16_t)1)<<8)-1;
 
@@ -96,6 +97,10 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
 
         fprintf(coarse_db->file_links, "> %d\n", i);
         for (link = seq->links; link != NULL; link = link->next){
+            int j;
+            char *id_bytes = read_int_to_bytes(link->org_seq_id, 8);
+            for (j = 0; j < 8; j++)
+                putc(id_bytes[j], coarse_db->file_links);
             /*Convert the start and end indices for the link to two
               characters.*/
             int16_t start = (int16_t)link->coarse_start;
@@ -104,11 +109,20 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             char start_right = start & mask;
             char end_left    = (end >> 8) & mask;
             char end_right   = end & mask;
+            putc(start_left, coarse_db->file_links);
+            putc(start_right, coarse_db->file_links);
+            putc(end_left, coarse_db->file_links);
+            putc(end_right, coarse_db->file_links);
+            putc((link->dir?'0':'1'), coarse_db->file_links);
 
-            fprintf(coarse_db->file_links, "%d,%c%c%c%c%c",
+            /*fprintf(coarse_db->file_links, "%d,%c%c%c%c%c",
                 link->org_seq_id, start_left, start_right, end_left, end_right,
-                (link->dir?'0':'1'));
+                (link->dir?'0':'1'));*/
+            if(link->next != NULL)
+                putc(0, coarse_db->file_links);
         }
+        if(i+1 < coarse_db->seqs->size)
+            putc('#', coarse_db->file_links);
     }
 }
 

@@ -5,9 +5,9 @@
   number of bits on the right of the mask set to 1 and all bits to the left
   set to 0.*/
 uint64_t make_mask(int bits){
-    if(bits == 64)
-        return ~0;
     uint64_t mask = (uint64_t)1;
+    if (bits == 64)
+        return ~0;
     mask <<= bits;
     return mask & (mask-1);
 }
@@ -30,7 +30,7 @@ char *read_int_to_bytes(uint64_t number, int length){
     int i;
     uint64_t mask = make_mask(8);
     char *bytes = malloc(length * sizeof(*bytes));
-    for(i = length-1; i >= 0; i--)
+    for (i = length-1; i >= 0; i--)
         bytes[length-i-1] = (char)(shift_right(number, 8*i) & mask);
     return bytes;
 }
