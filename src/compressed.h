@@ -7,6 +7,8 @@
 #include "ds.h"
 
 #include "align.h"
+#include "bitpack.h"
+
 #include "stdbool.h"
 
 struct cbp_link_to_coarse {
@@ -30,7 +32,7 @@ void
 cbp_link_to_coarse_free(struct cbp_link_to_coarse *link);
 
 struct cbp_compressed_seq {
-    int32_t id;
+    uint64_t id;
     char *name;
     struct cbp_link_to_coarse *links;
 };
