@@ -107,11 +107,13 @@ struct cbp_compressed_seq **read_compressed(FILE *f){
             break;
         struct cbp_link_to_coarse *links = NULL;
         while(true){
+fprintf(stderr, "!\n");
             char c = 1;
             struct cbp_link_to_coarse *current_link = read_link(f);
             if(current_link == NULL)
                break;
             current_link -> next = links;
+            links = current_link;
             c = getc(f);
             if(c == '\n')
                 break;
@@ -121,6 +123,8 @@ struct cbp_compressed_seq **read_compressed(FILE *f){
         (compressed_seqs[length]->links) = links;
         length++;
     }
-    compressed_seqs=realloc(compressed_seqs, length *sizeof(*compressed_seqs));
-    return NULL;
+
+    compressed_seqs=realloc(compressed_seqs, (length+1)*sizeof(*compressed_seqs));
+    compressed_seqs[length] = NULL;
+    return compressed_seqs;
 }

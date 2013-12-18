@@ -12,10 +12,10 @@
 #include "compression.h"
 #include "flags.h"
 #include "fasta.h"
+#include "read_compressed.h"
 #include "seq.h"
 #include "util.h"
 
-/*This function will only be here temporarily*/
 static char *path_join(char *a, char *b)
 {
     char *joined;
@@ -53,6 +53,13 @@ main(int argc, char **argv)
 
     org_seq_id = 0;
     gettimeofday(&start, NULL);
+    char *compressed_filename = path_join(args->args[0], CABLASTP_COMPRESSED);
+    FILE *compressed_file = fopen(compressed_filename, "r");
+    struct cbp_compressed_seq **compressed = read_compressed(compressed_file);
+    struct cbp_link_to_coarse *link;
+    for (i = 0; compressed[i] != NULL; i++)
+        for(link = (compressed[i])->links; link != NULL; link = link->next)
+            printf("%ld %d %d\n%s\n\n\n", link->coarse_seq_id, link->coarse_start, link->coarse_end, link->diff);
     fsg = fasta_generator_start(path_join(args->args[0],CABLASTP_COARSE_FASTA),
                                 FASTA_EXCLUDE_NCBI_BLOSUM62, 100);
     while (NULL != (seq = fasta_generator_next(fsg))) {
@@ -72,6 +79,7 @@ main(int argc, char **argv)
     }
 
     fasta_generator_free(fsg);
+    /*printf("%s\n", test[0]->name);*/
 
     /*cbp_database_free(db);*/
     opt_config_free(conf);
