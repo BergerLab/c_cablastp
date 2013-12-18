@@ -76,7 +76,7 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
         char *id_bytes;
         seq = seq_at(com_db, i);
         id_bytes = read_int_to_bytes(seq->id, 64);
-        /*fprintf(com_db->file_compressed, "> %d; %s\n", seq->id, seq->name);*/
+
         putc('>', com_db->file_compressed);
         putc(' ', com_db->file_compressed);
         for(j = 0; j < 8; j++)
@@ -188,9 +188,10 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
     int i;
     struct cbp_link_to_coarse *link;
     int16_t mask = (((int16_t)1)<<8)-1;
-    /*char *id_bytes = read_int_to_bytes(seq->id, 64);*/
     char *id_string = malloc(20*sizeof(*id_string));
     sprintf(id_string, "%ld", seq->id);
+
+    /*Output the header for the sequence*/
     putc('>', com_db->file_compressed);
     putc(' ', com_db->file_compressed);
     for(i = 0; id_string[i] != '\0'; i++)
@@ -200,9 +201,8 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
     for(i = 0; seq->name[i] != '\0'; i++)
         putc(seq->name[i], com_db->file_compressed);
     putc('\n', com_db->file_compressed);
-    free(id_string);
 
-    /*fprintf(com_db->file_compressed, "> %d; %s\n", seq->id, seq->name);*/
+    free(id_string);
 
     for (link = seq->links; link != NULL; link = link->next){
         /*Convert the start and end indices for the link to two
@@ -219,9 +219,9 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
         char *script = edit_script_to_half_bytes(edit_script);
 
         /*Output the ID of the current chunk as 8 characters*/
-        int coarse_seq_id = link->coarse_seq_id;
+        uint64_t coarse_seq_id = link->coarse_seq_id;
         for(i = 7; i >= 0; i--){
-            char b = shift_right(coarse_seq_id, i*8) & mask;
+            char b = (char)(shift_right(coarse_seq_id, i*8) & mask);
             putc(b, com_db->file_compressed);
         }
 
@@ -243,9 +243,6 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
         putc(end_right, com_db->file_compressed);
         putc(script_left, com_db->file_compressed);
         putc(script_right, com_db->file_compressed);
-        /*fprintf(com_db->file_compressed, "%c%c%c%c%c%c,",
-            start_left, start_right, end_left, end_right,
-            script_left, script_right);*/
 
         /*Output all of the characters of the edit script as half-bytes*/
         for(i = 0; i < script_length/2+1; i++)

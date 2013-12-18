@@ -5,6 +5,8 @@
   number of bits on the right of the mask set to 1 and all bits to the left
   set to 0.*/
 uint64_t make_mask(int bits){
+    if(bits == 64)
+        return ~0;
     uint64_t mask = (uint64_t)1;
     mask <<= bits;
     return mask & (mask-1);
@@ -17,7 +19,7 @@ uint64_t shift_left(uint64_t x, int bits){
 
 /*Right shift for 64-bit integers*/
 uint64_t shift_right(uint64_t x, int bits){
-    int mask = make_mask(64-bits);
+    uint64_t mask = make_mask(64-bits);
     x >>= bits;
     return x & mask;
 }
