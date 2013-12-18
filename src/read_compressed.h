@@ -5,24 +5,11 @@
 #include <stdio.h>
 
 #include "ds.h"
-
-#include "align.h"
-#include "bitpack.h"
 #include "compressed.h"
-#include "coarse.h"
-#include "database.h"
-#include "DNAutils.h"
-#include "edit_scripts.h"
-
 #include "stdbool.h"
 
-struct links_to_coarse{
-    char *header;
-    struct cbp_link_to_coarse *links;
-};
-
 char *get_header(FILE *f);
-
 struct cbp_link_to_coarse *read_link(FILE *f);
+struct cbp_compressed_seq **read_compressed(FILE *f);
 
 #endif
