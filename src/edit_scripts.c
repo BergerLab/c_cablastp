@@ -60,7 +60,7 @@ char *edit_script_to_half_bytes(char *edit_script){
         length++;
     odd = length % 2;
     length = length / 2 + odd;
-    half_bytes = malloc(length*sizeof(char));
+    half_bytes = malloc(length*sizeof(*half_bytes));
  
     while (edit_script[i] != '\0') {
         if(i%2 == 0)

@@ -8,6 +8,7 @@
 
 #include "align.h"
 #include "bitpack.h"
+#include "edit_scripts.h"
 
 #include "stdbool.h"
 

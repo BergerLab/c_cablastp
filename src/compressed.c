@@ -4,9 +4,13 @@
 
 #include "ds.h"
 
+#include "bitpack.h"
 #include "compressed.h"
 #include "edit_scripts.h"
-#include "bitpack.h"
+
+/*These will only temporarily be here*/
+char *edit_script_to_half_bytes(char *edit_script);
+char *make_edit_script(char *str, char *ref, bool dir, int length);
 
 static struct cbp_compressed_seq *
 seq_at(struct cbp_compressed *com_db, int32_t i);
@@ -69,8 +73,9 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
 
     for (i = 0; i < com_db->seqs->size; i++) {
         int j;
-        char *id_bytes = read_int_to_bytes(seq->id, 64);
+        char *id_bytes;
         seq = seq_at(com_db, i);
+        id_bytes = read_int_to_bytes(seq->id, 64);
         /*fprintf(com_db->file_compressed, "> %d; %s\n", seq->id, seq->name);*/
         putc('>', com_db->file_compressed);
         putc(' ', com_db->file_compressed);
@@ -100,7 +105,7 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
             int coarse_seq_id = link->coarse_seq_id;
             for(j = 7; j >= 0; j--){
                 char b = shift_right(coarse_seq_id, j*8) & mask;
-                fprintf(com_db->file_compressed, "%c", b);
+                putc(b, com_db->file_compressed);
             }
 
             /*Represent the length of the edit script as two characters and get
@@ -116,23 +121,27 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
              *linked to and the length of the edit script represented in 16
              *bits, and the length of the edit script.
              */
-            fprintf(com_db->file_compressed, "%c%c%c%c%c%c,",
-                start_left, start_right, end_left, end_right,
-                script_left, script_right);
+            putc(start_left, com_db->file_compressed);
+            putc(start_right, com_db->file_compressed);
+            putc(end_left, com_db->file_compressed);
+            putc(end_right, com_db->file_compressed);
+            putc(script_left, com_db->file_compressed);
+            putc(script_right, com_db->file_compressed);
 
             /*Output all of the characters of the edit script as half-bytes*/
-            for(j = 0; j < script_length/2+1; j++)
-                fprintf(com_db->file_compressed, "%c", script[j]);
+            for(j = 0; j < script_length/2; j++)
+                putc(script[j], com_db->file_compressed);
+
             /*If there are more links for this sequence, the character after
              *the edit script is a space.  Otherwise, the character after the
              *edit script is the > of the FASTA header.  If we are printing the
              *last link of the last sequence, print a newline.
              */
             if(link->next)
-                fprintf(com_db->file_compressed, "%c", ' ');
+                putc(' ', com_db->file_compressed);
             else
                 if(i == com_db->seqs->size-1)
-                    fprintf(com_db->file_compressed, "%c", '\n');
+                    putc('\n', com_db->file_compressed);
         }
     }
 }
@@ -146,10 +155,10 @@ cbp_compressed_save_plain(struct cbp_compressed *com_db)
 
     for (i = 0; i < com_db->seqs->size; i++) {
         seq = seq_at(com_db, i);
-        fprintf(com_db->file_compressed, "> %d; %s\n", seq->id, seq->name);
+        fprintf(com_db->file_compressed, "> %ld; %s\n", seq->id, seq->name);
         for (link = seq->links; link != NULL; link = link->next)
             fprintf(com_db->file_compressed,
-                "reference sequence id: %d, reference range: (%d, %d)\n%s\n",
+                "reference sequence id: %ld, reference range: (%d, %d)\n%s\n",
                 link->coarse_seq_id, link->coarse_start, link->coarse_end,
                 link->diff);
     }
@@ -161,10 +170,10 @@ cbp_compressed_write(struct cbp_compressed *com_db,
 {
     struct cbp_link_to_coarse *link;
 
-    fprintf(com_db->file_compressed, "> %d; %s\n", seq->id, seq->name);
+    fprintf(com_db->file_compressed, "> %ld; %s\n", seq->id, seq->name);
     for (link = seq->links; link != NULL; link = link->next){
         fprintf(com_db->file_compressed,
-            "reference sequence id: %d, reference range: (%d, %d)\n%s\n",
+            "reference sequence id: %ld, reference range: (%d, %d)\n%s\n",
             link->coarse_seq_id, link->coarse_start, link->coarse_end,
             link->diff);
     }
@@ -176,11 +185,19 @@ void
 cbp_compressed_write_binary(struct cbp_compressed *com_db,
                             struct cbp_compressed_seq *seq)
 {
+    int i;
     struct cbp_link_to_coarse *link;
     int16_t mask = (((int16_t)1)<<8)-1;
+    char *id_bytes = read_int_to_bytes(seq->id, 64);
+    putc('>', com_db->file_compressed);
+    putc(' ', com_db->file_compressed);
+    for(i = 0; i < 8; i++)
+        putc(id_bytes[i], com_db->file_compressed);
+    putc(';', com_db->file_compressed);
+    putc(' ', com_db->file_compressed);
 
-    fprintf(com_db->file_compressed, "> %d; %s\n", seq->id, seq->name);
-    fprintf(com_db->file_compressed, "");
+    /*fprintf(com_db->file_compressed, "> %d; %s\n", seq->id, seq->name);*/
+
     for (link = seq->links; link != NULL; link = link->next){
         /*Convert the start and end indices for the link to two
           characters.*/
@@ -193,14 +210,13 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
 
         char script_left, script_right;
         char *edit_script = link->diff;
-        char *script;
-        int i;
+        char *script = edit_script_to_half_bytes(edit_script);
 
         /*Output the ID of the current chunk as 8 characters*/
         int coarse_seq_id = link->coarse_seq_id;
         for(i = 7; i >= 0; i--){
             char b = shift_right(coarse_seq_id, i*8) & mask;
-            fprintf(com_db->file_compressed, "%c", b);
+            putc(b, com_db->file_compressed);
         }
 
         /*Represent the length of the edit script as two characters and get
@@ -210,26 +226,34 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
             script_length++;
         script_left  = (script_length >> 8) & mask;
         script_right = script_length & mask;
-        script = edit_script_to_half_bytes(edit_script);
 
         /*Output the indices of the start and end of the sequence being
          *linked to and the length of the edit script represented in 16
          *bits, and the length of the edit script.
          */
-        fprintf(com_db->file_compressed, "%c%c%c%c%c%c,",
+        putc(start_left, com_db->file_compressed);
+        putc(start_right, com_db->file_compressed);
+        putc(end_left, com_db->file_compressed);
+        putc(end_right, com_db->file_compressed);
+        putc(script_left, com_db->file_compressed);
+        putc(script_right, com_db->file_compressed);
+        /*fprintf(com_db->file_compressed, "%c%c%c%c%c%c,",
             start_left, start_right, end_left, end_right,
-            script_left, script_right);
+            script_left, script_right);*/
 
         /*Output all of the characters of the edit script as half-bytes*/
         for(i = 0; i < script_length/2+1; i++)
-            fprintf(com_db->file_compressed, "%c", script[i]);
+            putc(script[i], com_db->file_compressed);
+
         /*If there are more links for this sequence, the character after
          *the edit script is a space.  Otherwise, the character after the
          *edit script is the > of the FASTA header.  If we are printing the
          *last link of the last sequence, print a newline.
          */
         if(link->next)
-            fprintf(com_db->file_compressed, "%c", ' ');
+            putc(' ', com_db->file_compressed);
+
+        free(script);
     }
 }
 
