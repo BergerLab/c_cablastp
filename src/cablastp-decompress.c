@@ -8,13 +8,13 @@
 
 #include "opt.h"
 
-#include "blosum62.h"
-#include "compression.h"
+#include "coarse.h"
+#include "compressed.h"
+#include "database.h"
 #include "flags.h"
 #include "fasta.h"
 #include "read_compressed.h"
 #include "seq.h"
-#include "util.h"
 
 static char *path_join(char *a, char *b)
 {
@@ -56,30 +56,18 @@ main(int argc, char **argv)
     char *compressed_filename = path_join(args->args[0], CABLASTP_COMPRESSED);
     FILE *compressed_file = fopen(compressed_filename, "r");
     struct cbp_compressed_seq **compressed = read_compressed(compressed_file);
+    struct fasta_seq **coarse_sequences = malloc(10000*sizeof(*coarse_sequences));
+    uint64_t num_coarse_sequences = 0;
     struct cbp_link_to_coarse *link;
-    for (i = 0; compressed[i] != NULL; i++)
-        for(link = (compressed[i])->links; link != NULL; link = link->next)
-            printf("%ld %d %d\n%s\n\n\n", link->coarse_seq_id, link->coarse_start, link->coarse_end, link->diff);
+    /*for (i = 0; compressed[i] != NULL; i++)
+        for (link = (compressed[i])->links; link != NULL; link = link->next)
+            printf("%ld %d %d\n%s\n\n\n", link->coarse_seq_id, link->coarse_start, link->coarse_end, link->diff);*/
     fsg = fasta_generator_start(path_join(args->args[0],CABLASTP_COARSE_FASTA),
                                 FASTA_EXCLUDE_NCBI_BLOSUM62, 100);
-    while (NULL != (seq = fasta_generator_next(fsg))) {
-        printf("%s\n%s\n", seq->name, seq->seq);
-        /*org_seq = cbp_seq_init(org_seq_id, seq->name, seq->seq);
-        cbp_compress_send_job(workers, org_seq);
-
-        fasta_free_seq(seq);
-
-        org_seq_id++;
-        if (org_seq_id % 1000 == 0) {
-            gettimeofday(&current, NULL);
-            elapsed = (long double)(current.tv_sec - start.tv_sec);
-            printf("%d sequences compressed (%0.4Lf seqs/sec)\n",
-                   org_seq_id, ((long double) org_seq_id) / elapsed);
-        }*/
-    }
+    while (NULL != (seq = fasta_generator_next(fsg)))
+        coarse_sequences[num_coarse_sequences++] = seq;
 
     fasta_generator_free(fsg);
-    /*printf("%s\n", test[0]->name);*/
 
     /*cbp_database_free(db);*/
     opt_config_free(conf);

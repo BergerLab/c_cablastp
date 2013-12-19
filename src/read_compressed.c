@@ -13,12 +13,12 @@ char *get_header(FILE *f){
     char *header = malloc(10000*sizeof(*header));
     int header_length = 10000;
     int i = 0;
-    while(c != EOF && c != '\n'){
+    while (c != EOF && c != '\n'){
         c = getc(f);
-        if(c != EOF){
+        if (c != EOF){
             header[i] = (char)c;
             i++;
-            if(i == header_length-1){
+            if (i == header_length-1){
                 header_length *= 2;
                 header = realloc(header, header_length*sizeof(*header));
             }
@@ -46,9 +46,9 @@ struct cbp_link_to_coarse *read_link(FILE *f){
     char *diff;
     unsigned char indices[6];
 
-    for(i = 0; i < 8; i++){
+    for (i = 0; i < 8; i++){
         c = getc(f);
-        if(feof(f)){
+        if (feof(f)){
             free(link);
             fprintf(stderr, "?\n");
             return NULL;
@@ -57,9 +57,9 @@ struct cbp_link_to_coarse *read_link(FILE *f){
         coarse_seq_id |= (uint64_t)c;
     }
 
-    for(i = 0; i < 6; i++){
+    for (i = 0; i < 6; i++){
         c = getc(f);
-        if(feof(f)){
+        if (feof(f)){
             free(link);
             fprintf(stderr, "??\n");
             return NULL;
@@ -79,9 +79,9 @@ struct cbp_link_to_coarse *read_link(FILE *f){
     if(script_length % 2 == 1)
         chars_to_read++;
     half_bytes = malloc(chars_to_read*sizeof(*half_bytes));
-    for(i = 0; i < chars_to_read; i++){
+    for (i = 0; i < chars_to_read; i++){
         c = getc(f);
-        if(feof(f)){
+        if (feof(f)){
             free(link);
             return NULL;
         }
@@ -101,20 +101,32 @@ struct cbp_compressed_seq **read_compressed(FILE *f){
     int length = 0;
     struct cbp_compressed_seq **compressed_seqs =
         malloc(1000*sizeof(*compressed_seqs));
-    while(true){
-        char *header = get_header(f);
-        if(header == NULL)
-            break;
+    /*Read each sequence*/
+    while (true) {
         struct cbp_link_to_coarse *links = NULL;
-        while(true){
+        char *header = get_header(f);
+        if (header == NULL)
+            break;
+        /*Read each link in the sequence*/
+        while (true) {
             char c = 1;
             struct cbp_link_to_coarse *current_link = read_link(f);
-            if(current_link == NULL)
-               break;
-            current_link -> next = links;
-            links = current_link;
+            if (current_link == NULL)
+                break;
+            current_link->next = links;
+            if (current_link->next == NULL)
+                links = current_link;
+            else{
+                while (current_link->next->next != NULL)
+                    current_link->next = current_link->next->next;
+                current_link->next->next = current_link;
+                current_link->next = NULL;
+            }
+/*            links = current_link;*/
             c = getc(f);
-            if(c == '\n')
+            /*If we find a newline at the end of the link we are at the end of
+              the sequence.*/
+            if (c == '\n')
                 break;
         }
         compressed_seqs[length] = malloc(sizeof(*(compressed_seqs[length])));
