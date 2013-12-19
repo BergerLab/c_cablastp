@@ -324,7 +324,7 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
 
     link->diff = make_edit_script(alignment.org, alignment.ref, dir, alignment.length);
 int i;
-for(i = 0; i < alignment.length; i++)
+/*for(i = 0; i < alignment.length; i++)
     if(alignment.org[i] != '-')
         fprintf(stderr, "%c", alignment.org[i]);
 fprintf(stderr, "\n");
@@ -332,7 +332,24 @@ fprintf(stderr, "\n");
 for(i = 0; i < alignment.length; i++)
     if(alignment.ref[i] != '-')
         fprintf(stderr, "%c", alignment.ref[i]);
-fprintf(stderr, "\n");
+fprintf(stderr, "\n");*/
+char *original = malloc(100000*sizeof(char));
+char *ref = malloc(100000*sizeof(char));
+int length1 = 0;
+int length2 = 0;
+
+for(i = 0; alignment.org[i]!='\0'; i++)
+    if(alignment.org[i] != '-')
+        original[length1++] = alignment.org[i];
+for(i = 0; alignment.ref[i]!='\0'; i++)
+    if(alignment.ref[i] != '-')
+        ref[length2++] = alignment.ref[i];
+
+original[length1] = '\0';
+ref[length2] = '\0';
+printf("length = %d\n", length2);
+fprintf(stderr, "%s\n\n", read_edit_script(link->diff, ref, length2));
+fprintf(stderr, "%s\n\n", original);
     assert(link->diff);
 
     return link;

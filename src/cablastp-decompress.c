@@ -59,13 +59,34 @@ main(int argc, char **argv)
     struct fasta_seq **coarse_sequences = malloc(10000*sizeof(*coarse_sequences));
     uint64_t num_coarse_sequences = 0;
     struct cbp_link_to_coarse *link;
-    /*for (i = 0; compressed[i] != NULL; i++)
-        for (link = (compressed[i])->links; link != NULL; link = link->next)
-            printf("%ld %d %d\n%s\n\n\n", link->coarse_seq_id, link->coarse_start, link->coarse_end, link->diff);*/
     fsg = fasta_generator_start(path_join(args->args[0],CABLASTP_COARSE_FASTA),
                                 FASTA_EXCLUDE_NCBI_BLOSUM62, 100);
     while (NULL != (seq = fasta_generator_next(fsg)))
         coarse_sequences[num_coarse_sequences++] = seq;
+    for (i = 0; compressed[i] != NULL; i++) {
+        printf("%s", compressed[i]->name);
+        int current_chunk = 0;
+        for (link = (compressed[i])->links; link != NULL; link = link->next) {
+            int start = link->diff[1] == '\0' ? 100 : 0;
+fprintf(stderr, "%d\n", start);
+            struct cbp_seq *chunk =
+                cbp_seq_init_range(-1, "",
+                                   coarse_sequences[link->coarse_seq_id]->seq,
+                                   link->coarse_start, link->coarse_end);
+            int length;
+            for (length = 0; chunk->residues[length] != '\0'; length++);
+/*if(start == 0)fprintf(stderr, "%s\n", chunk->residues);
+if(start == 0)fprintf(stderr, "%s\n", link->diff);*/
+if(start == 0)fprintf(stderr, "%s\n", read_edit_script(link->diff, chunk->residues, length));
+            if (start == 0 || current_chunk == 0)
+                printf("%s", read_edit_script(link->diff, chunk->residues, length));
+            else
+                printf("%s", read_edit_script(link->diff, chunk->residues+99, length-99));
+            current_chunk++;
+if(current_chunk == 3)
+    break;
+        }
+    }
 
     fasta_generator_free(fsg);
 

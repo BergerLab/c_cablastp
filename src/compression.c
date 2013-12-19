@@ -203,9 +203,9 @@ if(chunks >= 105){break;}
 
                 continue;
 
-            if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+            if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
-               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){
 printf("-->\n");
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
@@ -287,12 +287,14 @@ printf("-->\n");
                                                true));
                 }
 
+int align_fwd_len = mlens_fwd.rlen - (mlens_fwd.rlen+mlens_rev.rlen-cbp_align_length_nogaps(alignment.ref));
+
                 /*Add a link to the coarse sequence in the compressed
                   sequence.*/
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
                                             resind - mlens_rev.rlen,
-                                            resind + mlens_fwd.rlen,
+                                            resind + align_fwd_len,
                                             alignment, true));
 
                 /*Add a link to the compressed sequence in the coarse

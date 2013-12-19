@@ -331,10 +331,10 @@ for(j2 = 0; j2 <= dp_len2; j2++){
         for(i = *matches_index - 100; i < *matches_index; i++)
             if(matches[i])
                 matches_count++;
-   /* Make sure we don't have a bad window unless we are running
-      Needleman-Wunsch alignment on a match.  If we have a bad window, then
-      throw out this alignment.  Otherwise, copy the alignment into align.org
-      and align.ref. */
+    /* Make sure we don't have a bad window unless we are running
+       Needleman-Wunsch alignment on a match.  If we have a bad window, then
+       throw out this alignment.  Otherwise, copy the alignment into align.org
+       and align.ref. */
     if(dp_len1 < compress_flags.min_match_len &&
        check_and_update(matches, matches_index, &matches_count,
                         matches_to_add, num_steps) != num_steps)
