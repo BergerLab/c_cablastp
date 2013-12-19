@@ -604,8 +604,8 @@ cbp_compress_worker(void *data)
     mem = cbp_align_nw_memory_init();
     while (NULL != (s = (struct cbp_seq *) ds_queue_get(args->jobs))) {
         cseq = cbp_compress(args->db->coarse_db, s, mem);
-        cbp_compressed_write(args->db->com_db, cseq);
-        /*cbp_compressed_write_binary(args->db->com_db, cseq);*/
+        /*cbp_compressed_write(args->db->com_db, cseq);*/
+        cbp_compressed_write_binary(args->db->com_db, cseq);
         cbp_seq_free(s);
         cbp_compressed_seq_free(cseq);
     }
