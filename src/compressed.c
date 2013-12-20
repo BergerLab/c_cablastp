@@ -224,8 +224,10 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
         /*Represent the length of the edit script as two characters and get
           the edit script as a sequence of half-bytes*/
         int16_t script_length = (int16_t)0;
+        int odd;
         while(edit_script[script_length] != '\0')
             script_length++;
+        odd = script_length % 2 == 1 ? 1 : 0;
         script_left  = (script_length >> 8) & mask;
         script_right = script_length & mask;
 
@@ -241,7 +243,7 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
         putc(script_right, com_db->file_compressed);
 
         /*Output all of the characters of the edit script as half-bytes*/
-        for(i = 0; i < script_length/2+1; i++)
+        for(i = 0; i < script_length/2+odd; i++)
             putc(script[i], com_db->file_compressed);
 
         /*If there are more links for this sequence, the character after

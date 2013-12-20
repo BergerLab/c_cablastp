@@ -67,23 +67,19 @@ main(int argc, char **argv)
         printf("%s", compressed[i]->name);
         int current_chunk = 0;
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
+fprintf(stderr, "!");
             int start = link->diff[1] == '\0' ? 100 : 0;
-fprintf(stderr, "%d\n", start);
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
                                    link->coarse_start, link->coarse_end);
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
-if(start == 0)fprintf(stderr, "%s\n", read_edit_script(link->diff, chunk->residues, length));
             if (start == 0 || current_chunk == 0)
                 printf("%s", read_edit_script(link->diff, chunk->residues, length));
             else
                 printf("%s", read_edit_script(link->diff, chunk->residues+99, length-99));
             current_chunk++;
-if(current_chunk == 3){
-    break;
-}
         }
     }
 
