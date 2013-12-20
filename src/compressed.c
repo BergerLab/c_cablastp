@@ -323,6 +323,9 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
     link->next = NULL;
 
     link->diff = make_edit_script(alignment.org, alignment.ref, dir, alignment.length);
+fprintf(stderr, "%s\n", alignment.org);
+/*fprintf(stderr, "%s\n", link->diff);*/
+fprintf(stderr, "%s\n", alignment.ref);
 int i;
 /*for(i = 0; i < alignment.length; i++)
     if(alignment.org[i] != '-')
@@ -335,7 +338,7 @@ for(i = 0; i < alignment.length; i++)
 fprintf(stderr, "\n");*/
 char *original = malloc(100000*sizeof(char));
 char *ref = malloc(100000*sizeof(char));
-int length1 = 0;
+/*int length1 = 0;
 int length2 = 0;
 
 for(i = 0; alignment.org[i]!='\0'; i++)
@@ -349,7 +352,7 @@ original[length1] = '\0';
 ref[length2] = '\0';
 printf("length = %d\n", length2);
 fprintf(stderr, "%s\n\n", read_edit_script(link->diff, ref, length2));
-fprintf(stderr, "%s\n\n", original);
+fprintf(stderr, "%s\n\n", original);*/
     assert(link->diff);
 
     return link;
