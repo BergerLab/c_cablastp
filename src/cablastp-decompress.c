@@ -66,8 +66,11 @@ main(int argc, char **argv)
     for (i = 0; compressed[i] != NULL; i++) {
         printf("%s", compressed[i]->name);
         int current_chunk = 0;
+        bool prev_match = false;
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
             int start = link->diff[1] == '\0' ? 100 : 0;
+            if (!prev_match && start == 100)
+                start--;
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
@@ -77,10 +80,13 @@ main(int argc, char **argv)
             if (start == 0 || current_chunk == 0)
                 printf("%s", read_edit_script(link->diff, chunk->residues, length));
             else
-                printf("%s", read_edit_script(link->diff, chunk->residues+99, length-99));
+                printf("%s", read_edit_script(link->diff, chunk->residues+start, length-start));
+            prev_match = start == 0;
             current_chunk++;
+if(current_chunk == 4)break;
         }
     }
+    putc('\n', stdout);
 
     fasta_generator_free(fsg);
 
