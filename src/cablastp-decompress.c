@@ -67,7 +67,6 @@ main(int argc, char **argv)
         printf("%s", compressed[i]->name);
         int current_chunk = 0;
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
-fprintf(stderr, "!");
             int start = link->diff[1] == '\0' ? 100 : 0;
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",

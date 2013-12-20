@@ -218,7 +218,6 @@ printf("-->\n");
                 found_match = true;
                 changed = false;
                 printf("MATCH!!!\n");
-fprintf(stderr, "Coarse: %d, %d\nOriginal: %d, %d\n\n", mlens_rev.rlen, mlens_fwd.rlen, mlens_rev.olen, mlens_fwd.olen);
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
 
@@ -604,7 +603,6 @@ cbp_compress_worker(void *data)
     mem = cbp_align_nw_memory_init();
     while (NULL != (s = (struct cbp_seq *) ds_queue_get(args->jobs))) {
         cseq = cbp_compress(args->db->coarse_db, s, mem);
-        /*cbp_compressed_write(args->db->com_db, cseq);*/
         cbp_compressed_write_binary(args->db->com_db, cseq);
         cbp_seq_free(s);
         cbp_compressed_seq_free(cseq);

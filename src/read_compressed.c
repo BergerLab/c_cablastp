@@ -50,7 +50,6 @@ struct cbp_link_to_coarse *read_link(FILE *f){
         c = getc(f);
         if (feof(f)){
             free(link);
-            fprintf(stderr, "?\n");
             return NULL;
         }
         coarse_seq_id <<= 8;
@@ -61,7 +60,6 @@ struct cbp_link_to_coarse *read_link(FILE *f){
         c = getc(f);
         if (feof(f)){
             free(link);
-            fprintf(stderr, "??\n");
             return NULL;
         }
         indices[i] = (char)c;
@@ -75,11 +73,9 @@ struct cbp_link_to_coarse *read_link(FILE *f){
     script_length |= (uint16_t)indices[4];
     script_length <<= 8;
     script_length |= (uint16_t)indices[5];
-fprintf(stderr, "%d %d %d\n", coarse_start, coarse_end, script_length);
     chars_to_read = script_length / 2;
     if(script_length % 2 == 1)
         chars_to_read++;
-fprintf(stderr, "%d half bytes\n", chars_to_read);
     half_bytes = malloc(chars_to_read*sizeof(*half_bytes));
     for (i = 0; i < chars_to_read; i++){
         c = getc(f);
@@ -124,7 +120,6 @@ struct cbp_compressed_seq **read_compressed(FILE *f){
                 current_link->next->next = current_link;
                 current_link->next = NULL;
             }
-/*            links = current_link;*/
             c = getc(f);
             /*If we find a newline at the end of the link we are at the end of
               the sequence.*/

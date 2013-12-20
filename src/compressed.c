@@ -95,6 +95,7 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
             char script_left, script_right;
             char *edit_script = link->diff;
             char *script;
+            int16_t script_length = (int16_t)0;
             int j;
 
             /*Output the ID of the current chunk as 8 characters*/
@@ -106,7 +107,6 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
 
             /*Represent the length of the edit script as two characters and get
               the edit script as a sequence of half-bytes*/
-            int16_t script_length = (int16_t)0;
             while(edit_script[script_length] != '\0')
                 script_length++;
             script_left  = (script_length >> 8) & mask;
@@ -213,6 +213,8 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
         char script_left, script_right;
         char *edit_script = link->diff;
         char *script = edit_script_to_half_bytes(edit_script);
+        int16_t script_length = (int16_t)0;
+        int odd;
 
         /*Output the ID of the current chunk as 8 characters*/
         uint64_t coarse_seq_id = link->coarse_seq_id;
@@ -223,8 +225,6 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
 
         /*Represent the length of the edit script as two characters and get
           the edit script as a sequence of half-bytes*/
-        int16_t script_length = (int16_t)0;
-        int odd;
         while(edit_script[script_length] != '\0')
             script_length++;
         odd = script_length % 2 == 1 ? 1 : 0;
@@ -325,36 +325,6 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
     link->next = NULL;
 
     link->diff = make_edit_script(alignment.org, alignment.ref, dir, alignment.length);
-fprintf(stderr, "%s\n", alignment.org);
-/*fprintf(stderr, "%s\n", link->diff);*/
-fprintf(stderr, "%s\n", alignment.ref);
-int i;
-/*for(i = 0; i < alignment.length; i++)
-    if(alignment.org[i] != '-')
-        fprintf(stderr, "%c", alignment.org[i]);
-fprintf(stderr, "\n");
-
-for(i = 0; i < alignment.length; i++)
-    if(alignment.ref[i] != '-')
-        fprintf(stderr, "%c", alignment.ref[i]);
-fprintf(stderr, "\n");*/
-char *original = malloc(100000*sizeof(char));
-char *ref = malloc(100000*sizeof(char));
-/*int length1 = 0;
-int length2 = 0;
-
-for(i = 0; alignment.org[i]!='\0'; i++)
-    if(alignment.org[i] != '-')
-        original[length1++] = alignment.org[i];
-for(i = 0; alignment.ref[i]!='\0'; i++)
-    if(alignment.ref[i] != '-')
-        ref[length2++] = alignment.ref[i];
-
-original[length1] = '\0';
-ref[length2] = '\0';
-printf("length = %d\n", length2);
-fprintf(stderr, "%s\n\n", read_edit_script(link->diff, ref, length2));
-fprintf(stderr, "%s\n\n", original);*/
     assert(link->diff);
 
     return link;
