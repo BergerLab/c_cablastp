@@ -267,7 +267,6 @@ printf("-->\n");
                     for(i2 = start_original_align; i2<end_original_align; i2++)
                         org_match[i2-start_original_align] =
                                                    org_seq->residues[i2];
-
                     alignment = cbp_align_nw(mem,
                                              cor_match, coarse_align_len, 0, 1,
                                              org_match, original_align_len,
@@ -278,12 +277,12 @@ printf("-->\n");
                   match.*/
                 if (current - start_of_section > 0) {
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
-                                                    start_of_section, current-mlens_rev.rlen);
+                                                    start_of_section, current-mlens_rev.olen);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
-                                               new_coarse_seq_id, 0,
-                                               current - mlens_rev.olen - start_of_section,
-                                               true));
+                            new_coarse_seq_id, 0,
+                            current - mlens_rev.olen - start_of_section,
+                                                                  true));
                 }
 
                 /*Add a link to the coarse sequence in the compressed
@@ -412,11 +411,12 @@ printf("<--\n");
                   match.*/
                 if (current - start_of_section > 0){
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
-                                                    start_of_section, current);
+                                                    start_of_section,
+                                                    current - mlens_rev.olen);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                                                new_coarse_seq_id, 0,
-                                               current - start_of_section,
+                                               current - mlens_rev.olen - start_of_section,
                                                true));
                 }
 
