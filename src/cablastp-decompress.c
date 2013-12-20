@@ -75,16 +75,15 @@ fprintf(stderr, "%d\n", start);
                                    link->coarse_start, link->coarse_end);
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
-/*if(start == 0)fprintf(stderr, "%s\n", chunk->residues);
-if(start == 0)fprintf(stderr, "%s\n", link->diff);*/
 if(start == 0)fprintf(stderr, "%s\n", read_edit_script(link->diff, chunk->residues, length));
             if (start == 0 || current_chunk == 0)
                 printf("%s", read_edit_script(link->diff, chunk->residues, length));
             else
                 printf("%s", read_edit_script(link->diff, chunk->residues+99, length-99));
             current_chunk++;
-if(current_chunk == 3)
+if(current_chunk == 3){
     break;
+}
         }
     }
 

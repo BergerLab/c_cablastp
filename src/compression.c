@@ -218,6 +218,7 @@ printf("-->\n");
                 found_match = true;
                 changed = false;
                 printf("MATCH!!!\n");
+fprintf(stderr, "Coarse: %d, %d\nOriginal: %d, %d\n\n", mlens_rev.rlen, mlens_fwd.rlen, mlens_rev.olen, mlens_fwd.olen);
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
 
@@ -278,11 +279,11 @@ printf("-->\n");
                   match.*/
                 if (current - start_of_section > 0) {
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
-                                                    start_of_section, current);
+                                                    start_of_section, current-mlens_rev.rlen);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                                                new_coarse_seq_id, 0,
-                                               current - start_of_section,
+                                               current - mlens_rev.olen - start_of_section,
                                                true));
                 }
 
