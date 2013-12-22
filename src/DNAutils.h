@@ -4,5 +4,6 @@
 int bases_match(char a, char b, int dir_prod);
 char base_complement(char base);
 char *kmer_revcomp(char *kmer);
+char *string_revcomp(char *sequence, int length);
 
 #endif

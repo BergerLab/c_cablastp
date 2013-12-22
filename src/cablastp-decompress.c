@@ -83,7 +83,7 @@ main(int argc, char **argv)
                 printf("%s", read_edit_script(link->diff, chunk->residues+start, length-start));
             prev_match = start == 0;
             current_chunk++;
-if(current_chunk == 4)break;
+/*if(current_chunk == 5)break;*/
         }
     }
     putc('\n', stdout);

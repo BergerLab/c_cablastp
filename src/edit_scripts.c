@@ -2,6 +2,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+
+#include "DNAutils.h"
 #include "edit_scripts.h"
 
 /* Converts an integer to its octal representation */
@@ -185,11 +187,12 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     int orig_pos = 0, last_edit_str_len = 0; /* length of last edit str */
     int current = 0;
     int script_pos = 1;
+    char *original = (edit_script[0] == '0' ? orig : string_revcomp(orig, -1));
 
     while(next_edit(edit_script, &script_pos, &edit)){
         /* chunk after previous edit */
         for(i = 0; i < edit.last_dist - last_edit_str_len; i++)
-            str[current++] = orig[orig_pos+i];
+            str[current++] = original[orig_pos+i];
 
         /* update position in original string */
         orig_pos += edit.last_dist - last_edit_str_len;
@@ -205,7 +208,7 @@ char *read_edit_script(char *edit_script, char *orig, int length){
         last_edit_str_len = edit.str_length;
     }
     while(orig_pos < length)
-        str[current++] = orig[orig_pos++];
+        str[current++] = original[orig_pos++];
     str = realloc(str, current+1*sizeof(char));
     str[current] = '\0';
     return str;
