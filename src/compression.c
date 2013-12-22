@@ -348,6 +348,7 @@ printf("<--\n");
                     continue;
 
                 found_match = true;
+                changed = false;
                 printf("MATCH\n");
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
@@ -412,11 +413,11 @@ printf("<--\n");
                 if (current - start_of_section > 0){
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section,
-                                                    current - mlens_rev.olen);
+                                                    current - mlens_fwd.olen);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                                                new_coarse_seq_id, 0,
-                                               current - mlens_rev.olen - start_of_section,
+                                               current - mlens_fwd.olen - start_of_section,
                                                true));
                 }
 
@@ -424,7 +425,7 @@ printf("<--\n");
                   sequence.*/
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
-                                            resind - mlens_fwd.rlen,
+                                            resind - seed_size - mlens_fwd.rlen,
                                             resind + mlens_rev.rlen,
                                             alignment, false));
 
@@ -433,7 +434,7 @@ printf("<--\n");
                 cbp_coarse_seq_addlink(coarse_seq,
                                        cbp_link_to_compressed_init(
                                        org_seq->id,
-                                       resind - mlens_fwd.rlen,
+                                       resind - seed_size - mlens_fwd.rlen,
                                        resind + mlens_rev.rlen, false));
 
                 /*Update the current position in the sequence*/
