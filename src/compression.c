@@ -353,10 +353,10 @@ printf("<--\n");
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
 
-                start_coarse_align = resind - seed_size - mlens_fwd.rlen;
-                end_coarse_align = resind + mlens_rev.rlen;
-                start_original_align = current - seed_size - mlens_fwd.olen;
-                end_original_align = current + mlens_rev.olen;
+                start_coarse_align = resind - mlens_fwd.rlen;
+                end_coarse_align = resind + seed_size + mlens_rev.rlen;
+                start_original_align = current - mlens_fwd.olen;
+                end_original_align = current + seed_size + mlens_rev.olen;
                 
                 cor_match = malloc(coarse_align_len * sizeof(char));
                 org_match = malloc(original_align_len * sizeof(char));
@@ -427,8 +427,8 @@ fprintf(stderr, "____________________\n%s\n%s\n____________________\n\n\n%d %d\n
 
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
-                                            resind - seed_size - mlens_fwd.rlen,
-                                            resind + mlens_rev.rlen,
+                                            resind - mlens_fwd.rlen,
+                                            resind + seed_size + mlens_rev.rlen,
                                             alignment, false));
 
                 /*Add a link to the compressed sequence in the coarse
@@ -436,8 +436,8 @@ fprintf(stderr, "____________________\n%s\n%s\n____________________\n\n\n%d %d\n
                 cbp_coarse_seq_addlink(coarse_seq,
                                        cbp_link_to_compressed_init(
                                        org_seq->id,
-                                       resind - seed_size - mlens_fwd.rlen,
-                                       resind + mlens_rev.rlen, false));
+                                       resind - mlens_fwd.rlen,
+                                       resind + seed_size + mlens_rev.rlen, false));
 
                 /*Update the current position in the sequence*/
                 start_of_section = current + mlens_rev.olen
