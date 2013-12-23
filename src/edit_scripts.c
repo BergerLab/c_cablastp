@@ -106,6 +106,7 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
  * script that can convert the reference string to the original string.
  */
 char *make_edit_script(char *str, char *ref, bool dir, int length){
+fprintf(stderr, "\n\n\nCoarse sequence:   %s\n\nOriginal sequence: %s\n\n", ref, str);
     char direction = dir ? '0' : '1';
     bool insert_open = false, subdel_open = false;
     int last_edit = 0;

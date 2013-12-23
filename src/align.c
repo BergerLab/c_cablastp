@@ -260,21 +260,9 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq, dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
 
-/*int j1, j2;
-for(j2 = 0; j2 <= dp_len2; j2++){
-    for(j1 = 0; j1 <= dp_len1; j1++)
-        printf("%4d", tables.dp_score[j1][j2]);
-    printf("\n");
-}
-printf("\n");
-for(j2 = 0; j2 <= dp_len2; j2++){
-    for(j1 = 0; j1 <= dp_len1; j1++)
-        printf("   %c", tables.dp_from[j1][j2] == 0 ? '\\' : tables.dp_from[j1][j2] == 1 ? '<' : '^');
-    printf("\n");
-}*/
     int *clump = backtrack_to_clump(tables, best);
     int i = 0;
-    if(clump[0] <= 0){
+    if (clump[0] <= 0) {
         align.ref = "\0";
         align.org = "\0";
         align.length = -1;
@@ -292,7 +280,7 @@ for(j2 = 0; j2 <= dp_len2; j2++){
     align.ref = "\0";
     align.org = "\0";
     align.length = -1;
-    while(!(cur_j1 == 0 && cur_j2 == 0)) {
+    while (!(cur_j1 == 0 && cur_j2 == 0)) {
         int prev_j1, prev_j2;
         switch (dp_from[cur_j1][cur_j2]) {
 	    char c1, c2;
@@ -320,33 +308,33 @@ for(j2 = 0; j2 <= dp_len2; j2++){
         num_steps++;
         cur_j1 = prev_j1; cur_j2 = prev_j2;
     }
-    for(i = 0; i < num_steps/2; i++){ /* flip order */
+    for (i = 0; i < num_steps/2; i++) { /* flip order */
         bool temp = matches_to_add[num_steps-i-1];
         matches_to_add[num_steps-1-i] = matches_to_add[i];
         matches_to_add[i] = temp;
     }
 
     /* note: need to flip order */
-    if(dp_len1 < compress_flags.min_match_len)
-        for(i = *matches_index - 100; i < *matches_index; i++)
-            if(matches[i])
+    if (dp_len1 < compress_flags.min_match_len)
+        for (i = *matches_index - 100; i < *matches_index; i++)
+            if (matches[i])
                 matches_count++;
     /* Make sure we don't have a bad window unless we are running
        Needleman-Wunsch alignment on a match.  If we have a bad window, then
        throw out this alignment.  Otherwise, copy the alignment into align.org
        and align.ref. */
-    if(dp_len1 < compress_flags.min_match_len &&
+    if (dp_len1 < compress_flags.min_match_len &&
        check_and_update(matches, matches_index, &matches_count,
                         matches_to_add, num_steps) != num_steps)
         align.length = -1;
-    else{
+    else {
         align.length = num_steps;
         align.org = malloc((align.length+1)*sizeof(char));
         align.ref = malloc((align.length+1)*sizeof(char));
         for(i = 0; i < align.length; i++){
             /*Don't update the matches array if we are running Needleman-Wunsch
               alignment on a match.*/
-            if(dp_len1 < compress_flags.min_match_len)
+            if (dp_len1 < compress_flags.min_match_len)
                 matches[(*matches_index)+i] = matches_to_add[i];
 
             align.ref[i] = subs1_dp[align.length-i-1];

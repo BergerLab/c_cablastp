@@ -327,14 +327,13 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
     link->diff = make_edit_script(alignment.org, alignment.ref, dir, alignment.length);
     assert(link->diff);
 
+fprintf(stderr, "coarse_start: %d, coarse_end: %d\n\n\n", coarse_start, coarse_end);
 
 fprintf(stderr, "Original: %s\n\n", alignment.org);
 
-/*fprintf(stderr, "diff: %s\n\n", link->diff);
+fprintf(stderr, "diff: %s\n\n", link->diff);
 
 fprintf(stderr, "coarse: %s\n\n", alignment.ref);
-fprintf(stderr, "%s\n", read_edit_script("0s7Cs2--s5-i3Cs7---s5---AAs6-", "CGCGCATAATGCCGAGGCGCTCATTGCCGGTTTCGATGTCGTGGTGGACGGTTCGGACAATTTCGCCACGCGCTATGTGCTGGCCGATGCTGCGGCCAAGGTGGGAAGGCCCCTCGTAACGGGCGCCATGGGCCGTTTCGATGGCACGGTGACGGTGTTGATGCCCTATGCGAACGGCCCGGACGGCGCAAAGAACCCGTCCTATCGCGATCTTTTCCCGGATGCGCCGCCGCCGGGAACGGTCCCTTCCTGCGCCGAAGCGGGTGTGCTGGGTGTCCTGCCGGGTGTGATCGGCAGCCTGCAGGCCATGGAAGTCATCAAGCTTGTCACCGGCATCGGCGAACCGCTGGTCGGGCGGCTTCTTCTCTACAATGCGCTGAATGTCCGTTTTGAAACCATCCGCTACAAGGCCCGCAAACCAAAATAATTGAGCATTTTCAGGCTCAATAATGGGTTGA", 459));*/
-
 
     return link;
 }

@@ -11,6 +11,7 @@
 #include "coarse.h"
 #include "compressed.h"
 #include "database.h"
+#include "DNAutils.h"
 #include "flags.h"
 #include "fasta.h"
 #include "read_compressed.h"
@@ -68,6 +69,8 @@ main(int argc, char **argv)
         int current_chunk = 0;
         bool prev_match = false;
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
+            /*If link -> diff[1] is a null terminator, this means this link is
+              to a chunk added without any matches*/
             int start = link->diff[1] == '\0' ? 100 : 0;
             if (!prev_match && start == 100)
                 start--;
@@ -75,6 +78,12 @@ main(int argc, char **argv)
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
                                    link->coarse_start, link->coarse_end);
+            if(link->diff[0] == '1'){
+                /*char *revcomp = string_revcomp(chunk->residues, -1);
+                free(chunk->residues);
+                chunk->residues = revcomp;*/
+fprintf(stderr, "\n\n\n%s\n\n\n", chunk->residues);
+            }
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
             if (start == 0 || current_chunk == 0)
@@ -83,7 +92,7 @@ main(int argc, char **argv)
                 printf("%s", read_edit_script(link->diff, chunk->residues+start, length-start));
             prev_match = start == 0;
             current_chunk++;
-/*if(current_chunk == 5)break;*/
+if(current_chunk == 3)break;
         }
     }
     putc('\n', stdout);
