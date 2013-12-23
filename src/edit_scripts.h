@@ -16,4 +16,7 @@ char *to_octal_str(int i);
 char *make_edit_script(char *str, char *ref, bool dir, int length);
 char *read_edit_script(char *edit_script, char *orig, int length);
 bool next_edit(char *edit_script, int *pos, struct edit_info *edit);
+
+
+char *no_dashes(char *sequence);
 #endif

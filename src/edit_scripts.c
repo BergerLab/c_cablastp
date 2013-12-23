@@ -151,6 +151,13 @@ fprintf(stderr, "\n\n\nCoarse sequence:   %s\n\nOriginal sequence: %s\n\n", ref,
     }
     edit_script = realloc(edit_script, current+1*sizeof(char));
     edit_script[current] = '\0';
+
+fprintf(stderr, "\n\n%s\n\n", edit_script);
+fprintf(stderr, "\n\n%s\n", no_dashes(ref));
+fprintf(stderr, "    |\n    |\n  \\   /\n    V\n");
+fprintf(stderr, "%s\n\n", no_dashes(str));
+
+fprintf(stderr, "%s", read_edit_script(edit_script, no_dashes(ref), 440));
     return edit_script;
 }
 
@@ -213,4 +220,21 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     str = realloc(str, current+1*sizeof(char));
     str[current] = '\0';
     return str;
+}
+
+char *no_dashes(char *sequence){
+    int length;
+    int bases = 0;
+    int i, j;
+    j = 0;
+    for(length = 0; sequence[length] != '\0'; length++)
+        if(sequence[length] != '-')
+            bases++;
+    char *n = malloc((bases+1)*sizeof(char));
+    n[bases] = '\0';
+    for(i = 0; i < length; i++)
+        if(sequence[i] != '-')
+            n[j++] = sequence[i];
+/*fprintf("No dashes: %s\n", n);*/
+    return n;
 }
