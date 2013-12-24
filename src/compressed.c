@@ -327,14 +327,6 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
     link->diff = make_edit_script(alignment.org, alignment.ref, dir, alignment.length);
     assert(link->diff);
 
-/*fprintf(stderr, "coarse_start: %d, coarse_end: %d\n\n\n", coarse_start, coarse_end);
-
-fprintf(stderr, "Original: %s\n\n", alignment.org);
-
-fprintf(stderr, "diff: %s\n\n", link->diff);
-
-fprintf(stderr, "coarse: %s\n\n", alignment.ref);*/
-
     return link;
 }
 
@@ -352,7 +344,6 @@ cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id, int16_t coarse_start,
     link->coarse_seq_id = coarse_seq_id;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
-fprintf(stderr, "[%d %d %d]", link->coarse_seq_id, link->coarse_start, link->coarse_end);
     link->next = NULL;
 
     return link;

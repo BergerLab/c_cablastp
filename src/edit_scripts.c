@@ -106,7 +106,6 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
  * script that can convert the reference string to the original string.
  */
 char *make_edit_script(char *str, char *ref, bool dir, int length){
-fprintf(stderr, "\n\n\nCoarse sequence:   %s\n\nOriginal sequence: %s\n\n", ref, str);
     char direction = dir ? '0' : '1';
     bool insert_open = false, subdel_open = false;
     int last_edit = 0;
@@ -152,12 +151,6 @@ fprintf(stderr, "\n\n\nCoarse sequence:   %s\n\nOriginal sequence: %s\n\n", ref,
     edit_script = realloc(edit_script, (current+1)*sizeof(char));
     edit_script[current] = '\0';
 
-fprintf(stderr, "\n\n%s\n\n", edit_script);
-fprintf(stderr, "\n\n%s\n", no_dashes(ref));
-fprintf(stderr, "    |\n    |\n  \\   /\n    V\n");
-fprintf(stderr, "%s\n\n", no_dashes(str));
-
-fprintf(stderr, "%s\n\n", read_edit_script(edit_script, string_revcomp(no_dashes(ref), 440), 440));
     return edit_script;
 }
 

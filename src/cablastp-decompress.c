@@ -81,9 +81,6 @@ main(int argc, char **argv)
                                    link->coarse_start, link->coarse_end);
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
-if(link->diff[0]=='1')fprintf(stderr, "-->: %s\n", chunk->residues);
-if(link->diff[0]=='1')fprintf(stderr, "-->: %s\n", string_revcomp(chunk->residues,-1));
-if(link->diff[0]=='1')fprintf(stderr, "-->: %s\n", read_edit_script(link->diff,chunk->residues, length));
             if (start == 0 || current_chunk == 0)
                 printf("%s", read_edit_script(link->diff, chunk->residues, length));
             else

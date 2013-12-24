@@ -372,8 +372,6 @@ printf("<--\n");
                                          org_match, original_align_len,
                                          original_align_len-1, -1,
                                          matches, NULL);
-fprintf(stderr, "\n____________________\n%s\n%s\n____________________\n\n\n",
-        cor_match, org_match);
 
                 /*If we are close to the end of the section, extend the match
                   to the end of the sequence.*/
