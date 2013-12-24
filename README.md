@@ -45,3 +45,5 @@ The usage of `cablastp-compress` is:
 cablastp-compress [flags] database-directory fasta-file [fasta-file ...]
 ```
 
+
+Current progress:  Can compress and decompress two same-direction matches and two reverse-complement matches
