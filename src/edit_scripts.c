@@ -115,19 +115,19 @@ fprintf(stderr, "\n\n\nCoarse sequence:   %s\n\nOriginal sequence: %s\n\n", ref,
     int i, j;
     char *octal;
     edit_script[0] = direction;
-    for(i = 0; i < length; i++){
-        if(str[i] == ref[i]){
+    for (i = 0; i < length; i++) {
+        if (str[i] == ref[i]) {
             insert_open = false;
             subdel_open = false;
         }
-        else{ /* mismatch */
-            if(ref[i] == '-'){ /* insertion in str relative to ref (i.e., gap in ref) */
+        else { /* mismatch */
+            if (ref[i] == '-') { /* insertion in str relative to ref (i.e., gap in ref) */
                 subdel_open = false;
-	        if(!insert_open){ /* indicate start of insertion */
+	        if (!insert_open) { /* indicate start of insertion */
 	            insert_open = true;
                     octal = to_octal_str(i - last_edit);
                     edit_script[current++] = 'i';
-                    for(j = 0; octal[j] != '\0'; j++)
+                    for (j = 0; octal[j] != '\0'; j++)
                         edit_script[current++] = octal[j];
 	            last_edit = i;
                 }
@@ -135,13 +135,13 @@ fprintf(stderr, "\n\n\nCoarse sequence:   %s\n\nOriginal sequence: %s\n\n", ref,
             }
            /* substitution or deletion in str (represented in script by '-') relative
               to ref */
-            else{
+            else {
                 insert_open = false;
-                if(!subdel_open){ /* indicate start of subdel */
+                if (!subdel_open) { /* indicate start of subdel */
 	            subdel_open = true;
                     octal = to_octal_str(i - last_edit);
                     edit_script[current++] = 's';
-                    for(j = 0; octal[j] != '\0'; j++)
+                    for (j = 0; octal[j] != '\0'; j++)
                         edit_script[current++] = octal[j];
                     last_edit = i;
                 }
@@ -149,7 +149,7 @@ fprintf(stderr, "\n\n\nCoarse sequence:   %s\n\nOriginal sequence: %s\n\n", ref,
             }
         }
     }
-    edit_script = realloc(edit_script, current+1*sizeof(char));
+    edit_script = realloc(edit_script, (current+1)*sizeof(char));
     edit_script[current] = '\0';
 
 fprintf(stderr, "\n\n%s\n\n", edit_script);
@@ -157,7 +157,7 @@ fprintf(stderr, "\n\n%s\n", no_dashes(ref));
 fprintf(stderr, "    |\n    |\n  \\   /\n    V\n");
 fprintf(stderr, "%s\n\n", no_dashes(str));
 
-fprintf(stderr, "%s", read_edit_script(edit_script, no_dashes(ref), 440));
+fprintf(stderr, "%s\n\n", read_edit_script(edit_script, string_revcomp(no_dashes(ref), 440), 440));
     return edit_script;
 }
 
@@ -195,12 +195,13 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     int orig_pos = 0, last_edit_str_len = 0; /* length of last edit str */
     int current = 0;
     int script_pos = 1;
-    char *original = (edit_script[0] == '0' ? orig : string_revcomp(orig, -1));
+    char *s = str;
+    /*char *original = orig;*//*(edit_script[0] == '0' ? orig : string_revcomp(orig, -1));*/
 
     while(next_edit(edit_script, &script_pos, &edit)){
         /* chunk after previous edit */
         for(i = 0; i < edit.last_dist - last_edit_str_len; i++)
-            str[current++] = original[orig_pos+i];
+            str[current++] = orig[orig_pos+i];
 
         /* update position in original string */
         orig_pos += edit.last_dist - last_edit_str_len;
@@ -216,9 +217,11 @@ char *read_edit_script(char *edit_script, char *orig, int length){
         last_edit_str_len = edit.str_length;
     }
     while(orig_pos < length)
-        str[current++] = original[orig_pos++];
+        str[current++] = orig[orig_pos++];
     str = realloc(str, current+1*sizeof(char));
     str[current] = '\0';
+    if(edit_script[0] == '1')
+        str = string_revcomp(s, -1);
     return str;
 }
 
@@ -235,6 +238,5 @@ char *no_dashes(char *sequence){
     for(i = 0; i < length; i++)
         if(sequence[i] != '-')
             n[j++] = sequence[i];
-/*fprintf("No dashes: %s\n", n);*/
     return n;
 }

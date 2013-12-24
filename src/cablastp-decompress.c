@@ -79,21 +79,18 @@ main(int argc, char **argv)
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
                                    link->coarse_start, link->coarse_end);
-            if(link->diff[0] == '1'){
-                /*char *revcomp = string_revcomp(chunk->residues, -1);
-                free(chunk->residues);
-                chunk->residues = revcomp;*/
-fprintf(stderr, "\n\n\n%s\n\n\n", chunk->residues);
-            }
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
+if(link->diff[0]=='1')fprintf(stderr, "-->: %s\n", chunk->residues);
+if(link->diff[0]=='1')fprintf(stderr, "-->: %s\n", string_revcomp(chunk->residues,-1));
+if(link->diff[0]=='1')fprintf(stderr, "-->: %s\n", read_edit_script(link->diff,chunk->residues, length));
             if (start == 0 || current_chunk == 0)
                 printf("%s", read_edit_script(link->diff, chunk->residues, length));
             else
                 printf("%s", read_edit_script(link->diff, chunk->residues+start, length-start));
             prev_match = start == 0;
             current_chunk++;
-if(current_chunk == 3)break;
+if(current_chunk == 30)break;
         }
     }
     putc('\n', stdout);
@@ -103,8 +100,6 @@ if(current_chunk == 3)break;
     /*cbp_database_free(db);*/
     opt_config_free(conf);
     opt_args_free(args);
-
-fprintf(stderr, "%s\n", read_edit_script("1s0--GAs6As2-s2TGi3Ts1Gs4Ci2Ts2-s2-i2Gs1Gi2Ci2Gs1Ts4Ti4Cs1Gi2CCi3Gi2CGi3TTs3Gi3As2Ai2Gs1Cs3Gs2Cs4-i2Ci2Gs1Ti3TCi5Gs2Ai3Gs2Ci2Gs3-i2Ci3CCGGi6Cs1Ci6GGi4Ts2-Cs3CGi3Ts3-s3Cs4-s4ATs4-s2TTs3Gs2Ci4TTs2Ti5As4-Cs5Ts3Ai7Ti2Gi6GCi4CCs3-Cs3Cs2Ci2CCs7-Gi3Ai2GCi3Gs5-i2Ai3Gs6--s4-s6ATCi5Cs1Ts2Ts3ATi4As3CCTCCs6Ts2Gs3-s2Ts3-GCs4Ai3Ci2Cs3-i2TTTTs5-s2As3CCs4--i4Cs3Ci6Cs4--s11-s3--s3-s3AAs3Gs3CCs4Gi4Ts1Cs5--i5Cs1Gi2Cs1Ts3As2As2--TTs11-s2-s5TTTs4Cs4Cs2Ci2As4-s2-s3ACs5---i5Ti2Ci2CTs3Ts2Ci4Ai2GGs3Ai10Gs1Ci2Ai2As2-i3ACi6Cs2A","CTTCAAGGAACAGCTTCGCGATATCGACCTTCTGGTGATCGACGACATGCAGTTCCTGCAGGGCAAGTCGATCCAGCACGAGTTCTGCCATCTTCTGAATACGCTGCTCGACAGCGCAAAACAGGTCGTGGTTGCCGCCGACCGCGCCCCTTCGGAACTGGAATCGCTCGACGTTCGCGTCCGTTCCCGCCTTCAGGGCGGTGTCGCTCTGGAAGTGGCCGCACCCGATTATGAAATGCGCCTGGAAATGCTGCGTCGCCGTCTGGCCAGCGCACAGTGCGAGGATGCAAGCCTCGATATCGGTGAAGAGATTCTCGCCCATGTCGCGCGCACGGTCACGGGTTCCGGCCGTGAACTGGAAGGCGCATTCAACCAGCTTCTGTTCCGCCAGTCTTTCGAGCCGAATATTTCCATCGACCGCGTGGACGAGTTGCTCGGCC",440));
 
     return 0;
 }
