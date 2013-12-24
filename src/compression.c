@@ -458,7 +458,7 @@ printf("<--\n");
             new_coarse_seq_id = add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
             cbp_compressed_seq_addlink(cseq, cbp_link_to_coarse_init_nodiff(
                                                  new_coarse_seq_id,
-                                                 0, end_of_chunk-start_of_section,
+                                                 0, end_of_chunk-start_of_section-1,
                                                  true));
             start_of_section = end_of_chunk - overlap;
             end_of_chunk = min(start_of_section + max_chunk_size,

@@ -47,4 +47,5 @@ cablastp-compress [flags] database-directory fasta-file [fasta-file ...]
 
 
 Current progress:  Can compress and decompress two same-direction matches, two reverse-complement matches,
-and one same-direction match and one reverse-complement match.
+one same-direction match and one reverse-complement match, and two matches that are at least one chunk
+apart.
