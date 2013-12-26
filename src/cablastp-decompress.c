@@ -31,7 +31,7 @@ static char *path_join(char *a, char *b)
 
 int
 main(int argc, char **argv)
-{
+{ 
     struct cbp_database *db;
     struct opt_config *conf;
     struct opt_args *args;
