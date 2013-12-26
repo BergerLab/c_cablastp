@@ -473,12 +473,15 @@ printf("<--\n");
     /*If there are bases left at the end of the last chunk, add a chunk for the
       remaining bases and a link to the chunk in the compressed sequence.*/
     if (/*org_seq->length*/ end_of_section - start_of_section > 0) {
+/*fprintf(stderr, "%d %d\n", start_of_section, end_of_section);*/
         new_coarse_seq_id = add_without_match(
-            coarse_db, org_seq, start_of_section, end_of_section /*org_seq->length*/);
+            coarse_db, org_seq, start_of_section,
+            end_of_section+seed_size /*org_seq->length*/);
         cbp_compressed_seq_addlink(
             cseq,
             cbp_link_to_coarse_init_nodiff(
-                new_coarse_seq_id, 0, /*org_seq->length*/ end_of_section - start_of_section, true));
+                new_coarse_seq_id, 0, /*org_seq->length*/
+                end_of_section + seed_size - start_of_section, true));
     }
 fprintf(stderr, "Compress finished\n");
     return cseq;
