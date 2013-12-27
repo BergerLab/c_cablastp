@@ -153,7 +153,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 151){break;}
+if(chunks >= 200){break;}
         found_match = false;
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
@@ -262,11 +262,11 @@ printf("-->\n");
                 }
 
                 /*If the match was extended, update the alignment*/
-                if (changed) {
+                /*if (changed) {
                     original_align_len = mlens_rev.olen + seed_size +
                                                               mlens_fwd.olen;
-                    start_original_align = current - mlens_fwd.olen;
-                    end_original_align = current + seed_size + mlens_rev.olen;
+                    start_original_align = current - mlens_rev.olen;
+                    end_original_align = current + seed_size + mlens_fwd.olen;
 
                     org_match = malloc(original_align_len*sizeof(char));
                     for (i2 = start_original_align; i2<end_original_align; i2++)
@@ -276,7 +276,7 @@ printf("-->\n");
                                              cor_match, coarse_align_len, 0, 1,
                                              org_match, original_align_len,
                                              0, 1, matches, NULL);
-                }
+                }*/
                 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
@@ -395,7 +395,7 @@ printf("<--\n");
                 }
 
                 /*If the match was extended, update the alignment*/
-                if (changed) {
+                /*if (changed) {
                     original_align_len = mlens_rev.olen + seed_size +
                                                               mlens_fwd.olen;
                     start_original_align = current - mlens_fwd.olen;
@@ -409,7 +409,7 @@ printf("<--\n");
                                              org_match, original_align_len,
                                              original_align_len-1, -1,
                                              matches, NULL);
-                }
+                }*/
 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
