@@ -153,7 +153,11 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 10){break;}
+int b;
+/*for(b = 0; b < 10; b++)
+  printf("%c", org_seq->residues[current+b]);*/
+/*printf("\n");*/
+if(chunks >= 99){break;}
         found_match = false;
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
@@ -202,7 +206,12 @@ if(chunks >= 10){break;}
                         ext_seed))
 
                 continue;
-
+/*****************************************************************************
+printf("%d %d\n", attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                           resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
+                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) );
+*****************************************************************************/
             if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                 attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -277,7 +286,7 @@ printf("-->\n");
                   match.*/
                 if (current - start_of_section > 0) {
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
-                                                    start_of_section, current-mlens_rev.olen);
+                                                    start_of_section, current-mlens_rev.olen+compress_flags.overlap);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                             new_coarse_seq_id, 0,
@@ -333,6 +342,12 @@ printf("-->\n");
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;*/
+/*****************************************************************************
+printf("%d %d\n", attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
+               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) );
+*****************************************************************************/
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -411,7 +426,7 @@ printf("<--\n");
                 if (current - start_of_section > 0) {
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section,
-                                                    current - mlens_fwd.olen);
+                                                    current - mlens_fwd.olen+compress_flags.overlap);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                                                new_coarse_seq_id, 0,
@@ -517,7 +532,6 @@ extend_match(struct cbp_align_nw_memory *mem,
         matches_past_clump[i] = true;
     }
 
-
     resind += dir1;
     current += dir2;
 
@@ -585,6 +599,7 @@ static int32_t
 add_without_match(struct cbp_coarse *coarse_db,
                   struct cbp_seq *org_seq, int32_t ostart, int32_t oend)
 {
+/*printf("____________________________________________________\n");*/
     struct cbp_coarse_seq *coarse_seq;
 
     coarse_seq = cbp_coarse_add(coarse_db, org_seq->residues, ostart, oend);
