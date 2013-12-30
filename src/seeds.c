@@ -101,7 +101,6 @@ cbp_seeds_add(struct cbp_seeds *seeds, struct cbp_coarse_seq *seq)
     for (i = 0; i < seq->seq->length - seeds->seed_size+1; i++) {
         kmer = seq->seq->residues + i;
         sl1 = cbp_seed_loc_init(seq->id, i);
-
         hash = hash_kmer(seeds, kmer);
         if (seeds->locs[hash] == NULL)
             seeds->locs[hash] = sl1;
@@ -205,17 +204,23 @@ char *unhash_kmer(struct cbp_seeds *seeds, int hash){
 }
 
 void print_seeds(struct cbp_seeds *seeds){
-    int32_t i;
-    for(i = 0; i < seeds-> locs_length; i++){
-      char *kmer = unhash_kmer(seeds, i);
-      struct cbp_seed_loc *j = seeds->locs[i];
-      printf("%s\n", kmer);
-      free(kmer);
-      kmer = NULL;
-      while(j){
-        printf("(%d %d) > ", j->coarse_seq_id, j -> residue_index);
-        j = j -> next;
-      }
-      printf("\n");
+    int32_t i, j;
+    char *kmer = malloc(seeds->seed_size * sizeof(*kmer));
+    for(i = 0; i < seeds->locs_length; i++){
+        printf("%s\n", kmer);
+        uint32_t new_kmer = (uint32_t)0;
+        for(j = 0; j < seeds->seed_size; j++){
+            new_kmer <<= 2;
+            new_kmer |= ((i >> (2*j)) & ((uint32_t)3));
+        }
+        char *kmer = unhash_kmer(seeds, i);
+        printf("%s\n", kmer);
+        free(kmer);
+        struct cbp_seed_loc *s = seeds->locs[i];
+        while(s){
+            printf("(%d %d) > ", s->coarse_seq_id, s->residue_index);
+            s = s->next;
+        }
+        printf("\n");
     }
 }

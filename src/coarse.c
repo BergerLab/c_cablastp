@@ -4,6 +4,8 @@
 
 #include "bitpack.h"
 #include "coarse.h"
+#include "DNAutils.h"
+#include "seeds.h"
 
 struct cbp_coarse *
 cbp_coarse_init(int32_t seed_size,
@@ -95,9 +97,9 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
 
     for (i = 0; i < coarse_db->seqs->size; i++) {
         seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
-        fprintf(coarse_db->file_fasta, "> %d\n%s\n", i, seq->seq->residues);
+        fprintf(coarse_db->file_fasta, "> %ld\n%s\n", i, seq->seq->residues);
 
-        fprintf(coarse_db->file_links, "> %d\n", i);
+        fprintf(coarse_db->file_links, "> %ld\n", i);
         for (link = seq->links; link != NULL; link = link->next){
             int j;
             char *id_bytes = read_int_to_bytes(link->org_seq_id, 8);
@@ -129,7 +131,6 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
     }
 }
 
-
 void
 cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
 {
@@ -147,6 +148,35 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
                 "original sequence id: %d, reference range: (%d, %d), direction: %c\n",
                 link->org_seq_id, link->coarse_start, link->coarse_end,
                 (link->dir?'0':'1'));
+    }
+}
+
+void
+cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db)
+{
+    struct cbp_coarse_seq *seq;
+    struct cbp_link_to_compressed *link;
+    int32_t i, j;
+    uint32_t i2;
+    uint32_t mask = (uint32_t)3;
+    char *kmer;
+
+    for (i = 0; i < coarse_db->seeds->locs_length; i++) {
+        struct cbp_seed_loc *loc;
+        i2 = (uint32_t)0;
+        for (j = 0; j < coarse_db->seeds->seed_size; j++) {
+            i2 <<= 2;
+            i2 |= ((i >> (2*j)) & mask);
+        }
+        kmer = unhash_kmer(coarse_db->seeds, i2);
+        fprintf(coarse_db->file_seeds, "%s\n", kmer);
+        loc = cbp_seeds_lookup(coarse_db->seeds, kmer);
+        while (loc) {
+            fprintf(coarse_db->file_seeds,"(%d, %d) > ", loc->coarse_seq_id, loc->residue_index);
+            loc = loc->next;
+        }
+        fprintf(coarse_db->file_seeds, "\n");
+        free(kmer);
     }
 }
 

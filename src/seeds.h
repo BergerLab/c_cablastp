@@ -50,4 +50,6 @@ cbp_seeds_lookup(struct cbp_seeds *seeds, char *kmer);
 
 void print_seeds(struct cbp_seeds *seeds);
 
+char *unhash_kmer(struct cbp_seeds *seeds, int hash);
+
 #endif

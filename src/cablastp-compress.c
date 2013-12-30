@@ -9,6 +9,7 @@
 #include "opt.h"
 
 #include "blosum62.h"
+#include "coarse.h"
 #include "compression.h"
 #include "database.h"
 #include "flags.h"
@@ -69,6 +70,7 @@ main(int argc, char **argv)
     cbp_compress_join_workers(workers);
     cbp_coarse_save_plain(db->coarse_db);
     cbp_coarse_save_binary(db->coarse_db);
+    cbp_coarse_save_seeds_plain(db->coarse_db);
     cbp_compressed_save_plain(db->com_db);
     cbp_compressed_save_binary(db->com_db);
 

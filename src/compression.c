@@ -142,8 +142,8 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     last_match = 0;
     current = 0;
     start_of_section = 0;
-    end_of_chunk = start_of_section + max_chunk_size - 1;
-    end_of_section = start_of_section + max_section_size - 1;
+    end_of_chunk = start_of_section + max_chunk_size;
+    end_of_section = start_of_section + max_section_size;
     chunks = 0;
 
     matches = malloc(max_section_size*sizeof(*matches));
@@ -153,7 +153,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 172){break;}
+if(chunks >= 50/*173*/){break;}
         found_match = false;
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
@@ -202,12 +202,9 @@ if(chunks >= 172){break;}
                         ext_seed))
 
                 continue;
-/*****************************************************************************
-printf("%d %d\n", attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                           resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0),
-                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) );
-*****************************************************************************/
+/*****************************************************************************/
+/*printf("(%d %d), ", seedLoc->coarse_seq_id, seedLoc->residue_index);*/
+/*****************************************************************************/
             if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                 attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -338,6 +335,9 @@ printf("-->\n");
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;*/
+/*****************************************************************************/
+/*printf("(%d %d), ", seedLoc->coarse_seq_id, seedLoc->residue_index);*/
+/*****************************************************************************/
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -463,7 +463,7 @@ printf("<--\n");
             new_coarse_seq_id = add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
             cbp_compressed_seq_addlink(cseq, cbp_link_to_coarse_init_nodiff(
                                                  new_coarse_seq_id,
-                                                 0, end_of_chunk-start_of_section-1,
+                                                 0, end_of_chunk-start_of_section,
                                                  true));
             start_of_section = end_of_chunk - overlap;
             end_of_chunk = min(start_of_section + max_chunk_size,
@@ -477,15 +477,15 @@ printf("<--\n");
     
     /*If there are bases left at the end of the last chunk, add a chunk for the
       remaining bases and a link to the chunk in the compressed sequence.*/
-    if (/*org_seq->length*/ end_of_section - start_of_section > 0) {
+    if (/*org_seq->length*/ end_of_chunk - start_of_section > 0) {
         new_coarse_seq_id = add_without_match(
             coarse_db, org_seq, start_of_section,
-            end_of_section+seed_size /*org_seq->length*/);
+            end_of_chunk /*org_seq->length*/);
         cbp_compressed_seq_addlink(
             cseq,
             cbp_link_to_coarse_init_nodiff(
                 new_coarse_seq_id, 0, /*org_seq->length*/
-                end_of_section + seed_size - start_of_section, true));
+                end_of_chunk - start_of_section, true));
     }
 fprintf(stderr, "Compress finished\n");
     return cseq;
