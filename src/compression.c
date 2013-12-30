@@ -153,7 +153,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current < org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 61/*173*/){break;}
+if(chunks >= 180/*173*/){break;}
         found_match = false;
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
@@ -172,11 +172,18 @@ if(chunks >= 61/*173*/){break;}
             end_of_section = min(start_of_section + max_section_size,
                                  org_seq->length - seed_size - ext_seed);
             current = start_of_section-1;
+printf("________________________FIRST\n");
             chunks++;
             continue;
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
+/***********************************************************/
+/*int base;
+for(base = 0; base < 10; base++)
+    printf("%c", kmer[base]);
+printf("\n");*/
+/***********************************************************/
 
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
@@ -286,6 +293,7 @@ printf("-->\n");
                             new_coarse_seq_id, 0,
                             current - mlens_rev.olen - start_of_section,
                                                                   true));
+printf("________________________BEFORE FORWARD MATCH\n");
                     chunks++;
                 }
 
@@ -313,6 +321,7 @@ printf("-->\n");
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-seed_size-ext_seed);
                 current = start_of_section-1;
+printf("________________________FORWARD MATCH\n");
                 chunks++;
             }
         }
@@ -425,6 +434,7 @@ printf("<--\n");
                                                new_coarse_seq_id, 0,
                                                current - mlens_fwd.olen - start_of_section,
                                                true));
+printf("________________________BEFORE REVERSE MATCH\n");
                     chunks++;
                 }
 
@@ -453,6 +463,7 @@ printf("<--\n");
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-seed_size-ext_seed);
                 current = start_of_section-1;
+printf("________________________REVERSE MATCH\n");
                 chunks++;
             }
         }
@@ -463,7 +474,7 @@ printf("<--\n");
       /*If we have traversed an entire chunk of bases without finding a match,
         then add the whole chunk as a sequence in the database and update
         start_of_section, end_of_chunk, and end_of_section*/
-        if(current >= end_of_chunk && !found_match){
+        if(current >= end_of_chunk - seed_size && !found_match){
             new_coarse_seq_id = add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
             cbp_compressed_seq_addlink(cseq, cbp_link_to_coarse_init_nodiff(
                                                  new_coarse_seq_id,
@@ -475,6 +486,7 @@ printf("<--\n");
             end_of_section = min(start_of_section + max_section_size,
                                  org_seq->length - seed_size - ext_seed);
             current = start_of_section - 1;
+printf("________________________END OF CHUNK\n");
             chunks++;
         }
     }
