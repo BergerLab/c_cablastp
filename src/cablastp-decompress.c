@@ -72,7 +72,8 @@ main(int argc, char **argv)
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
             /*If link -> diff[1] is a null terminator, this means this link is
               to a chunk added without any matches*/
-            int start = link->diff[1] == '\0' ? 100 : 0;
+            int start = link->diff[1] == '\0' && link->coarse_start == 0 ? 100 : 0;
+fprintf(stderr, "%d\n", start);
             /*if (!prev_match && start == 100)
                 start--;*/
             struct cbp_seq *chunk =
