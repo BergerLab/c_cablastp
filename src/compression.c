@@ -153,8 +153,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         matches_temp[i] = true;
     }
     for (current = 0; current <= org_seq->length - seed_size - ext_seed; current++) {
-/*if(current > 2000000)fprintf(stderr, "%d\n", current);*/
-if(chunks >= 500/*173*/){break;}
+if(chunks >= 500){break;}
         found_match = false;
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
@@ -170,9 +169,9 @@ if(chunks >= 500/*173*/){break;}
             if(end_of_chunk < org_seq->length - seed_size - ext_seed){
                 start_of_section += max_chunk_size - overlap;
                 end_of_chunk = min(start_of_section + max_chunk_size,
-                                   org_seq->length /*- seed_size*/ - ext_seed);
+                                   org_seq->length - ext_seed);
                 end_of_section = min(start_of_section + max_section_size,
-                                     org_seq->length /*- seed_size*/ - ext_seed);
+                                     org_seq->length - ext_seed);
                 current = start_of_section-1;
             }
 printf("________________________END OF CHUNK\n");
@@ -181,12 +180,6 @@ printf("________________________END OF CHUNK\n");
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
-/***********************************************************/
-/*int base;
-for(base = 0; base < 10; base++)
-    printf("%c", kmer[base]);
-printf("\n");*/
-/***********************************************************/
 
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
@@ -212,9 +205,6 @@ printf("\n");*/
                         ext_seed))
 
                 continue;
-/*****************************************************************************/
-/*printf("(%d %d), ", seedLoc->coarse_seq_id, seedLoc->residue_index);*/
-/*****************************************************************************/
             if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                 attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -229,7 +219,6 @@ printf("-->\n");
                     continue;
                 found_match = true;
                 changed = false;
-                fprintf(stderr, "MATCH!!!\n");
                 printf("MATCH!!!\n");
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
@@ -321,9 +310,9 @@ printf("________________________BEFORE FORWARD MATCH\n");
                     start_of_section = current + mlens_fwd.olen
                                                - compress_flags.overlap + seed_size;
                     end_of_chunk = min(start_of_section + max_chunk_size,
-                                       org_seq->length/*-seed_size*/-ext_seed);
+                                       org_seq->length-ext_seed);
                     end_of_section = min(start_of_section + max_section_size,
-                                         org_seq->length/*-seed_size*/-ext_seed);
+                                         org_seq->length-ext_seed);
                     current = start_of_section-1;
                 }
 printf("________________________FORWARD MATCH\n");
@@ -351,9 +340,6 @@ printf("________________________FORWARD MATCH\n");
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;*/
-/*****************************************************************************/
-/*printf("(%d %d), ", seedLoc->coarse_seq_id, seedLoc->residue_index);*/
-/*****************************************************************************/
             if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
@@ -370,7 +356,6 @@ printf("<--\n");
 
                 found_match = true;
                 changed = false;
-                fprintf(stderr, "MATCH\n");
                 printf("MATCH\n");
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
@@ -465,9 +450,9 @@ printf("________________________BEFORE REVERSE MATCH\n");
                     start_of_section = current + mlens_rev.olen
                                                - compress_flags.overlap + seed_size;
                     end_of_chunk = min(start_of_section + max_chunk_size,
-                                       org_seq->length/*-seed_size*/-ext_seed);
+                                       org_seq->length-ext_seed);
                     end_of_section = min(start_of_section + max_section_size,
-                                         org_seq->length/*-seed_size*/-ext_seed);
+                                         org_seq->length-ext_seed);
                     current = start_of_section-1;
                 }
 printf("________________________REVERSE MATCH\n");
@@ -487,13 +472,12 @@ printf("________________________REVERSE MATCH\n");
                                                  new_coarse_seq_id,
                                                  0, end_of_chunk-start_of_section,
                                                  true));
-fprintf(stderr, "End of section: %d, End of chunk: %d, current: %d, length: %d\n", end_of_section, end_of_chunk, current, org_seq->length);
             if(end_of_chunk < org_seq->length - seed_size - ext_seed - 1){
                 start_of_section = end_of_chunk - overlap;
                 end_of_chunk = min(start_of_section + max_chunk_size,
-                                   org_seq->length /*- seed_size*/ - ext_seed);
+                                   org_seq->length - ext_seed);
                 end_of_section = min(start_of_section + max_section_size,
-                                     org_seq->length /*- seed_size*/ - ext_seed);
+                                     org_seq->length - ext_seed);
                 current = start_of_section - 1;
             }
 printf("________________________END OF CHUNK\n");
