@@ -73,8 +73,8 @@ main(int argc, char **argv)
             /*If link -> diff[1] is a null terminator, this means this link is
               to a chunk added without any matches*/
             int start = link->diff[1] == '\0' ? 100 : 0;
-            if (!prev_match && start == 100)
-                start--;
+            /*if (!prev_match && start == 100)
+                start--;*/
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
