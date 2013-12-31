@@ -590,7 +590,11 @@ printf("%d@@@%d\n", dp_len2, dp_len1);
         mlens.olen += o_align_len;
         resind += r_align_len * dir1;
         current += o_align_len * dir2;
+        free(alignment.org);
+        free(alignment.ref);
     }
+    free(matches);
+    free(matches_past_clump);
     return mlens;
 }
 
