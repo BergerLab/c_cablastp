@@ -260,16 +260,17 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq, dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
 
-    int *clump = backtrack_to_clump(tables, best);
+    best = backtrack_to_clump(tables, best);
     int i = 0;
-    if (clump[0] <= 0) {
+    if (best[0] <= 0) {
         align.ref = "\0";
         align.org = "\0";
         align.length = -1;
+        free(best);
         return align;
     }
-    int cur_j1 = clump[0];
-    int cur_j2 = clump[1];
+    int cur_j1 = best[0];
+    int cur_j2 = best[1];
     int dir_prod = dir1*dir2;
     int **dp_score = tables.dp_score;
     int **dp_from = tables.dp_from;
@@ -343,7 +344,11 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         align.org[align.length] = '\0';
         align.ref[align.length] = '\0';
     }
-
+    free(best);
+    free(tables.dp_score);
+    free(tables.dp_from);
+    free(subs1_dp);
+    free(subs2_dp);
     free(matches_to_add);
     return align;
 }
