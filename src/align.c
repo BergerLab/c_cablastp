@@ -345,6 +345,10 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         align.ref[align.length] = '\0';
     }
     free(best);
+    for(i = 0; i <= dp_len1; i++){
+        free(tables.dp_score[i]);
+        free(tables.dp_from[i]);
+    }
     free(tables.dp_score);
     free(tables.dp_from);
     free(subs1_dp);
