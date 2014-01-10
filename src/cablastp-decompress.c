@@ -73,7 +73,7 @@ main(int argc, char **argv)
             /*If link -> diff[1] is a null terminator, this means this link is
               to a chunk added without any matches*/
             int start = link->diff[1] == '\0' && link->coarse_start == 0 ? 100 : 0;
-fprintf(stderr, "%d\n", start);
+/*fprintf(stderr, "%d\n", start);*/
             /*if (!prev_match && start == 100)
                 start--;*/
             struct cbp_seq *chunk =
@@ -88,9 +88,10 @@ fprintf(stderr, "%d\n", start);
                 printf("%s", read_edit_script(link->diff, chunk->residues+start, length-start));
             prev_match = start == 0;
             current_chunk++;
+if(current_chunk > 228)break;
         }
+        putc('\n', stdout);
     }
-    putc('\n', stdout);
 
     fasta_generator_free(fsg);
 
