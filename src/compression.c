@@ -148,7 +148,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
 
     matches = malloc(max_section_size*sizeof(*matches));
     matches_temp = malloc(max_section_size*sizeof(*matches_temp));
-    for(i = 0; i < max_section_size; i++){
+    for (i = 0; i < max_section_size; i++) {
         matches[i] = true;
         matches_temp[i] = true;
     }
@@ -174,12 +174,19 @@ if(chunks >= 500){break;}
                                      org_seq->length - ext_seed);
                 current = start_of_section-1;
             }
-printf("________________________END OF CHUNK\n");
+if(org_seq -> id > 0)printf("________________________END OF CHUNK\n");
             chunks++;
             continue;
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
+
+if(org_seq -> id > 0){
+   int base = 0;
+   for(base = 0; base < 10; base++)
+        printf("%c", *(kmer+base));
+   printf("!\n");
+}
 
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
@@ -277,7 +284,8 @@ printf("-->\n");
                 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
-                if (current - start_of_section > 0) {
+                if (current - mlens_rev.olen - start_of_section > 0) {
+if(org_seq -> id > 0)printf("____________%d____________\n", current - start_of_section);
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section, current-mlens_rev.olen+compress_flags.overlap);
                     cbp_compressed_seq_addlink(cseq,
@@ -285,7 +293,7 @@ printf("-->\n");
                             new_coarse_seq_id, 0,
                             current - mlens_rev.olen - start_of_section,
                                                                   true));
-printf("________________________BEFORE FORWARD MATCH\n");
+if(org_seq -> id > 0)printf("________________________BEFORE FORWARD MATCH\n");
                     chunks++;
                 }
 
@@ -315,7 +323,7 @@ printf("________________________BEFORE FORWARD MATCH\n");
                                          org_seq->length-ext_seed);
                     current = start_of_section-1;
                 }
-printf("________________________FORWARD MATCH\n");
+if(org_seq -> id > 0)printf("________________________FORWARD MATCH\n");
                 chunks++;
             }
         }
@@ -415,7 +423,8 @@ printf("<--\n");
 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
-                if (current - start_of_section > 0) {
+                if (current - mlens_fwd.olen - start_of_section > 0) {
+if(org_seq -> id > 0)printf("____________%d____________\n", current - start_of_section);
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section,
                                                     current - mlens_fwd.olen+compress_flags.overlap);
@@ -424,7 +433,7 @@ printf("<--\n");
                                                new_coarse_seq_id, 0,
                                                current - mlens_fwd.olen - start_of_section,
                                                true));
-printf("________________________BEFORE REVERSE MATCH\n");
+if(org_seq -> id > 0)printf("________________________BEFORE REVERSE MATCH\n");
                     chunks++;
                 }
 
@@ -455,7 +464,7 @@ printf("________________________BEFORE REVERSE MATCH\n");
                                          org_seq->length-ext_seed);
                     current = start_of_section-1;
                 }
-printf("________________________REVERSE MATCH\n");
+if(org_seq -> id > 0)printf("________________________REVERSE MATCH\n");
                 chunks++;
             }
         }
@@ -480,7 +489,7 @@ printf("________________________REVERSE MATCH\n");
                                      org_seq->length - ext_seed);
                 current = start_of_section - 1;
             }
-printf("________________________END OF CHUNK\n");
+if(org_seq -> id > 0)printf("________________________END OF CHUNK\n");
             chunks++;
         }
     }
