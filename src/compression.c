@@ -314,15 +314,21 @@ if(org_seq -> id > 0)printf("________________________BEFORE FORWARD MATCH\n");
                                        resind + seed_size + mlens_fwd.rlen, true));
 
                 /*Update the current position in the sequence*/
-                if(end_of_chunk < org_seq->length - seed_size - ext_seed){
+                if (current + mlens_fwd.olen < org_seq->length - seed_size - ext_seed - 1) {
+if(org_seq -> id > 0)printf("!!!!!\n");
+if(org_seq -> id > 0)printf("%d %d\n", current + mlens_fwd.olen, org_seq->length);
                     start_of_section = current + mlens_fwd.olen
                                                - compress_flags.overlap + seed_size;
-                    end_of_chunk = min(start_of_section + max_chunk_size,
-                                       org_seq->length-ext_seed);
-                    end_of_section = min(start_of_section + max_section_size,
-                                         org_seq->length-ext_seed);
-                    current = start_of_section-1;
+if(org_seq -> id > 0)printf("%d\n", start_of_section);
+                } else {
+                    start_of_section = current + mlens_fwd.olen + seed_size;
                 }
+                current = start_of_section-1;
+                end_of_chunk = min(start_of_section + max_chunk_size,
+                                   org_seq->length-ext_seed);
+                end_of_section = min(start_of_section + max_section_size,
+                                     org_seq->length-ext_seed);
+
 if(org_seq -> id > 0)printf("________________________FORWARD MATCH\n");
                 chunks++;
             }
@@ -455,15 +461,18 @@ if(org_seq -> id > 0)printf("________________________BEFORE REVERSE MATCH\n");
                                        resind + seed_size + mlens_fwd.rlen, false));
 
                 /*Update the current position in the sequence*/
-                if(end_of_chunk < org_seq->length - seed_size - ext_seed){
+                if(current + mlens_rev.olen < org_seq->length - seed_size - ext_seed - 1){
                     start_of_section = current + mlens_rev.olen
                                                - compress_flags.overlap + seed_size;
-                    end_of_chunk = min(start_of_section + max_chunk_size,
-                                       org_seq->length-ext_seed);
-                    end_of_section = min(start_of_section + max_section_size,
-                                         org_seq->length-ext_seed);
-                    current = start_of_section-1;
+                } else {
+                    start_of_section = current + mlens_rev.olen + seed_size;
                 }
+                current = start_of_section-1;
+                end_of_chunk = min(start_of_section + max_chunk_size,
+                                   org_seq->length-ext_seed);
+                end_of_section = min(start_of_section + max_section_size,
+                                     org_seq->length-ext_seed);
+
 if(org_seq -> id > 0)printf("________________________REVERSE MATCH\n");
                 chunks++;
             }

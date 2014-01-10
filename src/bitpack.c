@@ -24,7 +24,7 @@ uint64_t shift_right(uint64_t x, int bits){
     return x & mask;
 }
 
-/*Takes in an integer in int64_t format and the number of bytes in that int
+/*Takes in an integer in uint64_t format and the number of bytes in that int
   and returns its representation as an array of characters.*/
 char *read_int_to_bytes(uint64_t number, int length){
     int i;
