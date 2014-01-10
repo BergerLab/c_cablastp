@@ -172,7 +172,7 @@ cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db)
         fprintf(coarse_db->file_seeds, "%s\n", kmer);
         loc = cbp_seeds_lookup(coarse_db->seeds, kmer);
         while (loc) {
-            if(loc->coarse_seq_id<221)
+            if(loc->coarse_seq_id<500)
                 fprintf(coarse_db->file_seeds,"(%d, %d) > ", loc->coarse_seq_id, loc->residue_index);
             loc = loc->next;
         }
