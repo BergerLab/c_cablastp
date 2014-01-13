@@ -31,6 +31,11 @@ char to_half_byte(char c){
         case '-': return (char)12;
         case 'i': return (char)13;
         case 's': return (char)14;
+        /*For direction bytes with a 1 as the first bit to indicate that
+          the script is from a match, move the 1 to the leftmost bit of the
+          half-byte*/
+        case '0' | (char)0x80: return (char)8;
+        case '9' | (char)0x80: return (char)9;
         /*'N' is represented as the half byte 1111*/
         default:  return (char)15;
     }
@@ -94,9 +99,17 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
             left >>= 4;
             left &= (char)15;
             edit_script[i] = half_byte_to_char(left);
+            /*Handle the direction byte*/
+            if (i == 0) {
+                left &= (char)1;
+                edit_script[i] = half_byte_to_char(left);
+                if ((half_bytes[0] & (char)0x80) > 0)
+                    edit_script[i] |= 0x80;
+            }
         }
         else /* Copy the right half-byte of the current byte */
-            edit_script[i] = half_byte_to_char(half_bytes[i/2] & (char)15);}
+            edit_script[i] = half_byte_to_char(half_bytes[i/2] & (char)15);
+    }
     edit_script[length] = '\0';
     return edit_script;
 }
@@ -215,7 +228,6 @@ char *read_edit_script(char *edit_script, char *orig, int length){
         str[current++] = orig[orig_pos++];
     str = realloc(str, current+1*sizeof(char));
     str[current] = '\0';
-fprintf(stderr, "%d\n", edit_script[0] /*& ((char)0x7f)*/);
     if ((edit_script[0] & ((char)0x7f)) == '1')
         str = string_revcomp(s, -1);
     return str;
