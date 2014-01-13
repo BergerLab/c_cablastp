@@ -241,7 +241,7 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
         putc(end_right, com_db->file_compressed);
         putc(script_left, com_db->file_compressed);
         putc(script_right, com_db->file_compressed);
-
+fprintf(stderr, "%c!!!!\n", script[0]&0x7f);
         /*Output all of the characters of the edit script as half-bytes*/
         for(i = 0; i < script_length/2+odd; i++)
             putc(script[i], com_db->file_compressed);

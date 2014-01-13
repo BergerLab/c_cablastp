@@ -15,7 +15,7 @@ char *to_octal_str(int i) {
 
 /* Converts a character in an edit script to a half-byte */
 char to_half_byte(char c){
-    switch(c){
+    switch (c) {
         case '0': return (char)0;
         case '1': return (char)1;
         case '2': return (char)2;
@@ -38,9 +38,9 @@ char to_half_byte(char c){
 
 /* Converts a half-byte to an edit script character */
 char half_byte_to_char(char h){
-    if(h < 8) /*h is an octal digit*/
+    if (h < 8) /*h is an octal digit*/
         return '0' + h;
-    switch(h){
+    switch (h) {
         case (char)8:  return 'A';
         case (char)9:  return 'C';
         case (char)10: return 'G';
@@ -65,7 +65,7 @@ char *edit_script_to_half_bytes(char *edit_script){
     half_bytes = malloc(length*sizeof(*half_bytes));
  
     while (edit_script[i] != '\0') {
-        if(i%2 == 0)
+        if (i%2 == 0)
             half_bytes[i/2] = (char)0;
         else
             half_bytes[i/2] <<= 4;
@@ -88,7 +88,7 @@ char *edit_script_to_half_bytes(char *edit_script){
 char *half_bytes_to_ASCII(char *half_bytes, int length){
     int i = 0;
     char *edit_script = malloc((length+1)*sizeof(char));
-    for (i = 0; i < length; i++){
+    for (i = 0; i < length; i++) {
         if (i % 2 == 0) { /* Copy the left half-byte of the current byte */
             char left = half_bytes[i/2] & (((char)15) << 4);
             left >>= 4;
@@ -101,12 +101,15 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
     return edit_script;
 }
 
-/* Takes in as input two strings, a character representing whether or not they
- * are in the same direction, and the length of the strings and returns an edit
+/* Takes in as input two strings, a bool representing whether or not they are
+ * in the same direction, and the length of the strings and returns an edit
  * script that can convert the reference string to the original string.
  */
 char *make_edit_script(char *str, char *ref, bool dir, int length){
-    char direction = dir ? '0' : '1';
+    /*direction has its first bit set to 1 to indicate that the edit script
+      was made from a match*/
+    char direction = (dir ? '0' : '1');
+    direction |= ((char)0x80);
     bool insert_open = false, subdel_open = false;
     int last_edit = 0;
     char *edit_script = malloc(3*length*sizeof(char));
@@ -130,7 +133,7 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
                         edit_script[current++] = octal[j];
 	            last_edit = i;
                 }
-	        edit_script[current++] = str[i];
+                edit_script[current++] = str[i];
             }
            /* substitution or deletion in str (represented in script by '-') relative
               to ref */
@@ -144,13 +147,12 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
                         edit_script[current++] = octal[j];
                     last_edit = i;
                 }
-	        edit_script[current++] = str[i];
+                edit_script[current++] = str[i];
             }
         }
     }
     edit_script = realloc(edit_script, (current+1)*sizeof(char));
     edit_script[current] = '\0';
-
     return edit_script;
 }
 
@@ -191,17 +193,17 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     char *s = str;
     /*char *original = orig;*//*(edit_script[0] == '0' ? orig : string_revcomp(orig, -1));*/
 
-    while(next_edit(edit_script, &script_pos, &edit)){
+    while (next_edit(edit_script, &script_pos, &edit)) {
         /* chunk after previous edit */
-        for(i = 0; i < edit.last_dist - last_edit_str_len; i++)
+        for (i = 0; i < edit.last_dist - last_edit_str_len; i++)
             str[current++] = orig[orig_pos+i];
 
         /* update position in original string */
         orig_pos += edit.last_dist - last_edit_str_len;
 
         /* append replacement string in edit script; get rid of dashes */
-        for(i = 0; i < edit.str_length; i++)
-            if(edit.str[i] != '-')
+        for (i = 0; i < edit.str_length; i++)
+            if (edit.str[i] != '-')
 	        str[current++] = edit.str[i];
 
         /* skip subdel along original string */
@@ -209,11 +211,12 @@ char *read_edit_script(char *edit_script, char *orig, int length){
 
         last_edit_str_len = edit.str_length;
     }
-    while(orig_pos < length)
+    while (orig_pos < length)
         str[current++] = orig[orig_pos++];
     str = realloc(str, current+1*sizeof(char));
     str[current] = '\0';
-    if(edit_script[0] == '1')
+fprintf(stderr, "%d\n", edit_script[0] /*& ((char)0x7f)*/);
+    if ((edit_script[0] & ((char)0x7f)) == '1')
         str = string_revcomp(s, -1);
     return str;
 }
@@ -223,13 +226,13 @@ char *no_dashes(char *sequence){
     int bases = 0;
     int i, j;
     j = 0;
-    for(length = 0; sequence[length] != '\0'; length++)
-        if(sequence[length] != '-')
+    for (length = 0; sequence[length] != '\0'; length++)
+        if (sequence[length] != '-')
             bases++;
     char *n = malloc((bases+1)*sizeof(char));
     n[bases] = '\0';
-    for(i = 0; i < length; i++)
-        if(sequence[i] != '-')
+    for (i = 0; i < length; i++)
+        if (sequence[i] != '-')
             n[j++] = sequence[i];
     return n;
 }
