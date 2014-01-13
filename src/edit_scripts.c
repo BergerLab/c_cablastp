@@ -111,7 +111,6 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
             edit_script[i] = half_byte_to_char(half_bytes[i/2] & (char)15);
     }
     edit_script[length] = '\0';
-fprintf(stderr, "%d\n", edit_script[0]&(char)0xff);
     return edit_script;
 }
 

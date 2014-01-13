@@ -72,8 +72,9 @@ main(int argc, char **argv)
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
             /*If link -> diff[1] is a null terminator, this means this link is
               to a chunk added without any matches*/
-            int start = ((link->diff[0] & (char)0x80) == (char)0) || prev_match ? 100 : 0;
-fprintf(stderr, "%d %d '%s' %d %d\n", start, link->diff[0], link->diff, link->coarse_start, link->coarse_end);
+            int start = (((link->diff[0] & (char)0x80) == (char)0) || prev_match) && current_chunk > 0 ? 100 : 0;
+if(current_chunk==0)start=0;
+if(i<=1)fprintf(stderr, "%d %d '%s' %d %d\n", start, link->diff[0], link->diff, link->coarse_start, link->coarse_end);
             /*if (!prev_match && start == 100)
                 start--;*/
             struct cbp_seq *chunk =
@@ -82,12 +83,19 @@ fprintf(stderr, "%d %d '%s' %d %d\n", start, link->diff[0], link->diff, link->co
                                    link->coarse_start, link->coarse_end);
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
-            if (start == 0 || current_chunk == 0)
+
+char *decompressed = read_edit_script(link->diff, chunk->residues, length);
+decompressed += start;
+printf("%s", decompressed);
+decompressed -= start;
+free(decompressed);
+/*            if (start == 0 || current_chunk == 0)
                 printf("%s", read_edit_script(link->diff, chunk->residues, length));
             else
-                printf("%s", read_edit_script(link->diff, chunk->residues+start, length-start));
+                printf("%s", read_edit_script(link->diff, chunk->residues+start, length-start));*/
             prev_match = start == 0;
             current_chunk++;
+if(i==1&&current_chunk==5)break;
         }
         putc('\n', stdout);
     }
