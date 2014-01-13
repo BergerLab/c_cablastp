@@ -66,7 +66,6 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
     struct cbp_link_to_coarse *link;
 
     int16_t mask = (((int16_t)1)<<8)-1;
-
     for (i = 0; i < com_db->seqs->size; i++) {
         int j;
         char *id_bytes;

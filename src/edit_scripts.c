@@ -99,7 +99,9 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
             left >>= 4;
             left &= (char)15;
             edit_script[i] = half_byte_to_char(left);
-            /*Handle the direction byte*/
+            /*Handle the direction byte so that the match bit of the
+              half-byte is added to the direction byte separately from the
+              direction bit*/
             if (i == 0) {
                 left &= (char)1;
                 edit_script[i] = half_byte_to_char(left);

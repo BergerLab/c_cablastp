@@ -66,17 +66,30 @@ main(int argc, char **argv)
     while (NULL != (seq = fasta_generator_next(fsg)))
         coarse_sequences[num_coarse_sequences++] = seq;
     for (i = 0; compressed[i] != NULL; i++) {
-        printf("%s", compressed[i]->name);
         int current_chunk = 0;
         bool prev_match = false;
         int remaining_overlap = 0;
+        printf("%s", compressed[i]->name);
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
             /*If link -> diff[1] is a null terminator, this means this link is
               to a chunk added without any matches*/
             bool is_match = (link->diff[0] & (char)0x80) != (char)0;
-            int start = (!is_match || prev_match || remaining_overlap < 100) && (current_chunk > 0) ? remaining_overlap : 0;
-            if(link->coarse_end-link->coarse_start<remaining_overlap)start=link->coarse_end-link->coarse_start;
-if(i<=1)fprintf(stderr, "%d %d '%s' %d %d\n", start, link->diff[0], link->diff, link->coarse_start, link->coarse_end);
+
+            /*start and remaining_overlap are used to keep track of how much
+              of the sequence currently being decompressed overlaps with the
+              previous sequence that was decompressed.  If the current chunk
+              is not the first chunk in the sequence and the last chunk added
+              was not a pre-match chunk, then we start copying the decompressed
+              sequence from either the index "remaining_overlap", or if the
+              subsequence linked to is shorter than remaining_overlap, we start
+              from the index "link_length", which is the length of the
+              subsequence being linked to.*/
+            int start = (!is_match || prev_match || remaining_overlap < 100) &&
+                        (current_chunk > 0) ? remaining_overlap : 0;
+            int link_length = link->coarse_end - link->coarse_start;
+            if (link_length < remaining_overlap)
+                start = link_length;
+
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
@@ -84,7 +97,11 @@ if(i<=1)fprintf(stderr, "%d %d '%s' %d %d\n", start, link->diff[0], link->diff, 
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
 
-            char *decompressed = read_edit_script(link->diff, chunk->residues, length);
+            char *decompressed = read_edit_script(link->diff, chunk->residues,
+                                                                      length);
+
+            /*Print all characters of the decompressed sequence past the
+              index "start"*/
             decompressed += start;
             printf("%s", decompressed);
             decompressed -= start;
@@ -92,13 +109,10 @@ if(i<=1)fprintf(stderr, "%d %d '%s' %d %d\n", start, link->diff[0], link->diff, 
 
             prev_match = (link->diff[0] & (char)0x80) != (char)0;
             current_chunk++;
-fprintf(stderr, "%d->", remaining_overlap);
+
             remaining_overlap -= start;
-fprintf(stderr, "%d\n", remaining_overlap);
             if (remaining_overlap == 0)
                 remaining_overlap = 100;
-            /*else remaining_overlap -= start;*/
-/*if(i==1&&current_chunk==11)break;*/
         }
         putc('\n', stdout);
     }

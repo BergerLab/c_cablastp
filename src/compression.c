@@ -107,6 +107,7 @@ struct cbp_compressed_seq *
 cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
              struct cbp_align_nw_memory *mem)
 {
+fprintf(stderr, "Starting compression      %d\n", org_seq->id);
     struct extend_match mlens_fwd, mlens_rev;
     struct cbp_coarse_seq *coarse_seq;
     struct cbp_compressed_seq *cseq;
@@ -501,6 +502,7 @@ if(org_seq -> id > 0)printf("________________________REVERSE MATCH\n");
 if(org_seq -> id > 0)printf("________________________END OF CHUNK\n");
             chunks++;
         }
+if(org_seq->id==2&&chunks==1)break;
     }
     
     /*If there are bases left at the end of the last chunk, add a chunk for the
@@ -515,7 +517,7 @@ if(org_seq -> id > 0)printf("________________________END OF CHUNK\n");
                 new_coarse_seq_id, 0, /*org_seq->length*//*
                 end_of_chunk - start_of_section, true));
     }*/
-fprintf(stderr, "Compress finished\n");
+fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     return cseq;
 }
 
