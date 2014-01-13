@@ -93,9 +93,9 @@ free(decompressed);
                 printf("%s", read_edit_script(link->diff, chunk->residues, length));
             else
                 printf("%s", read_edit_script(link->diff, chunk->residues+start, length-start));*/
-            prev_match = start == 0;
+            prev_match = (link->diff[0] & (char)0x80) != (char)0;
             current_chunk++;
-if(i==1&&current_chunk==5)break;
+if(i==1&&current_chunk==10)break;
         }
         putc('\n', stdout);
     }
