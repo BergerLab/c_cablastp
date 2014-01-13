@@ -103,14 +103,15 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
             if (i == 0) {
                 left &= (char)1;
                 edit_script[i] = half_byte_to_char(left);
-                if ((half_bytes[0] & (char)0x80) > 0)
-                    edit_script[i] |= 0x80;
+                if ((half_bytes[0] & (char)0x80) != 0)
+                    edit_script[i] |= (char)0x80;
             }
         }
         else /* Copy the right half-byte of the current byte */
             edit_script[i] = half_byte_to_char(half_bytes[i/2] & (char)15);
     }
     edit_script[length] = '\0';
+fprintf(stderr, "%d\n", edit_script[0]&(char)0xff);
     return edit_script;
 }
 
