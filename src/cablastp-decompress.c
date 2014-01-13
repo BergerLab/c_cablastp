@@ -69,14 +69,14 @@ main(int argc, char **argv)
         printf("%s", compressed[i]->name);
         int current_chunk = 0;
         bool prev_match = false;
+        int remaining_overlap = 0;
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
             /*If link -> diff[1] is a null terminator, this means this link is
               to a chunk added without any matches*/
-            int start = (((link->diff[0] & (char)0x80) == (char)0) || prev_match) && current_chunk > 0 ? 100 : 0;
-if(current_chunk==0)start=0;
+            bool is_match = (link->diff[0] & (char)0x80) != (char)0;
+            int start = (!is_match || prev_match || remaining_overlap < 100) && (current_chunk > 0) ? remaining_overlap : 0;
+            if(link->coarse_end-link->coarse_start<remaining_overlap)start=link->coarse_end-link->coarse_start;
 if(i<=1)fprintf(stderr, "%d %d '%s' %d %d\n", start, link->diff[0], link->diff, link->coarse_start, link->coarse_end);
-            /*if (!prev_match && start == 100)
-                start--;*/
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
@@ -84,18 +84,21 @@ if(i<=1)fprintf(stderr, "%d %d '%s' %d %d\n", start, link->diff[0], link->diff, 
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
 
-char *decompressed = read_edit_script(link->diff, chunk->residues, length);
-decompressed += start;
-printf("%s", decompressed);
-decompressed -= start;
-free(decompressed);
-/*            if (start == 0 || current_chunk == 0)
-                printf("%s", read_edit_script(link->diff, chunk->residues, length));
-            else
-                printf("%s", read_edit_script(link->diff, chunk->residues+start, length-start));*/
+            char *decompressed = read_edit_script(link->diff, chunk->residues, length);
+            decompressed += start;
+            printf("%s", decompressed);
+            decompressed -= start;
+            free(decompressed);
+
             prev_match = (link->diff[0] & (char)0x80) != (char)0;
             current_chunk++;
-if(i==1&&current_chunk==10)break;
+fprintf(stderr, "%d->", remaining_overlap);
+            remaining_overlap -= start;
+fprintf(stderr, "%d\n", remaining_overlap);
+            if (remaining_overlap == 0)
+                remaining_overlap = 100;
+            /*else remaining_overlap -= start;*/
+/*if(i==1&&current_chunk==11)break;*/
         }
         putc('\n', stdout);
     }
