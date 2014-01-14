@@ -103,6 +103,28 @@ cbp_compress_send_job(struct cbp_compress_workers *workers,
     ds_queue_put(workers->jobs, (void*) org_seq);
 }
 
+static void *
+cbp_compress_worker(void *data)
+{
+    struct worker_args *args;
+    struct cbp_align_nw_memory *mem;
+    struct cbp_seq *s;
+    struct cbp_compressed_seq *cseq;
+
+    args = (struct worker_args *) data;
+    mem = cbp_align_nw_memory_init();
+    while (NULL != (s = (struct cbp_seq *) ds_queue_get(args->jobs))) {
+        cseq = cbp_compress(args->db->coarse_db, s, mem);
+        cbp_compressed_write_binary(args->db->com_db, cseq);
+        cbp_seq_free(s);
+        cbp_compressed_seq_free(cseq);
+    }
+    cbp_align_nw_memory_free(mem);
+
+    return NULL;
+}
+
+
 struct cbp_compressed_seq *
 cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
              struct cbp_align_nw_memory *mem)
@@ -175,14 +197,14 @@ if(chunks >= 500){break;}
                                      org_seq->length - ext_seed);
                 current = start_of_section-1;
             }
-if(org_seq -> id > 0)printf("________________________END OF CHUNK\n");
+if(org_seq -> id > 1)printf("________________________END OF CHUNK\n");
             chunks++;
             continue;
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
 
-if(org_seq -> id > 0){
+if(org_seq -> id > 1){
    int base = 0;
    for(base = 0; base < 10; base++)
         printf("%c", *(kmer+base));
@@ -286,7 +308,7 @@ printf("-->\n");
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
                 if (current - mlens_rev.olen - start_of_section > 0) {
-if(org_seq -> id > 0)printf("____________%d____________\n", current - start_of_section);
+if(org_seq -> id > 1)printf("____________%d____________\n", current - start_of_section);
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section, current-mlens_rev.olen+compress_flags.overlap);
                     cbp_compressed_seq_addlink(cseq,
@@ -294,7 +316,7 @@ if(org_seq -> id > 0)printf("____________%d____________\n", current - start_of_s
                             new_coarse_seq_id, 0,
                             current - mlens_rev.olen - start_of_section,
                                                                   true));
-if(org_seq -> id > 0)printf("________________________BEFORE FORWARD MATCH\n");
+if(org_seq -> id > 1)printf("________________________BEFORE FORWARD MATCH\n");
                     chunks++;
                 }
 
@@ -316,11 +338,11 @@ if(org_seq -> id > 0)printf("________________________BEFORE FORWARD MATCH\n");
 
                 /*Update the current position in the sequence*/
                 if (current + mlens_fwd.olen < org_seq->length - seed_size - ext_seed - 1) {
-if(org_seq -> id > 0)printf("!!!!!\n");
-if(org_seq -> id > 0)printf("%d %d\n", current + mlens_fwd.olen, org_seq->length);
+if(org_seq -> id > 1)printf("!!!!!\n");
+if(org_seq -> id > 1)printf("%d %d\n", current + mlens_fwd.olen, org_seq->length);
                     start_of_section = current + mlens_fwd.olen
                                                - compress_flags.overlap + seed_size;
-if(org_seq -> id > 0)printf("%d\n", start_of_section);
+if(org_seq -> id > 1)printf("%d\n", start_of_section);
                 } else {
                     start_of_section = current + mlens_fwd.olen + seed_size;
                 }
@@ -330,7 +352,7 @@ if(org_seq -> id > 0)printf("%d\n", start_of_section);
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-ext_seed);
 
-if(org_seq -> id > 0)printf("________________________FORWARD MATCH\n");
+if(org_seq -> id > 1)printf("________________________FORWARD MATCH\n");
                 chunks++;
             }
         }
@@ -431,7 +453,7 @@ printf("<--\n");
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
                 if (current - mlens_fwd.olen - start_of_section > 0) {
-if(org_seq -> id > 0)printf("____________%d____________\n", current - start_of_section);
+if(org_seq -> id > 1)printf("____________%d____________\n", current - start_of_section);
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section,
                                                     current - mlens_fwd.olen+compress_flags.overlap);
@@ -440,7 +462,7 @@ if(org_seq -> id > 0)printf("____________%d____________\n", current - start_of_s
                                                new_coarse_seq_id, 0,
                                                current - mlens_fwd.olen - start_of_section,
                                                true));
-if(org_seq -> id > 0)printf("________________________BEFORE REVERSE MATCH\n");
+if(org_seq -> id > 1)printf("________________________BEFORE REVERSE MATCH\n");
                     chunks++;
                 }
 
@@ -474,7 +496,7 @@ if(org_seq -> id > 0)printf("________________________BEFORE REVERSE MATCH\n");
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-ext_seed);
 
-if(org_seq -> id > 0)printf("________________________REVERSE MATCH\n");
+if(org_seq -> id > 1)printf("________________________REVERSE MATCH\n");
                 chunks++;
             }
         }
@@ -499,10 +521,10 @@ if(org_seq -> id > 0)printf("________________________REVERSE MATCH\n");
                                      org_seq->length - ext_seed);
                 current = start_of_section - 1;
             }
-if(org_seq -> id > 0)printf("________________________END OF CHUNK\n");
+if(org_seq -> id > 1)printf("________________________END OF CHUNK\n");
             chunks++;
         }
-if(org_seq->id==2&&chunks==1)break;
+if(org_seq->id==2&&chunks>=10)break;
     }
     
     /*If there are bases left at the end of the last chunk, add a chunk for the
@@ -622,6 +644,7 @@ static int32_t
 add_without_match(struct cbp_coarse *coarse_db,
                   struct cbp_seq *org_seq, int32_t ostart, int32_t oend)
 {
+fprintf(stderr, "add_without_match called for sequence #%d\n", org_seq->id);
     struct cbp_coarse_seq *coarse_seq;
 
     coarse_seq = cbp_coarse_add(coarse_db, org_seq->residues, ostart, oend);
@@ -629,27 +652,6 @@ add_without_match(struct cbp_coarse *coarse_db,
         coarse_seq,
         cbp_link_to_compressed_init(org_seq->id, 0, oend - ostart, true));
     return coarse_seq->id;
-}
-
-static void *
-cbp_compress_worker(void *data)
-{
-    struct worker_args *args;
-    struct cbp_align_nw_memory *mem;
-    struct cbp_seq *s;
-    struct cbp_compressed_seq *cseq;
-
-    args = (struct worker_args *) data;
-    mem = cbp_align_nw_memory_init();
-    while (NULL != (s = (struct cbp_seq *) ds_queue_get(args->jobs))) {
-        cseq = cbp_compress(args->db->coarse_db, s, mem);
-        cbp_compressed_write_binary(args->db->com_db, cseq);
-        cbp_seq_free(s);
-        cbp_compressed_seq_free(cseq);
-    }
-    cbp_align_nw_memory_free(mem);
-
-    return NULL;
 }
 
 static int32_t

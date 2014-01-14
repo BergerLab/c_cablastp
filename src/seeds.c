@@ -109,7 +109,7 @@ cbp_seeds_add(struct cbp_seeds *seeds, struct cbp_coarse_seq *seq)
             sl2->next = sl1;
         }
     }
-
+fprintf(stderr, "Adding seeds from sequence #%d\n", seq->id);
     pthread_rwlock_unlock(&seeds->lock);
 }
 
