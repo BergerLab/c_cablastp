@@ -38,17 +38,19 @@ struct cbp_link_to_coarse *read_link(FILE *f){
     unsigned int c = 0;
     struct cbp_link_to_coarse *link = malloc(sizeof(*link));
     uint64_t coarse_seq_id = (uint64_t)0;
+    uint16_t original_start = (uint16_t)0;
+    uint16_t original_end = (uint16_t)0;
     uint16_t coarse_start = (uint16_t)0;
     uint16_t coarse_end = (uint16_t)0;
     uint16_t script_length = (uint16_t)0;
     int chars_to_read;
     char *half_bytes;
     char *diff;
-    unsigned char indices[6];
+    unsigned char indices[10];
 
     for (i = 0; i < 8; i++){
         c = getc(f);
-        if (feof(f)){
+        if (feof(f)) {
             free(link);
             return NULL;
         }
@@ -56,23 +58,30 @@ struct cbp_link_to_coarse *read_link(FILE *f){
         coarse_seq_id |= (uint64_t)c;
     }
 
-    for (i = 0; i < 6; i++){
+    for (i = 0; i < 10; i++){
         c = getc(f);
-        if (feof(f)){
+        if (feof(f)) {
             free(link);
             return NULL;
         }
         indices[i] = (char)c;
     }
-    coarse_start |= (uint16_t)indices[0];
+    original_start |= (uint16_t)indices[0];
+    original_start <<= 8;
+    original_start |= (uint16_t)indices[1];
+    original_end |= (uint16_t)indices[2];
+    original_end <<= 8;
+    original_end |= (uint16_t)indices[3];
+    coarse_start |= (uint16_t)indices[4];
     coarse_start <<= 8;
-    coarse_start |= (uint16_t)indices[1];
-    coarse_end |= (uint16_t)indices[2];
+    coarse_start |= (uint16_t)indices[5];
+    coarse_end |= (uint16_t)indices[6];
     coarse_end <<= 8;
-    coarse_end |= (uint16_t)indices[3];
-    script_length |= (uint16_t)indices[4];
+    coarse_end |= (uint16_t)indices[7];
+    script_length |= (uint16_t)indices[8];
     script_length <<= 8;
-    script_length |= (uint16_t)indices[5];
+    script_length |= (uint16_t)indices[9];
+
     chars_to_read = script_length / 2;
     if(script_length % 2 == 1)
         chars_to_read++;

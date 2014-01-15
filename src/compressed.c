@@ -114,6 +114,7 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
               the edit script as a sequence of half-bytes*/
             while(edit_script[script_length] != '\0')
                 script_length++;
+
             script_left  = (script_length >> 8) & mask;
             script_right = script_length & mask;
             script = edit_script_to_half_bytes(edit_script);
@@ -163,8 +164,8 @@ cbp_compressed_save_plain(struct cbp_compressed *com_db)
         fprintf(com_db->file_compressed, "> %ld; %s\n", seq->id, seq->name);
         for (link = seq->links; link != NULL; link = link->next)
             fprintf(com_db->file_compressed,
-                "reference sequence id: %ld, reference range: (%d, %d)\n%s\n",
-                link->coarse_seq_id, link->coarse_start, link->coarse_end,
+                "reference sequence id: %ld, reference range: (%d, %d), original sequence range: (%d %d)\n%s\n",
+                link->coarse_seq_id, link->coarse_start, link->coarse_end, link->original_start, link->original_end,
                 link->diff);
     }
 }

@@ -110,12 +110,12 @@ if(/*i<=2*/true)fprintf(stderr, "%d, #%d, %d '%s' %d %d\n", start, link->coarse_
 
             prev_match = (link->diff[0] & (char)0x80) != (char)0;
             current_chunk++;
-
+if(i==1&&current_chunk==1)break;
             remaining_overlap -= start;
             if (remaining_overlap == 0)
                 remaining_overlap = 100;
         }
-        putc('\n', stdout);
+        putc('\n', stdout);break;
     }
 
     fasta_generator_free(fsg);
