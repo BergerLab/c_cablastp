@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include <stdio.h>
 #include "bitpack.h"
 
 /*Takes in as input a number of bits and returns a 64-bit mask with that
@@ -33,4 +34,16 @@ char *read_int_to_bytes(uint64_t number, int length){
     for (i = length-1; i >= 0; i--)
         bytes[length-i-1] = (char)(shift_right(number, 8*i) & mask);
     return bytes;
+}
+
+/*Takes in an integer in unint64_t format, the number of bytes in that int,
+  and a file pointer and outputs the int to the file.*/
+void output_int_to_file(uint64_t number, int length, FILE *f){
+    int i;
+    uint64_t mask = make_mask(8);
+    char *bytes = malloc(length * sizeof(*bytes));
+    for (i = length-1; i >= 0; i--)
+        bytes[length-i-1] = (char)(shift_right(number, 8*i) & mask); 
+    for (i = length-1; i >= 0; i--)
+        putc(bytes[i], f);
 }
