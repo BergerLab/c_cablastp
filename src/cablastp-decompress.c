@@ -86,6 +86,7 @@ main(int argc, char **argv)
               subsequence being linked to.*/
             int start = (!is_match || prev_match || remaining_overlap < 100) &&
                         (current_chunk > 0) ? remaining_overlap : 0;
+if(/*i<=2*/true)fprintf(stderr, "%d, #%d, %d '%s' %d %d\n", start, link->coarse_seq_id, link->diff[0], link->diff, link->coarse_start, link->coarse_end);
             int link_length = link->coarse_end - link->coarse_start;
             if (link_length < remaining_overlap)
                 start = link_length;

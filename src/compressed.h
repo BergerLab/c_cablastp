@@ -15,6 +15,8 @@
 struct cbp_link_to_coarse {
     char *diff;
     int64_t coarse_seq_id;
+    int16_t original_start;
+    int16_t original_end;
     int16_t coarse_start;
     int16_t coarse_end;
     struct cbp_link_to_coarse *next;
@@ -22,12 +24,15 @@ struct cbp_link_to_coarse {
 
 struct cbp_link_to_coarse *
 cbp_link_to_coarse_init(int32_t coarse_seq_id,
+                        int16_t original_start, int16_t original_end,
                         int16_t coarse_start, int16_t coarse_end,
                         struct cbp_alignment alignment, bool dir);
 
 struct cbp_link_to_coarse *
-cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id, int16_t coarse_start,
-                               int16_t coarse_end, bool dir);
+cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id,
+                               int16_t original_start, int16_t original_end,
+                               int16_t coarse_start, int16_t coarse_end,
+                               bool dir);
 
 void
 cbp_link_to_coarse_free(struct cbp_link_to_coarse *link);

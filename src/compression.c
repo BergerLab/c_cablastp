@@ -187,7 +187,7 @@ if(chunks >= 500){break;}
                                                   max_chunk_size);
             cbp_compressed_seq_addlink(cseq, cbp_link_to_coarse_init_nodiff(
                                                  new_coarse_seq_id, 0,
-                                                 end_of_chunk, true));
+                                                 end_of_chunk, 0, end_of_chunk, true));
 
             if(end_of_chunk < org_seq->length - seed_size - ext_seed){
                 start_of_section += max_chunk_size - overlap;
@@ -314,7 +314,8 @@ if(org_seq -> id > 1)printf("____________%d____________\n", current - start_of_s
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                             new_coarse_seq_id, 0,
-                            current - mlens_rev.olen - start_of_section,
+                            current - mlens_rev.olen - start_of_section, 0,
+                            current - mlens_rev.olen - start_of_section, 
                                                                   true));
 if(org_seq -> id > 1)printf("________________________BEFORE FORWARD MATCH\n");
                     chunks++;
@@ -324,6 +325,8 @@ if(org_seq -> id > 1)printf("________________________BEFORE FORWARD MATCH\n");
                   sequence.*/
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
+                                            current - mlens_rev.olen,
+                                            current + seed_size + mlens_fwd.olen,
                                             resind - mlens_rev.rlen,
                                             resind + seed_size + mlens_fwd.rlen,
                                             alignment, true));
@@ -338,11 +341,11 @@ if(org_seq -> id > 1)printf("________________________BEFORE FORWARD MATCH\n");
 
                 /*Update the current position in the sequence*/
                 if (current + mlens_fwd.olen < org_seq->length - seed_size - ext_seed - 1) {
-if(org_seq -> id > 1)printf("!!!!!\n");
-if(org_seq -> id > 1)printf("%d %d\n", current + mlens_fwd.olen, org_seq->length);
+/*if(org_seq -> id > 1)printf("!!!!!\n");*/
+if(org_seq -> id > 1)fprintf(stderr, "%d %d %d!!!!!!\n", current, mlens_fwd.olen, current + mlens_fwd.olen - compress_flags.overlap + seed_size);
                     start_of_section = current + mlens_fwd.olen
                                                - compress_flags.overlap + seed_size;
-if(org_seq -> id > 1)printf("%d\n", start_of_section);
+/*if(org_seq -> id > 1)printf("%d!!!\n", start_of_section);*/
                 } else {
                     start_of_section = current + mlens_fwd.olen + seed_size;
                 }
@@ -460,6 +463,7 @@ if(org_seq -> id > 1)printf("____________%d____________\n", current - start_of_s
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                                                new_coarse_seq_id, 0,
+                                               current - mlens_fwd.olen - start_of_section, 0,
                                                current - mlens_fwd.olen - start_of_section,
                                                true));
 if(org_seq -> id > 1)printf("________________________BEFORE REVERSE MATCH\n");
@@ -471,6 +475,8 @@ if(org_seq -> id > 1)printf("________________________BEFORE REVERSE MATCH\n");
 
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
+                                            current - mlens_rev.olen,
+                                            current + seed_size + mlens_fwd.olen,
                                             resind - mlens_rev.rlen,
                                             resind + seed_size + mlens_fwd.rlen,
                                             alignment, false));
@@ -512,6 +518,7 @@ if(org_seq -> id > 1)printf("________________________REVERSE MATCH\n");
             cbp_compressed_seq_addlink(cseq, cbp_link_to_coarse_init_nodiff(
                                                  new_coarse_seq_id,
                                                  0, end_of_chunk-start_of_section,
+                                                 0, end_of_chunk-start_of_section,
                                                  true));
             if(end_of_chunk < org_seq->length - seed_size - ext_seed - 1){
                 start_of_section = end_of_chunk - overlap;
@@ -524,7 +531,7 @@ if(org_seq -> id > 1)printf("________________________REVERSE MATCH\n");
 if(org_seq -> id > 1)printf("________________________END OF CHUNK\n");
             chunks++;
         }
-if(org_seq->id==2&&chunks>=10)break;
+if(org_seq->id==2&&chunks>=16)break;
     }
     
     /*If there are bases left at the end of the last chunk, add a chunk for the

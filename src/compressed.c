@@ -84,12 +84,18 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
         for (link = seq->links; link != NULL; link = link->next){
             /*Convert the start and end indices for the link to two
               characters.*/
-            int16_t start = (int16_t)link->coarse_start;
-            int16_t end   = (int16_t)link->coarse_end;
-            char start_left  = (start >> 8) & mask;
-            char start_right = start & mask;
-            char end_left    = (end >> 8) & mask;
-            char end_right   = end & mask;
+            int16_t org_start = (int16_t)link->original_start;
+            int16_t org_end   = (int16_t)link->original_end;
+            int16_t cor_start = (int16_t)link->coarse_start;
+            int16_t cor_end   = (int16_t)link->coarse_end;
+            char org_start_left  = (org_start >> 8) & mask;
+            char org_start_right = org_start & mask;
+            char org_end_left    = (org_end >> 8) & mask;
+            char org_end_right   = org_end & mask;
+            char cor_start_left  = (cor_start >> 8) & mask;
+            char cor_start_right = cor_start & mask;
+            char cor_end_left    = (cor_end >> 8) & mask;
+            char cor_end_right   = cor_end & mask;
 
             char script_left, script_right;
             char *edit_script = link->diff;
@@ -116,10 +122,14 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
              *linked to and the length of the edit script represented in 16
              *bits, and the length of the edit script.
              */
-            putc(start_left, com_db->file_compressed);
-            putc(start_right, com_db->file_compressed);
-            putc(end_left, com_db->file_compressed);
-            putc(end_right, com_db->file_compressed);
+            putc(org_start_left, com_db->file_compressed);
+            putc(org_start_right, com_db->file_compressed);
+            putc(org_end_left, com_db->file_compressed);
+            putc(org_end_right, com_db->file_compressed);
+            putc(cor_start_left, com_db->file_compressed);
+            putc(cor_start_right, com_db->file_compressed);
+            putc(cor_end_left, com_db->file_compressed);
+            putc(cor_end_right, com_db->file_compressed);
             putc(script_left, com_db->file_compressed);
             putc(script_right, com_db->file_compressed);
 
@@ -202,12 +212,18 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
     for (link = seq->links; link != NULL; link = link->next){
         /*Convert the start and end indices for the link to two
           characters.*/
-        int16_t start = (int16_t)link->coarse_start;
-        int16_t end   = (int16_t)link->coarse_end;
-        char start_left  = (start >> 8) & mask;
-        char start_right = start & mask;
-        char end_left    = (end >> 8) & mask;
-        char end_right   = end & mask;
+        int16_t org_start = (int16_t)link->original_start;
+        int16_t org_end   = (int16_t)link->original_end;
+        int16_t cor_start = (int16_t)link->coarse_start;
+        int16_t cor_end   = (int16_t)link->coarse_end;
+        char org_start_left  = (org_start >> 8) & mask;
+        char org_start_right = org_start & mask;
+        char org_end_left    = (org_end >> 8) & mask;
+        char org_end_right   = org_end & mask;
+        char cor_start_left  = (cor_start >> 8) & mask;
+        char cor_start_right = cor_start & mask;
+        char cor_end_left    = (cor_end >> 8) & mask;
+        char cor_end_right   = cor_end & mask;
 
         char script_left, script_right;
         char *edit_script = link->diff;
@@ -234,10 +250,14 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
          *linked to and the length of the edit script represented in 16
          *bits, and the length of the edit script.
          */
-        putc(start_left, com_db->file_compressed);
-        putc(start_right, com_db->file_compressed);
-        putc(end_left, com_db->file_compressed);
-        putc(end_right, com_db->file_compressed);
+        putc(org_start_left, com_db->file_compressed);
+        putc(org_start_right, com_db->file_compressed);
+        putc(org_end_left, com_db->file_compressed);
+        putc(org_end_right, com_db->file_compressed);
+        putc(cor_start_left, com_db->file_compressed);
+        putc(cor_start_right, com_db->file_compressed);
+        putc(cor_end_left, com_db->file_compressed);
+        putc(cor_end_right, com_db->file_compressed);
         putc(script_left, com_db->file_compressed);
         putc(script_right, com_db->file_compressed);
 
@@ -310,15 +330,18 @@ cbp_compressed_seq_addlink(struct cbp_compressed_seq *seq,
 
 
 struct cbp_link_to_coarse *
-cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
-                        int16_t coarse_end, struct cbp_alignment alignment,
-                        bool dir) {
+cbp_link_to_coarse_init(int32_t coarse_seq_id,
+                        int16_t original_start, int16_t original_end,
+                        int16_t coarse_start, int16_t coarse_end,
+                        struct cbp_alignment alignment, bool dir){
     struct cbp_link_to_coarse *link;
 
     link = malloc(sizeof(*link));
     assert(link);
 
     link->coarse_seq_id = coarse_seq_id;
+    link->original_start = original_start;
+    link->original_end = original_end;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
     link->next = NULL;
@@ -330,8 +353,10 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id, int16_t coarse_start,
 }
 
 struct cbp_link_to_coarse *
-cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id, int16_t coarse_start,
-                               int16_t coarse_end, bool dir) {
+cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id,
+                               int16_t original_start, int16_t original_end,
+                               int16_t coarse_start, int16_t coarse_end,
+                               bool dir){
     struct cbp_link_to_coarse *link;
 
     link = malloc(sizeof(*link));
@@ -341,6 +366,8 @@ cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id, int16_t coarse_start,
     link->diff[0] = dir ? '0' : '1';
     link->diff[1] = '\0';
     link->coarse_seq_id = coarse_seq_id;
+    link->original_start = original_start;
+    link->original_end = original_end;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
     link->next = NULL;
