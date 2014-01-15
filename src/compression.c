@@ -472,7 +472,6 @@ if(org_seq -> id > 1)printf("________________________BEFORE REVERSE MATCH\n");
 
                 /*Add a link to the coarse sequence in the compressed
                   sequence.*/
-
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
                                             current - mlens_rev.olen,

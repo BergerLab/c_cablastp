@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include <stdint.h>
 
 #ifndef __CABLASTP_BITPACK_H__
