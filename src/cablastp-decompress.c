@@ -58,8 +58,10 @@ main(int argc, char **argv)
     char *compressed_filename = path_join(args->args[0], CABLASTP_COMPRESSED);
     FILE *compressed_file = fopen(compressed_filename, "r");
     struct cbp_compressed_seq **compressed = read_compressed(compressed_file);
-    /*struct fasta_seq **coarse_sequences = malloc(10000*sizeof(*coarse_sequences));
+    struct fasta_seq **coarse_sequences = malloc(10000*sizeof(*coarse_sequences));
     uint64_t num_coarse_sequences = 0;
+    uint64_t last_end;
+    int overlap;
     struct cbp_link_to_coarse *link;
     fsg = fasta_generator_start(path_join(args->args[0],CABLASTP_COARSE_FASTA),
                                 FASTA_EXCLUDE_NCBI_BLOSUM62, 100);
@@ -68,11 +70,11 @@ main(int argc, char **argv)
     for (i = 0; compressed[i] != NULL; i++) {
         int current_chunk = 0;
         bool prev_match = false;
-        int remaining_overlap = 0;
+/*        int remaining_overlap = 0;*/
         printf("%s", compressed[i]->name);
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
             /*If link -> diff[1] is a null terminator, this means this link is
-              to a chunk added without any matches*//*
+              to a chunk added without any matches*/
             bool is_match = (link->diff[0] & (char)0x80) != (char)0;
 
             /*start and remaining_overlap are used to keep track of how much
@@ -83,14 +85,16 @@ main(int argc, char **argv)
               sequence from either the index "remaining_overlap", or if the
               subsequence linked to is shorter than remaining_overlap, we start
               from the index "link_length", which is the length of the
-              subsequence being linked to.*//*
-            int start = (!is_match || prev_match || remaining_overlap < 100) &&
-                        (current_chunk > 0) ? remaining_overlap : 0;
-if(/*i<=2*//*true)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", start, link->coarse_seq_id, link->diff[0], link->diff,
-                                                                  link->original_start, link->original_end, link->coarse_start, link->coarse_end);
-            int link_length = link->coarse_end - link->coarse_start;
+              subsequence being linked to.*/
+            /*int start = (!is_match || prev_match || remaining_overlap < 100) &&
+                        (current_chunk > 0) ? remaining_overlap : 0;*/
+            overlap = last_end - link->original_start;
+fprintf(stderr, "%d. overlap: %d\n", current_chunk, overlap);
+/*if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", start, link->coarse_seq_id, link->diff[0], link->diff,
+                                                                  link->original_start, link->original_end, link->coarse_start, link->coarse_end);*/
+            /*int link_length = link->coarse_end - link->coarse_start;
             if (link_length < remaining_overlap)
-                start = link_length;
+                start = link_length;*/
 
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
@@ -103,26 +107,27 @@ if(/*i<=2*//*true)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", start, link-
                                                                       length);
 
             /*Print all characters of the decompressed sequence past the
-              index "start"*//*
-            decompressed += start;
+              index "start"*/
+            decompressed += overlap;
             printf("%s", decompressed);
-            decompressed -= start;
+            decompressed -= overlap;
             free(decompressed);
 
             prev_match = (link->diff[0] & (char)0x80) != (char)0;
             current_chunk++;
-            remaining_overlap -= start;
+            last_end = link->original_end;
+            /*remaining_overlap -= start;
             if (remaining_overlap == 0)
-                remaining_overlap = 100;
+                remaining_overlap = 100;*/
         }
         putc('\n', stdout);break;
-    }*/
+    }
 
-    /*fasta_generator_free(fsg);*/
+    fasta_generator_free(fsg);
 
     /*cbp_database_free(db);*/
-    /*opt_config_free(conf);
-    opt_args_free(args);*/
+    opt_config_free(conf);
+    opt_args_free(args);
 
     return 0;
 }
