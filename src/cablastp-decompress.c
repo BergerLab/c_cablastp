@@ -58,7 +58,7 @@ main(int argc, char **argv)
     char *compressed_filename = path_join(args->args[0], CABLASTP_COMPRESSED);
     FILE *compressed_file = fopen(compressed_filename, "r");
     struct cbp_compressed_seq **compressed = read_compressed(compressed_file);
-    struct fasta_seq **coarse_sequences = malloc(10000*sizeof(*coarse_sequences));
+    /*struct fasta_seq **coarse_sequences = malloc(10000*sizeof(*coarse_sequences));
     uint64_t num_coarse_sequences = 0;
     struct cbp_link_to_coarse *link;
     fsg = fasta_generator_start(path_join(args->args[0],CABLASTP_COARSE_FASTA),
@@ -72,7 +72,7 @@ main(int argc, char **argv)
         printf("%s", compressed[i]->name);
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
             /*If link -> diff[1] is a null terminator, this means this link is
-              to a chunk added without any matches*/
+              to a chunk added without any matches*//*
             bool is_match = (link->diff[0] & (char)0x80) != (char)0;
 
             /*start and remaining_overlap are used to keep track of how much
@@ -83,10 +83,10 @@ main(int argc, char **argv)
               sequence from either the index "remaining_overlap", or if the
               subsequence linked to is shorter than remaining_overlap, we start
               from the index "link_length", which is the length of the
-              subsequence being linked to.*/
+              subsequence being linked to.*//*
             int start = (!is_match || prev_match || remaining_overlap < 100) &&
                         (current_chunk > 0) ? remaining_overlap : 0;
-if(/*i<=2*/true)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", start, link->coarse_seq_id, link->diff[0], link->diff,
+if(/*i<=2*//*true)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", start, link->coarse_seq_id, link->diff[0], link->diff,
                                                                   link->original_start, link->original_end, link->coarse_start, link->coarse_end);
             int link_length = link->coarse_end - link->coarse_start;
             if (link_length < remaining_overlap)
@@ -103,7 +103,7 @@ if(/*i<=2*/true)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", start, link->c
                                                                       length);
 
             /*Print all characters of the decompressed sequence past the
-              index "start"*/
+              index "start"*//*
             decompressed += start;
             printf("%s", decompressed);
             decompressed -= start;
@@ -116,13 +116,13 @@ if(/*i<=2*/true)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", start, link->c
                 remaining_overlap = 100;
         }
         putc('\n', stdout);break;
-    }
+    }*/
 
-    fasta_generator_free(fsg);
+    /*fasta_generator_free(fsg);*/
 
     /*cbp_database_free(db);*/
-    opt_config_free(conf);
-    opt_args_free(args);
+    /*opt_config_free(conf);
+    opt_args_free(args);*/
 
     return 0;
 }

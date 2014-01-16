@@ -70,7 +70,7 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
         int j;
         char *id_bytes;
         seq = seq_at(com_db, i);
-        id_bytes = read_int_to_bytes(seq->id, 64);
+        id_bytes = read_int_to_bytes(seq->id, 8);
 
         putc('>', com_db->file_compressed);
         putc(' ', com_db->file_compressed);

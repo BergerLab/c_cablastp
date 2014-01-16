@@ -8,9 +8,11 @@
 uint64_t make_mask(int bits){
     uint64_t mask = (uint64_t)1;
     if (bits == 64)
-        return ~0;
+        return ~(uint64_t)0;
+    if (bits == 0)
+        return (uint64_t)0;
     mask <<= bits;
-    return mask & (mask-1);
+    return mask-1;
 }
 
 /*Left shift for 64-bit integers*/
@@ -33,6 +35,9 @@ char *read_int_to_bytes(uint64_t number, int length){
     char *bytes = malloc(length * sizeof(*bytes));
     for (i = length-1; i >= 0; i--)
         bytes[length-i-1] = (char)(shift_right(number, 8*i) & mask);
+/*    printf("read_int_to_bytes: %ld, %d\n", number, length);*/
+/*    for (i = 0; i < length; i++)
+        printf("%d\n", bytes[i]);*/
     return bytes;
 }
 
@@ -40,7 +45,8 @@ char *read_int_to_bytes(uint64_t number, int length){
   and a file pointer and outputs the int to the file.*/
 void output_int_to_file(uint64_t number, int length, FILE *f){
     int i;
-    char *bytes = read_int_to_bytes(number, length*8);
+    char *bytes = read_int_to_bytes(number, length);
     for (i = 0; i < length; i++)
         putc(bytes[i], f);
+    free(bytes);
 }

@@ -308,7 +308,6 @@ printf("-->\n");
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
                 if (current - mlens_rev.olen - start_of_section > 0) {
-if(org_seq -> id > 1)printf("____________%d____________\n", current - start_of_section);
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section, current-mlens_rev.olen+compress_flags.overlap);
                     cbp_compressed_seq_addlink(cseq,
@@ -456,7 +455,6 @@ printf("<--\n");
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
                 if (current - mlens_fwd.olen - start_of_section > 0) {
-if(org_seq -> id > 1)printf("____________%d____________\n", current - start_of_section);
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section,
                                                     current - mlens_fwd.olen+compress_flags.overlap);
