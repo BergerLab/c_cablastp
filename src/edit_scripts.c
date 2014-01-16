@@ -208,7 +208,9 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     char *s = str;
     /*char *original = orig;*//*(edit_script[0] == '0' ? orig : string_revcomp(orig, -1));*/
 
+fprintf(stderr, "%s\n", orig);
     while (next_edit(edit_script, &script_pos, &edit)) {
+fprintf(stderr, "@\n");
         /* chunk after previous edit */
         for (i = 0; i < edit.last_dist - last_edit_str_len; i++)
             str[current++] = orig[orig_pos+i];
@@ -230,8 +232,8 @@ char *read_edit_script(char *edit_script, char *orig, int length){
         str[current++] = orig[orig_pos++];
     str = realloc(str, current+1*sizeof(char));
     str[current] = '\0';
-    if ((edit_script[0] & ((char)0x7f)) == '1')
-        str = string_revcomp(s, -1);
+    if ((edit_script[0] & ((char)0x7f)) == '1'){fprintf(stderr, "!!!!!\n");
+        str = string_revcomp(s, -1);}
     return str;
 }
 

@@ -68,6 +68,7 @@ main(int argc, char **argv)
     while (NULL != (seq = fasta_generator_next(fsg)))
         coarse_sequences[num_coarse_sequences++] = seq;
     for (i = 0; compressed[i] != NULL; i++) {
+        last_end = 0;
         int current_chunk = 0;
         bool prev_match = false;
 /*        int remaining_overlap = 0;*/
@@ -90,8 +91,10 @@ main(int argc, char **argv)
                         (current_chunk > 0) ? remaining_overlap : 0;*/
             overlap = last_end - link->original_start;
 fprintf(stderr, "%d. overlap: %d\n", current_chunk, overlap);
-/*if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", start, link->coarse_seq_id, link->diff[0], link->diff,
-                                                                  link->original_start, link->original_end, link->coarse_start, link->coarse_end);*/
+fprintf(stderr, "!\n");
+if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", overlap, link->coarse_seq_id, link->diff[0], link->diff,
+                                                                  link->original_start, link->original_end,
+                                                                  link->coarse_start, link->coarse_end);
             /*int link_length = link->coarse_end - link->coarse_start;
             if (link_length < remaining_overlap)
                 start = link_length;*/
@@ -103,6 +106,7 @@ fprintf(stderr, "%d. overlap: %d\n", current_chunk, overlap);
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
 
+fprintf(stderr, "%d!\n", length);
             char *decompressed = read_edit_script(link->diff, chunk->residues,
                                                                       length);
 
@@ -118,7 +122,7 @@ fprintf(stderr, "%d. overlap: %d\n", current_chunk, overlap);
             last_end = link->original_end;
             /*remaining_overlap -= start;
             if (remaining_overlap == 0)
-                remaining_overlap = 100;*/
+                remaining_overlap = 100;*/if(current_chunk==44)break;
         }
         putc('\n', stdout);break;
     }

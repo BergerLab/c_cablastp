@@ -472,8 +472,8 @@ if(org_seq -> id > 1)printf("________________________BEFORE REVERSE MATCH\n");
                   sequence.*/
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
-                                            current - mlens_rev.olen,
-                                            current + seed_size + mlens_fwd.olen,
+                                            current - mlens_fwd.olen,
+                                            current + seed_size + mlens_rev.olen,
                                             resind - mlens_rev.rlen,
                                             resind + seed_size + mlens_fwd.rlen,
                                             alignment, false));

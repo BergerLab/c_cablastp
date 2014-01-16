@@ -211,10 +211,6 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
         uint64_t org_end   = link->original_end;
         int16_t cor_start = (int16_t)link->coarse_start;
         int16_t cor_end   = (int16_t)link->coarse_end;
-        /*char org_start_left  = (org_start >> 8) & mask;
-        char org_start_right = org_start & mask;
-        char org_end_left    = (org_end >> 8) & mask;
-        char org_end_right   = org_end & mask;*/
         char cor_start_left  = (cor_start >> 8) & mask;
         char cor_start_right = cor_start & mask;
         char cor_end_left    = (cor_end >> 8) & mask;
@@ -340,6 +336,7 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id,
     link->next = NULL;
 
     link->diff = make_edit_script(alignment.org, alignment.ref, dir, alignment.length);
+fprintf(stderr, "%s\n%s\n", alignment.org, alignment.ref);
     assert(link->diff);
 fprintf(stderr, "New link: %d %ld %ld %d %d!\n", coarse_seq_id, original_start, original_end, coarse_start, coarse_end);
     return link;
