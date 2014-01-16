@@ -111,8 +111,9 @@ if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", overlap, link->coarse_
 
             /*Print all characters of the decompressed sequence past the
               index "start"*/
+
             decompressed += overlap;
-            printf("%s", decompressed);
+            if(overlap<link->original_end-link->original_start)printf("%s", decompressed);
             decompressed -= overlap;
             free(decompressed);
 
@@ -123,7 +124,7 @@ if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", overlap, link->coarse_
             /*remaining_overlap -= start;
             if (remaining_overlap == 0)
                 remaining_overlap = 100;*//*if(current_chunk==150)break;*/
-            /*if(i==1&&current_chunk==11)break;*/
+            if(i==1&&current_chunk==500)break;
         }
         putc('\n', stdout);if(i==1)break;
     }
