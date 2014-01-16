@@ -336,7 +336,6 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id,
     link->next = NULL;
 
     link->diff = make_edit_script(alignment.org, alignment.ref, dir, alignment.length);
-fprintf(stderr, "%s\n%s\n", alignment.org, alignment.ref);
     assert(link->diff);
 fprintf(stderr, "New link: %d %ld %ld %d %d!\n", coarse_seq_id, original_start, original_end, coarse_start, coarse_end);
     return link;

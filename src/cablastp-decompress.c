@@ -90,8 +90,8 @@ main(int argc, char **argv)
             /*int start = (!is_match || prev_match || remaining_overlap < 100) &&
                         (current_chunk > 0) ? remaining_overlap : 0;*/
             overlap = last_end - link->original_start;
-fprintf(stderr, "%d. overlap: %d\n", current_chunk, overlap);
-fprintf(stderr, "!\n");
+/*fprintf(stderr, "%d. overlap: %d\n", current_chunk, overlap);
+fprintf(stderr, "!\n");*/
 if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", overlap, link->coarse_seq_id, link->diff[0], link->diff,
                                                                   link->original_start, link->original_end,
                                                                   link->coarse_start, link->coarse_end);
@@ -106,7 +106,6 @@ if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", overlap, link->coarse_
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
 
-fprintf(stderr, "%d!\n", length);
             char *decompressed = read_edit_script(link->diff, chunk->residues,
                                                                       length);
 
@@ -119,12 +118,14 @@ fprintf(stderr, "%d!\n", length);
 
             prev_match = (link->diff[0] & (char)0x80) != (char)0;
             current_chunk++;
-            last_end = link->original_end;
+            if (link->original_end > last_end)
+                last_end = link->original_end;
             /*remaining_overlap -= start;
             if (remaining_overlap == 0)
-                remaining_overlap = 100;*/if(current_chunk==44)break;
+                remaining_overlap = 100;*//*if(current_chunk==150)break;*/
+            /*if(i==1&&current_chunk==11)break;*/
         }
-        putc('\n', stdout);break;
+        putc('\n', stdout);if(i==1)break;
     }
 
     fasta_generator_free(fsg);
