@@ -40,10 +40,7 @@ char *read_int_to_bytes(uint64_t number, int length){
   and a file pointer and outputs the int to the file.*/
 void output_int_to_file(uint64_t number, int length, FILE *f){
     int i;
-    uint64_t mask = make_mask(8);
-    char *bytes = malloc(length * sizeof(*bytes));
-    for (i = length-1; i >= 0; i--)
-        bytes[length-i-1] = (char)(shift_right(number, 8*i) & mask); 
-    for (i = length-1; i >= 0; i--)
+    char *bytes = read_int_to_bytes(number, length*8);
+    for (i = 0; i < length; i++)
         putc(bytes[i], f);
 }

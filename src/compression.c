@@ -313,8 +313,8 @@ if(org_seq -> id > 1)printf("____________%d____________\n", current - start_of_s
                                                     start_of_section, current-mlens_rev.olen+compress_flags.overlap);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
-                            new_coarse_seq_id, 0,
-                            current - mlens_rev.olen - start_of_section, 0,
+                            new_coarse_seq_id, start_of_section,
+                            current - mlens_rev.olen, 0,
                             current - mlens_rev.olen - start_of_section, 
                                                                   true));
 if(org_seq -> id > 1)printf("________________________BEFORE FORWARD MATCH\n");
@@ -462,8 +462,8 @@ if(org_seq -> id > 1)printf("____________%d____________\n", current - start_of_s
                                                     current - mlens_fwd.olen+compress_flags.overlap);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
-                                               new_coarse_seq_id, 0,
-                                               current - mlens_fwd.olen - start_of_section, 0,
+                                               new_coarse_seq_id, start_of_section,
+                                               current - mlens_fwd.olen, 0,
                                                current - mlens_fwd.olen - start_of_section,
                                                true));
 if(org_seq -> id > 1)printf("________________________BEFORE REVERSE MATCH\n");
@@ -516,7 +516,7 @@ if(org_seq -> id > 1)printf("________________________REVERSE MATCH\n");
             new_coarse_seq_id = add_without_match(coarse_db, org_seq, start_of_section, end_of_chunk);
             cbp_compressed_seq_addlink(cseq, cbp_link_to_coarse_init_nodiff(
                                                  new_coarse_seq_id,
-                                                 0, end_of_chunk-start_of_section,
+                                                 start_of_section, end_of_chunk,
                                                  0, end_of_chunk-start_of_section,
                                                  true));
             if(end_of_chunk < org_seq->length - seed_size - ext_seed - 1){

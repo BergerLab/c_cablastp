@@ -84,14 +84,10 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
         for (link = seq->links; link != NULL; link = link->next){
             /*Convert the start and end indices for the link to two
               characters.*/
-            uint16_t org_start = link->original_start;
-            uint16_t org_end   = link->original_end;
+            uint64_t org_start = link->original_start;
+            uint64_t org_end   = link->original_end;
             int16_t cor_start = (int16_t)link->coarse_start;
             int16_t cor_end   = (int16_t)link->coarse_end;
-            /*char org_start_left  = (org_start >> 8) & mask;
-            char org_start_right = org_start & mask;
-            char org_end_left    = (org_end >> 8) & mask;
-            char org_end_right   = org_end & mask;*/
             char cor_start_left  = (cor_start >> 8) & mask;
             char cor_start_right = cor_start & mask;
             char cor_end_left    = (cor_end >> 8) & mask;
@@ -125,10 +121,6 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
              */
             output_int_to_file(org_start, 8, com_db->file_compressed);
             output_int_to_file(org_end, 8, com_db->file_compressed);
-            /*putc(org_start_left, com_db->file_compressed);
-            putc(org_start_right, com_db->file_compressed);
-            putc(org_end_left, com_db->file_compressed);
-            putc(org_end_right, com_db->file_compressed);*/
             putc(cor_start_left, com_db->file_compressed);
             putc(cor_start_right, com_db->file_compressed);
             putc(cor_end_left, com_db->file_compressed);
@@ -255,10 +247,6 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
          */
         output_int_to_file(org_start, 8, com_db->file_compressed);
         output_int_to_file(org_end, 8, com_db->file_compressed);
-        /*putc(org_start_left, com_db->file_compressed);
-        putc(org_start_right, com_db->file_compressed);
-        putc(org_end_left, com_db->file_compressed);
-        putc(org_end_right, com_db->file_compressed);*/
         putc(cor_start_left, com_db->file_compressed);
         putc(cor_start_right, com_db->file_compressed);
         putc(cor_end_left, com_db->file_compressed);
