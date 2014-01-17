@@ -123,10 +123,9 @@ if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", overlap, link->coarse_
                 last_end = link->original_end;
             /*remaining_overlap -= start;
             if (remaining_overlap == 0)
-                remaining_overlap = 100;*//*if(current_chunk==150)break;*/
-            if(i==1&&current_chunk==500)break;
+                remaining_overlap = 100;*/if(i==2&&current_chunk==16)break;
         }
-        putc('\n', stdout);if(i==1)break;
+        putc('\n', stdout);if(i==2)break;
     }
 
     fasta_generator_free(fsg);

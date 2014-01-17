@@ -19,7 +19,7 @@
 
 int
 main(int argc, char **argv)
-{
+{ 
     struct cbp_database *db;
     struct cbp_compress_workers *workers;
     struct opt_config *conf;

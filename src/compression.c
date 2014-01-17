@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-
+ 
 #include "compression.h"
 #include "flags.h"
 #include "DNAutils.h"
@@ -265,28 +265,26 @@ printf("-->\n");
                     cor_match[i1-start_coarse_align] = coarse_seq->seq->residues[i1];
                 for (i2 = start_original_align; i2 < end_original_align; i2++)
                     org_match[i2-start_original_align] = org_seq->residues[i2];
-
                 /*Get an alignment of the matching sequences*/
                 alignment = cbp_align_nw(mem,
                                          cor_match, coarse_align_len, 0, 1,
                                          org_match, original_align_len, 0, 1,
                                          matches, NULL);
-
                 /*If we are close to the end of the section, extend the match
                   to the end of the sequence.*/
-                if (current + mlens_fwd.olen + compress_flags.match_extend >=
+                /*if (current + mlens_fwd.olen + compress_flags.match_extend >=
                                                             org_seq->length) {
                    mlens_fwd.olen = org_seq->length - current - seed_size;
                    changed = true;
-                }
+                }*/
 
                 /*If we are close to the start of the section, extend the match
                   to the start of the sequence.*/
-                if (current - mlens_rev.olen - start_of_section <=
+                /*if (current - mlens_rev.olen - start_of_section <=
                                     compress_flags.match_extend) {
                    mlens_rev.olen = current - start_of_section;
                    changed = true;
-                }
+                }*/
 
                 /*If the match was extended, update the alignment*/
                 /*if (changed) {
@@ -345,9 +343,9 @@ if(org_seq -> id > 1)fprintf(stderr, "%d %d %d!!!!!!\n", current, mlens_fwd.olen
                     start_of_section = current + mlens_fwd.olen
                                                - compress_flags.overlap + seed_size;
 /*if(org_seq -> id > 1)printf("%d!!!\n", start_of_section);*/
-                } else {
-                    start_of_section = current + mlens_fwd.olen + seed_size;
                 }
+                else
+                    start_of_section = current + mlens_fwd.olen + seed_size;
                 current = start_of_section-1;
                 end_of_chunk = min(start_of_section + max_chunk_size,
                                    org_seq->length-ext_seed);
@@ -421,19 +419,19 @@ printf("<--\n");
 
                 /*If we are close to the end of the section, extend the match
                   to the end of the sequence.*/
-                if (current + mlens_rev.olen + compress_flags.match_extend >=
+                /*if (current + mlens_rev.olen + compress_flags.match_extend >=
                                                             org_seq->length) {
                     mlens_rev.olen = org_seq->length - current - seed_size;
                     changed = true;
-                }
+                }*/
 
                 /*If we are close to the start of the section, extend the match
                   to the start of the sequence.*/
-                if (current - mlens_fwd.olen - start_of_section <=
+                /*if (current - mlens_fwd.olen - start_of_section <=
                                     compress_flags.match_extend) {
                     mlens_fwd.olen = current - start_of_section;
                     changed = true;
-                }
+                }*/
 
                 /*If the match was extended, update the alignment*/
                 /*if (changed) {
@@ -490,9 +488,9 @@ if(org_seq -> id > 1)printf("________________________BEFORE REVERSE MATCH\n");
                 if(current + mlens_rev.olen < org_seq->length - seed_size - ext_seed - 1){
                     start_of_section = current + mlens_rev.olen
                                                - compress_flags.overlap + seed_size;
-                } else {
-                    start_of_section = current + mlens_rev.olen + seed_size;
                 }
+                else
+                    start_of_section = current + mlens_rev.olen + seed_size;
                 current = start_of_section-1;
                 end_of_chunk = min(start_of_section + max_chunk_size,
                                    org_seq->length-ext_seed);
