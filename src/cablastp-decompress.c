@@ -70,62 +70,43 @@ main(int argc, char **argv)
     for (i = 0; compressed[i] != NULL; i++) {
         last_end = 0;
         int current_chunk = 0;
-        bool prev_match = false;
-/*        int remaining_overlap = 0;*/
         printf("%s", compressed[i]->name);
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
-            /*If link -> diff[1] is a null terminator, this means this link is
-              to a chunk added without any matches*/
-            bool is_match = (link->diff[0] & (char)0x80) != (char)0;
-
-            /*start and remaining_overlap are used to keep track of how much
-              of the sequence currently being decompressed overlaps with the
-              previous sequence that was decompressed.  If the current chunk
-              is not the first chunk in the sequence and the last chunk added
-              was not a pre-match chunk, then we start copying the decompressed
-              sequence from either the index "remaining_overlap", or if the
-              subsequence linked to is shorter than remaining_overlap, we start
-              from the index "link_length", which is the length of the
-              subsequence being linked to.*/
-            /*int start = (!is_match || prev_match || remaining_overlap < 100) &&
-                        (current_chunk > 0) ? remaining_overlap : 0;*/
+            /*overlap represents the length of the overlap of the parts of the
+              decompressed sequence that has been printed and the parts of the
+              decompressed sequence currently being decompressed.*/
             overlap = last_end - link->original_start;
-/*fprintf(stderr, "%d. overlap: %d\n", current_chunk, overlap);
-fprintf(stderr, "!\n");*/
+
 if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", overlap, link->coarse_seq_id, link->diff[0], link->diff,
                                                                   link->original_start, link->original_end,
                                                                   link->coarse_start, link->coarse_end);
-            /*int link_length = link->coarse_end - link->coarse_start;
-            if (link_length < remaining_overlap)
-                start = link_length;*/
-
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
                                    link->coarse_start, link->coarse_end);
+fprintf(stderr, "%s\n", chunk->residues);
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
 
             char *decompressed = read_edit_script(link->diff, chunk->residues,
                                                                       length);
 
-            /*Print all characters of the decompressed sequence past the
-              index "start"*/
-
+            /*Print all characters of the decompressed chunk past the index
+              "overlap" unless overlap is greater than the length of the
+              decompressed chunk.*/
             decompressed += overlap;
-            if(overlap<link->original_end-link->original_start)printf("%s", decompressed);
+            if (overlap < link->original_end - link->original_start)
+                printf("%s", decompressed);
             decompressed -= overlap;
             free(decompressed);
 
-            prev_match = (link->diff[0] & (char)0x80) != (char)0;
             current_chunk++;
             if (link->original_end > last_end)
                 last_end = link->original_end;
-            /*remaining_overlap -= start;
-            if (remaining_overlap == 0)
-                remaining_overlap = 100;*/if(i==2&&current_chunk==16)break;
+            if(i==2&&current_chunk==57)break;
         }
-        putc('\n', stdout);if(i==2)break;
+        putc('\n', stdout);
+        if(i==2)break;
     }
 
     fasta_generator_free(fsg);
