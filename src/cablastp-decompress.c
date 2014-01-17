@@ -103,7 +103,7 @@ fprintf(stderr, "%s\n", chunk->residues);
             current_chunk++;
             if (link->original_end > last_end)
                 last_end = link->original_end;
-            if(i==2&&current_chunk==57)break;
+            if(i==2&&current_chunk==216)break;
         }
         putc('\n', stdout);
         if(i==2)break;

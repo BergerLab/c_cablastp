@@ -203,14 +203,14 @@ if(org_seq -> id > -1)printf("________________________END OF CHUNK\n");
         }
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
-
+/*
 if(org_seq -> id > 1){
    int base = 0;
    for(base = 0; base < 10; base++)
         printf("%c", *(kmer+base));
    printf("!\n");
 }
-
+*/
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
@@ -271,17 +271,20 @@ printf("-->\n");
                                          cor_match, coarse_align_len, 0, 1,
                                          org_match, original_align_len, 0, 1,
                                          matches, NULL);
+
+                /*If the length of either the coarse or original match
+                  was changed from backtracking in the alignment, update
+                  the lengths.*/
                 char *new_cor = no_dashes(alignment.ref);
                 char *new_org = no_dashes(alignment.org);
                 for (i1 = 0; new_cor[i1] != '\0'; i1++);
                 for (i2 = 0; new_org[i2] != '\0'; i2++);
-                if(i1 < coarse_align_len)
+                if (i1 < coarse_align_len)
                     mlens_fwd.rlen -= (coarse_align_len - i1);
-                if(i2 < original_align_len)
+                if (i2 < original_align_len)
                     mlens_fwd.olen -= (original_align_len - i2);
                 free(new_cor);
                 free(new_org);
-fprintf(stderr, "coarse_align_len: %d, start_coarse_align: %d, end_coarse_align:%d\n\n", coarse_align_len, start_coarse_align, end_coarse_align);
 /*fprintf(stderr, "%s\n%s\n", alignment.ref, alignment.org);*/
                 /*If we are close to the end of the section, extend the match
                   to the end of the sequence.*/
@@ -351,11 +354,9 @@ if(org_seq -> id > -1)printf("________________________BEFORE FORWARD MATCH\n");
 
                 /*Update the current position in the sequence*/
                 if (current + mlens_fwd.olen < org_seq->length - seed_size - ext_seed - 1) {
-/*if(org_seq -> id > 1)printf("!!!!!\n");*/
 if(org_seq -> id > 1)fprintf(stderr, "%d %d %d!!!!!!\n", current, mlens_fwd.olen, current + mlens_fwd.olen - compress_flags.overlap + seed_size);
                     start_of_section = current + mlens_fwd.olen
                                                - compress_flags.overlap + seed_size;
-/*if(org_seq -> id > 1)printf("%d!!!\n", start_of_section);*/
                 }
                 else
                     start_of_section = current + mlens_fwd.olen + seed_size;
@@ -377,7 +378,7 @@ if(org_seq -> id > -1)printf("________________________FORWARD MATCH\n");
             int i1, i2;
           /*If we found a match in the seed locations for the k-mer, then there
             is no need to check the locations for the reverse complement.*/
-            if(found_match)
+            if (found_match)
                 break;
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
@@ -390,10 +391,10 @@ if(org_seq -> id > -1)printf("________________________FORWARD MATCH\n");
                         org_seq->residues + seed_size,
                         ext_seed))
                 continue;*/
-            if(attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+            if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
-                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){
+                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50) {
 printf("<--\n");
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
                                          org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
@@ -401,7 +402,7 @@ printf("<--\n");
                                          org_seq->residues, start_of_section, end_of_section, current, -1);
 
               /*If the match was too short, try the next seed*/                
-                if(mlens_rev.olen+seed_size+mlens_fwd.olen < compress_flags.min_match_len)
+                if (mlens_rev.olen+seed_size+mlens_fwd.olen < compress_flags.min_match_len)
                     continue;
 
                 found_match = true;
@@ -419,9 +420,9 @@ printf("<--\n");
                 org_match = malloc(original_align_len * sizeof(char));
 
               /*Copy the matching parts of the coarse and original sequences*/
-                for(i1 = start_coarse_align; i1 < end_coarse_align; i1++)
+                for (i1 = start_coarse_align; i1 < end_coarse_align; i1++)
                     cor_match[i1-start_coarse_align] = coarse_seq->seq->residues[i1]; 
-                for(i2 = start_original_align; i2 < end_original_align; i2++)
+                for (i2 = start_original_align; i2 < end_original_align; i2++)
                     org_match[i2-start_original_align] = org_seq->residues[i2];
               /*Get an alignment of the matching sequences*/
                 alignment = cbp_align_nw(mem,
@@ -430,13 +431,16 @@ printf("<--\n");
                                          original_align_len-1, -1,
                                          matches, NULL);
 
+                /*If the length of either the coarse or original match
+                  was changed from backtracking in the alignment, update
+                  the lengths.*/
                 char *new_cor = no_dashes(alignment.ref);
                 char *new_org = no_dashes(alignment.org);
                 for (i1 = 0; new_cor[i1] != '\0'; i1++);
                 for (i2 = 0; new_org[i2] != '\0'; i2++);
-                if(i1 < coarse_align_len)
+                if (i1 < coarse_align_len)
                     mlens_rev.rlen -= (coarse_align_len - i1);
-                if(i2 < original_align_len)
+                if (i2 < original_align_len)
                     mlens_rev.olen -= (original_align_len - i2);
                 free(new_cor);
                 free(new_org);
@@ -550,21 +554,9 @@ if(org_seq -> id > -1)printf("________________________REVERSE MATCH\n");
 if(org_seq -> id > -1)printf("________________________END OF CHUNK\n");
             chunks++;
         }
-/*if(org_seq->id==2&&chunks>=57)break;*/
+if(org_seq->id==2&&chunks>=100)break;
     }
     
-    /*If there are bases left at the end of the last chunk, add a chunk for the
-      remaining bases and a link to the chunk in the compressed sequence.*/
-    /*if (/*org_seq->length*//* end_of_chunk - start_of_section > 0) {
-        new_coarse_seq_id = add_without_match(
-            coarse_db, org_seq, start_of_section,
-            end_of_chunk /*org_seq->length*//*);
-        cbp_compressed_seq_addlink(
-            cseq,
-            cbp_link_to_coarse_init_nodiff(
-                new_coarse_seq_id, 0, /*org_seq->length*//*
-                end_of_chunk - start_of_section, true));
-    }*/
 fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     return cseq;
 }
