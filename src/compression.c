@@ -182,14 +182,14 @@ if(chunks >= 500){break;}
         *add the first chunk without a match and skip ahead to the start of
         *the second chunk.
         */
-        if(current == 0 && coarse_db->seqs->size == 0){
+        if (current == 0 && coarse_db->seqs->size == 0) {
             new_coarse_seq_id = add_without_match(coarse_db, org_seq, 0,
                                                   max_chunk_size);
             cbp_compressed_seq_addlink(cseq, cbp_link_to_coarse_init_nodiff(
                                                  new_coarse_seq_id, 0,
                                                  end_of_chunk, 0, end_of_chunk, true));
 
-            if(end_of_chunk < org_seq->length - seed_size - ext_seed){
+            if (end_of_chunk < org_seq->length - seed_size - ext_seed) {
                 start_of_section += max_chunk_size - overlap;
                 end_of_chunk = min(start_of_section + max_chunk_size,
                                    org_seq->length - ext_seed);
@@ -197,7 +197,7 @@ if(chunks >= 500){break;}
                                      org_seq->length - ext_seed);
                 current = start_of_section-1;
             }
-if(org_seq -> id > 1)printf("________________________END OF CHUNK\n");
+if(org_seq -> id > -1)printf("________________________END OF CHUNK\n");
             chunks++;
             continue;
         }
@@ -265,11 +265,24 @@ printf("-->\n");
                     cor_match[i1-start_coarse_align] = coarse_seq->seq->residues[i1];
                 for (i2 = start_original_align; i2 < end_original_align; i2++)
                     org_match[i2-start_original_align] = org_seq->residues[i2];
+
                 /*Get an alignment of the matching sequences*/
                 alignment = cbp_align_nw(mem,
                                          cor_match, coarse_align_len, 0, 1,
                                          org_match, original_align_len, 0, 1,
                                          matches, NULL);
+                char *new_cor = no_dashes(alignment.ref);
+                char *new_org = no_dashes(alignment.org);
+                for (i1 = 0; new_cor[i1] != '\0'; i1++);
+                for (i2 = 0; new_org[i2] != '\0'; i2++);
+                if(i1 < coarse_align_len)
+                    mlens_fwd.rlen -= (coarse_align_len - i1);
+                if(i2 < original_align_len)
+                    mlens_fwd.olen -= (original_align_len - i2);
+                free(new_cor);
+                free(new_org);
+fprintf(stderr, "coarse_align_len: %d, start_coarse_align: %d, end_coarse_align:%d\n\n", coarse_align_len, start_coarse_align, end_coarse_align);
+/*fprintf(stderr, "%s\n%s\n", alignment.ref, alignment.org);*/
                 /*If we are close to the end of the section, extend the match
                   to the end of the sequence.*/
                 /*if (current + mlens_fwd.olen + compress_flags.match_extend >=
@@ -314,7 +327,7 @@ printf("-->\n");
                             current - mlens_rev.olen, 0,
                             current - mlens_rev.olen - start_of_section, 
                                                                   true));
-if(org_seq -> id > 1)printf("________________________BEFORE FORWARD MATCH\n");
+if(org_seq -> id > -1)printf("________________________BEFORE FORWARD MATCH\n");
                     chunks++;
                 }
 
@@ -352,7 +365,7 @@ if(org_seq -> id > 1)fprintf(stderr, "%d %d %d!!!!!!\n", current, mlens_fwd.olen
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-ext_seed);
 
-if(org_seq -> id > 1)printf("________________________FORWARD MATCH\n");
+if(org_seq -> id > -1)printf("________________________FORWARD MATCH\n");
                 chunks++;
             }
         }
@@ -417,6 +430,17 @@ printf("<--\n");
                                          original_align_len-1, -1,
                                          matches, NULL);
 
+                char *new_cor = no_dashes(alignment.ref);
+                char *new_org = no_dashes(alignment.org);
+                for (i1 = 0; new_cor[i1] != '\0'; i1++);
+                for (i2 = 0; new_org[i2] != '\0'; i2++);
+                if(i1 < coarse_align_len)
+                    mlens_rev.rlen -= (coarse_align_len - i1);
+                if(i2 < original_align_len)
+                    mlens_rev.olen -= (original_align_len - i2);
+                free(new_cor);
+                free(new_org);
+
                 /*If we are close to the end of the section, extend the match
                   to the end of the sequence.*/
                 /*if (current + mlens_rev.olen + compress_flags.match_extend >=
@@ -462,7 +486,7 @@ printf("<--\n");
                                                current - mlens_fwd.olen, 0,
                                                current - mlens_fwd.olen - start_of_section,
                                                true));
-if(org_seq -> id > 1)printf("________________________BEFORE REVERSE MATCH\n");
+if(org_seq -> id > -1)printf("________________________BEFORE REVERSE MATCH\n");
                     chunks++;
                 }
 
@@ -497,7 +521,7 @@ if(org_seq -> id > 1)printf("________________________BEFORE REVERSE MATCH\n");
                 end_of_section = min(start_of_section + max_section_size,
                                      org_seq->length-ext_seed);
 
-if(org_seq -> id > 1)printf("________________________REVERSE MATCH\n");
+if(org_seq -> id > -1)printf("________________________REVERSE MATCH\n");
                 chunks++;
             }
         }
@@ -523,10 +547,10 @@ if(org_seq -> id > 1)printf("________________________REVERSE MATCH\n");
                                      org_seq->length - ext_seed);
                 current = start_of_section - 1;
             }
-if(org_seq -> id > 1)printf("________________________END OF CHUNK\n");
+if(org_seq -> id > -1)printf("________________________END OF CHUNK\n");
             chunks++;
         }
-if(org_seq->id==2&&chunks>=16)break;
+/*if(org_seq->id==2&&chunks>=57)break;*/
     }
     
     /*If there are bases left at the end of the last chunk, add a chunk for the
