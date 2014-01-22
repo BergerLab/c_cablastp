@@ -67,7 +67,7 @@ fprintf(stderr, "%ld\n", coarse_seq_id);
         indices[i] = (char)c;
     }
 
-    for(i = 0; i < 8; i++){
+    for (i = 0; i < 8; i++) {
         original_start <<= 8;
         original_start |= (uint64_t)indices[i];
         original_end <<= 8;
@@ -84,12 +84,12 @@ fprintf(stderr, "%ld\n", coarse_seq_id);
     script_length |= (uint16_t)indices[21];
 
     chars_to_read = script_length / 2;
-    if(script_length % 2 == 1)
+    if (script_length % 2 == 1)
         chars_to_read++;
     half_bytes = malloc(chars_to_read*sizeof(*half_bytes));
-    for (i = 0; i < chars_to_read; i++){
+    for (i = 0; i < chars_to_read; i++) {
         c = getc(f);
-        if (feof(f)){
+        if (feof(f)) {
             free(link);
             return NULL;
         }

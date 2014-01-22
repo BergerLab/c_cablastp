@@ -77,7 +77,7 @@ main(int argc, char **argv)
               decompressed sequence currently being decompressed.*/
             overlap = last_end - link->original_start;
 
-if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", overlap, link->coarse_seq_id, link->diff[0], link->diff,
+if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %lu %lu %d %d\n", overlap, link->coarse_seq_id, link->diff[0], link->diff,
                                                                   link->original_start, link->original_end,
                                                                   link->coarse_start, link->coarse_end);
             struct cbp_seq *chunk =
@@ -87,7 +87,7 @@ if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %d %d %d %d\n", overlap, link->coarse_
 fprintf(stderr, "%s\n", chunk->residues);
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
-
+/*fprintf(stderr, "Length: %d\n", length);*/
             char *decompressed = read_edit_script(link->diff, chunk->residues,
                                                                       length);
 
@@ -97,13 +97,16 @@ fprintf(stderr, "%s\n", chunk->residues);
             decompressed += overlap;
             if (overlap < link->original_end - link->original_start)
                 printf("%s", decompressed);
+            if (overlap < link->original_end - link->original_start)
+                fprintf(stderr, "\n%s\n\n\n", decompressed);
+fprintf(stderr, "________________________________________________________________\n");
             decompressed -= overlap;
             free(decompressed);
 
             current_chunk++;
             if (link->original_end > last_end)
                 last_end = link->original_end;
-            if(i==2&&current_chunk==216)break;
+/*            if(i==2&&current_chunk==216)break;*/
         }
         putc('\n', stdout);
         if(i==2)break;
