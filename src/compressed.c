@@ -6,7 +6,6 @@
 
 #include "bitpack.h"
 #include "compressed.h"
-#include "DNAutils.h"
 #include "edit_scripts.h"
 
 static struct cbp_compressed_seq *
@@ -339,13 +338,6 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id,
     assert(link->diff);
 
 fprintf(stderr, "New link: %d %ld %ld %d %d!\n", coarse_seq_id, original_start, original_end, coarse_start, coarse_end);
-/*if(link->coarse_end-link->coarse_start<600){
-printf("Reference after alignment:\n%s\n\nOriginal:\n%s\n\n%s\n\n\n\n", alignment.ref, link->diff, alignment.org);
-printf("No dashes:\n%s\n\n", no_dashes(alignment.ref));
-printf("Reference sequence:\n%s\n  |\n  |\n  V\n", no_dashes(alignment.ref));
-printf("Test edit script:\n\n%s\n\n", read_edit_script(link->diff, no_dashes(alignment.ref), link->coarse_end-link->coarse_start));
-printf("Should be the same as:\n%s\n\n", string_revcomp(no_dashes(alignment.org),-1));
-}*/
     return link;
 }
 

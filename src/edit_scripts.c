@@ -199,7 +199,6 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
   the length of the sequence and applies the edit script to the sequence to
   produce a new sequence.*/
 char *read_edit_script(char *edit_script, char *orig, int length){
-/*fprintf(stderr, "Reference being read:\n%s\n", orig);*/
     char *str = malloc((2*length+1)*sizeof(char));
     int i;
     struct edit_info edit;
@@ -207,7 +206,6 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     int current = 0;
     int script_pos = 1;
     char *s = str;
-    /*char *original = orig;*//*(edit_script[0] == '0' ? orig : string_revcomp(orig, -1));*/
 
     while (next_edit(edit_script, &script_pos, &edit)) {
         /* chunk after previous edit */
@@ -231,10 +229,8 @@ char *read_edit_script(char *edit_script, char *orig, int length){
         str[current++] = orig[orig_pos++];
     str = realloc(str, current+1*sizeof(char));
     str[current] = '\0';
-/*fprintf(stderr, "Before reverse complementation: %s\n", str);*/
     if ((edit_script[0] & ((char)0x7f)) == '1')
         str = string_revcomp(s, -1);
-/*fprintf(stderr, "After reverse complementation: %s\n", str);*/
     return str;
 }
 

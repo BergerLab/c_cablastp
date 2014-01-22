@@ -204,12 +204,12 @@ if(org_seq -> id > -1)printf("________________________END OF CHUNK\n");
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
 
-if(org_seq -> id > 1){
+/*if(org_seq -> id > 1){
    int base = 0;
    for(base = 0; base < 10; base++)
         printf("%c", *(kmer+base));
    printf("!\n");
-}
+}*/
 
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
@@ -406,7 +406,7 @@ printf("<--\n");
                 found_match = true;
                 changed = false;
                 printf("MATCH\n");
-fprintf(stderr, "%d, 10, %d\n", mlens_fwd.olen, mlens_rev.olen);
+
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
 
@@ -423,14 +423,12 @@ fprintf(stderr, "%d, 10, %d\n", mlens_fwd.olen, mlens_rev.olen);
                     cor_match[i1-start_coarse_align] = coarse_seq->seq->residues[i1]; 
                 for (i2 = start_original_align; i2 < end_original_align; i2++)
                     org_match[i2-start_original_align] = org_seq->residues[i2];
-printf("Coarse match:\n%s\nOriginal match:%s\n\n", cor_match, org_match);
               /*Get an alignment of the matching sequences*/
                 alignment = cbp_align_nw(mem,
                                          cor_match, coarse_align_len, 0, 1,
                                          org_match, original_align_len,
                                          original_align_len-1, -1,
                                          matches, NULL);
-printf("Coarse alignment:\n%s\nOriginal alignment:%s\n\n", alignment.ref, alignment.org);
                 /*If the length of either the coarse or original match
                   was changed from backtracking in the alignment, update
                   the lengths.*/
@@ -477,7 +475,6 @@ printf("Coarse alignment:\n%s\nOriginal alignment:%s\n\n", alignment.ref, alignm
                                              original_align_len-1, -1,
                                              matches, NULL);
                 }*/
-fprintf(stderr, "Current: %d, mlens_fwd.olen: %d, start_of_section: %d\n\n", current, mlens_fwd.olen, start_of_section);
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
                 if (current - mlens_fwd.olen - start_of_section > 0) {

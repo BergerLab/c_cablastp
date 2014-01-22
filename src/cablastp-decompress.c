@@ -84,10 +84,9 @@ if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %lu %lu %d %d\n", overlap, link->coars
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
                                    link->coarse_start, link->coarse_end);
-fprintf(stderr, "%s\n", chunk->residues);
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
-/*fprintf(stderr, "Length: %d\n", length);*/
+
             char *decompressed = read_edit_script(link->diff, chunk->residues,
                                                                       length);
 
@@ -97,9 +96,6 @@ fprintf(stderr, "%s\n", chunk->residues);
             decompressed += overlap;
             if (overlap < link->original_end - link->original_start)
                 printf("%s", decompressed);
-            if (overlap < link->original_end - link->original_start)
-                fprintf(stderr, "\n%s\n\n\n", decompressed);
-fprintf(stderr, "________________________________________________________________\n");
             decompressed -= overlap;
             free(decompressed);
 
