@@ -105,7 +105,7 @@ if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %lu %lu %d %d\n", overlap, link->coars
 /*            if(i==2&&current_chunk==216)break;*/
         }
         putc('\n', stdout);
-        if(i==2)break;
+        /*if(i==2)break;*/
     }
 
     fasta_generator_free(fsg);

@@ -12,7 +12,7 @@ char base_complement(char base){
         case 'T':
             return 'A';
         default:
-            return '?';
+            return 'N';
     }
 }
 
