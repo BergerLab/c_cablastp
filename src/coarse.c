@@ -171,11 +171,13 @@ cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db)
         kmer = unhash_kmer(coarse_db->seeds, i2);
         fprintf(coarse_db->file_seeds, "%s\n", kmer);
         loc = cbp_seeds_lookup(coarse_db->seeds, kmer);
+        struct cbp_seed_loc *loc_first = loc;
         while (loc) {
-            if(loc->coarse_seq_id<500)
+            if (loc->coarse_seq_id < 500)
                 fprintf(coarse_db->file_seeds,"(%d, %d) > ", loc->coarse_seq_id, loc->residue_index);
             loc = loc->next;
         }
+        cbp_seed_loc_free(loc_first);
         fprintf(coarse_db->file_seeds, "\n");
         free(kmer);
     }

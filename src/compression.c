@@ -219,6 +219,7 @@ if(org_seq -> id > 1){
         /*The locations of all seeds in the database that start with the
           current k-mer's reverse complement.*/
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
+        free(revcomp);
         for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
 printf("Starting seed in seeds\n");
             int coarse_align_len, original_align_len,
