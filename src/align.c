@@ -267,6 +267,13 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         align.org = "\0";
         align.length = -1;
         free(best);
+        for(i = 0; i <= dp_len1; i++){
+            free(tables.dp_score[i]);
+            free(tables.dp_from[i]);
+        }
+        free(tables.dp_score);
+        free(tables.dp_from);
+       
         return align;
     }
     int cur_j1 = best[0];
