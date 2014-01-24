@@ -35,9 +35,6 @@ char *read_int_to_bytes(uint64_t number, int length){
     char *bytes = malloc(length * sizeof(*bytes));
     for (i = length-1; i >= 0; i--)
         bytes[length-i-1] = (char)(shift_right(number, 8*i) & mask);
-/*    printf("read_int_to_bytes: %ld, %d\n", number, length);*/
-/*    for (i = 0; i < length; i++)
-        printf("%d\n", bytes[i]);*/
     return bytes;
 }
 

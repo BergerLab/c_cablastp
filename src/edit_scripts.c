@@ -176,17 +176,17 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
 bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
     int editLength = 0;
     int i = 0;
-    if(isdigit(edit_script[(*pos)]) || edit_script[(*pos)] == '\0')
+    if (isdigit(edit_script[(*pos)]) || edit_script[(*pos)] == '\0')
         return false;
     edit->is_subdel = edit_script[(*pos)++] == 's';
     edit->last_dist = 0;
     edit->str = "";
-    while(isdigit(edit_script[(*pos)])){
+    while (isdigit(edit_script[(*pos)])) {
         edit->last_dist *= 8; /* octal encoding */
         edit->last_dist += edit_script[(*pos)++] - '0';
     }
-    while(isupper(edit_script[(*pos)+editLength]) ||
-                  edit_script[(*pos)+editLength] == '-')
+    while (isupper(edit_script[(*pos)+editLength]) ||
+                   edit_script[(*pos)+editLength] == '-')
         editLength++;
     edit->str = malloc((editLength+1)*sizeof(char));
     edit->str_length = editLength;
@@ -234,11 +234,14 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     return str;
 }
 
+/*Takes in as input a string and returns a copy of the string with the '-'
+  characters removed*/
 char *no_dashes(char *sequence){
     int length;
     int bases = 0;
     int i, j;
     j = 0;
+    /*Get the length of the final string*/
     for (length = 0; sequence[length] != '\0'; length++)
         if (sequence[length] != '-')
             bases++;

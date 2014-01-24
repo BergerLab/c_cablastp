@@ -101,14 +101,14 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
 
             /*Output the ID of the current chunk as 8 characters*/
             int coarse_seq_id = link->coarse_seq_id;
-            for(j = 7; j >= 0; j--){
+            for (j = 7; j >= 0; j--) {
                 char b = shift_right(coarse_seq_id, j*8) & mask;
                 putc(b, com_db->file_compressed);
             }
 
             /*Represent the length of the edit script as two characters and get
               the edit script as a sequence of half-bytes*/
-            while(edit_script[script_length] != '\0')
+            while (edit_script[script_length] != '\0')
                 script_length++;
 
             script_left  = (script_length >> 8) & mask;
@@ -129,7 +129,7 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
             putc(script_right, com_db->file_compressed);
 
             /*Output all of the characters of the edit script as half-bytes*/
-            for(j = 0; j < script_length/2; j++)
+            for (j = 0; j < script_length/2; j++)
                 putc(script[j], com_db->file_compressed);
 
             /*If there are more links for this sequence, the character after
@@ -137,10 +137,10 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
              *edit script is the > of the FASTA header.  If we are printing the
              *last link of the last sequence, print a newline.
              */
-            if(link->next)
+            if (link->next)
                 putc(' ', com_db->file_compressed);
             else
-                if(i == com_db->seqs->size-1)
+                if (i == com_db->seqs->size-1)
                     putc('\n', com_db->file_compressed);
         }
     }
@@ -194,11 +194,11 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
     /*Output the header for the sequence*/
     putc('>', com_db->file_compressed);
     putc(' ', com_db->file_compressed);
-    for(i = 0; id_string[i] != '\0'; i++)
+    for (i = 0; id_string[i] != '\0'; i++)
         putc(id_string[i], com_db->file_compressed);
     putc(';', com_db->file_compressed);
     putc(' ', com_db->file_compressed);
-    for(i = 0; seq->name[i] != '\0'; i++)
+    for (i = 0; seq->name[i] != '\0'; i++)
         putc(seq->name[i], com_db->file_compressed);
     putc('\n', com_db->file_compressed);
 
@@ -224,14 +224,14 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
 
         /*Output the ID of the current chunk as 8 characters*/
         uint64_t coarse_seq_id = link->coarse_seq_id;
-        for(i = 7; i >= 0; i--){
+        for (i = 7; i >= 0; i--) {
             char b = (char)(shift_right(coarse_seq_id, i*8) & mask);
             putc(b, com_db->file_compressed);
         }
 
         /*Represent the length of the edit script as two characters and get
           the edit script as a sequence of half-bytes*/
-        while(edit_script[script_length] != '\0')
+        while (edit_script[script_length] != '\0')
             script_length++;
         odd = script_length % 2 == 1 ? 1 : 0;
         script_left  = (script_length >> 8) & mask;
@@ -251,7 +251,7 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
         putc(script_right, com_db->file_compressed);
 
         /*Output all of the characters of the edit script as half-bytes*/
-        for(i = 0; i < script_length/2+odd; i++)
+        for (i = 0; i < script_length/2+odd; i++)
             putc(script[i], com_db->file_compressed);
 
         /*If there are more links for this sequence, the character after
@@ -259,7 +259,7 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
          *edit script is the > of the FASTA header.  If we are printing the
          *last link of the last sequence, print a newline.
          */
-        if(link->next)
+        if (link->next)
             putc(' ', com_db->file_compressed);
 
         free(script);

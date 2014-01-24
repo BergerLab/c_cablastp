@@ -39,24 +39,24 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
     matches_count = 0;
     matches_since_last_consec = 0;
 
-    for(i = *matches_index - 100; i < *matches_index; i++)
-        if(matches[i])
+    for (i = *matches_index - 100; i < *matches_index; i++)
+        if (matches[i])
             matches_count++;
-    while(i1 >= rstart && i1 < rend && i2 >= ostart && i2 < oend){
+    while (i1 >= rstart && i1 < rend && i2 >= ostart && i2 < oend) {
         int cur_ismatch = bases_match(rseq[i1], oseq[i2], dir_prod);
         i1 += dir1;
         i2 += dir2;
         scanned++;
-        if(cur_ismatch == 1){
+        if (cur_ismatch == 1) {
             matches_past_clump[temp_index] = true;
             temp_index++;
             successive++;
-            if(successive >= consec_match_clump_size){
+            if (successive >= consec_match_clump_size) {
                 int update = check_and_update(matches, matches_index, 
                                               &matches_count,
                                               matches_past_clump, temp_index);
                     length += update;
-                    if(update != temp_index){
+                    if (update != temp_index) {
                         ungapped.length = length;
                         ungapped.found_bad_window = true;
                         return ungapped;
@@ -71,8 +71,8 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32
             matches_past_clump[temp_index] = false;
             temp_index++;
             successive = 0;
-            if(scanned - length >= compress_flags.btwn_match_min_dist_check){
-                if((double)matches_since_last_consec < (scanned-length)*0.5){
+            if (scanned - length >= compress_flags.btwn_match_min_dist_check) {
+                if ((double)matches_since_last_consec < (scanned-length)*0.5) {
                     ungapped.length = length;
                     return ungapped;
                 }
@@ -153,34 +153,35 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
     int dir_prod = dir1*dir2;
     int **dp_score = malloc((dp_len1+1)*sizeof(int *));
     int **dp_from = malloc((dp_len1+1)*sizeof(int *));
-    for(i = 0; i < dp_len1+1; i++){
+    for (i = 0; i < dp_len1+1; i++) {
         dp_score[i] = malloc((dp_len2+1)*sizeof(int));
         dp_from[i] = malloc((dp_len2+1)*sizeof(int));
     }
-    for(i = 0; i <= dp_len2; i++){
+    for (i = 0; i <= dp_len2; i++) {
         dp_score[0][i] = -3*i;
         dp_from[0][i] = 2;
     }
-    for(i = 1; i <= dp_len1; i++){
+    for (i = 1; i <= dp_len1; i++) {
         dp_score[i][0] = -3*i;
         dp_from[i][0] = 1;
     }
-    for(j1 = 1; j1 <= dp_len1; j1++)
-        for(j2 = 1; j2 <= dp_len2; j2++){
+    for (j1 = 1; j1 <= dp_len1; j1++)
+        for (j2 = 1; j2 <= dp_len2; j2++){
             int score0, score1, score2;
             score0 = dp_score[j1-1][j2-1] +
-                     (bases_match(rseq[i1+dir1*(j1-1)], oseq[i2+dir2*(j2-1)], dir_prod) ? 1 : -3);
+                     (bases_match(rseq[i1+dir1*(j1-1)], oseq[i2+dir2*(j2-1)],
+                                                         dir_prod) ? 1 : -3);
             score1 = dp_score[j1-1][j2] - 3;
             score2 = dp_score[j1][j2-1] - 3;
-            if (score0 >= score1 && score0 >= score2){
+            if (score0 >= score1 && score0 >= score2) {
                 dp_score[j1][j2] = score0;
                 dp_from[j1][j2] = 0;
             }
-            else if(score2 >= score1){
+            else if (score2 >= score1) {
                 dp_score[j1][j2] = score2;
                 dp_from[j1][j2] = 2;
             }
-            else{
+            else {
                 dp_score[j1][j2] = score1;
                 dp_from[j1][j2] = 1;
             }
@@ -217,21 +218,21 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
     int **dp_score = tables.dp_score;
     int **dp_from = tables.dp_from;
     int consec_match_clump_size = compress_flags.consec_match_clump_size;
-    while(!(pos[0] == 0 && pos[1] == 0)){
+    while (!(pos[0] == 0 && pos[1] == 0)) {
         int prev_j1, prev_j2;
-        if(consec_matches == consec_match_clump_size){ /*found chunk; stop*/
+        if (consec_matches == consec_match_clump_size) { /*found chunk; stop*/
             pos[0] += consec_match_clump_size;
             pos[1] += consec_match_clump_size;
             break;
         }
 
-        switch(dp_from[pos[0]][pos[1]]){ /*backtrack to previous cell*/
+        switch (dp_from[pos[0]][pos[1]]) { /*backtrack to previous cell*/
             case 0: prev_j1 = pos[0]-1; prev_j2 = pos[1]-1; break;
             case 2: prev_j1 = pos[0]; prev_j2 = pos[1]-1;break;
             default: prev_j1 = pos[0]-1; prev_j2 = pos[1];
         }
-        if(dp_from[pos[0]][pos[1]] == 0)
-            if(dp_score[pos[0]][pos[1]] > dp_score[prev_j1][prev_j2]) /*match*/
+        if (dp_from[pos[0]][pos[1]] == 0)
+            if (dp_score[pos[0]][pos[1]] > dp_score[prev_j1][prev_j2]) /*match*/
 	        consec_matches++;
 	    else
 	        consec_matches = 0;
@@ -241,7 +242,7 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
         pos[1] = prev_j2;
     }
     /*Couldn't find a 4-mer clump*/
-    if(consec_matches < consec_match_clump_size){
+    if (consec_matches < consec_match_clump_size) {
         pos[0] = -1;
         pos[1] = -1;
     }
@@ -258,9 +259,12 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     bool *current_match;
     int matches_count = 0;
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq, dp_len2, i2, dir2);
+if(dp_len1 > 25)fprintf(stderr, "Made the tables\n");
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
+if(dp_len1 > 25)fprintf(stderr, "Found the best edge space\n");
 
     best = backtrack_to_clump(tables, best);
+if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the last 4-mer match\n");
     int i = 0;
     if (best[0] <= 0) {
         align.ref = "\0";
@@ -316,6 +320,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         num_steps++;
         cur_j1 = prev_j1; cur_j2 = prev_j2;
     }
+if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the top left\n");
     for (i = 0; i < num_steps/2; i++) { /* flip order */
         bool temp = matches_to_add[num_steps-i-1];
         matches_to_add[num_steps-1-i] = matches_to_add[i];
@@ -352,7 +357,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         align.ref[align.length] = '\0';
     }
     free(best);
-    for(i = 0; i <= dp_len1; i++){
+    for (i = 0; i <= dp_len1; i++) {
         free(tables.dp_score[i]);
         free(tables.dp_from[i]);
     }
@@ -412,15 +417,15 @@ attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
  */
 int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *temp, int temp_index){
     int i;
-    for(i = 0; i < temp_index; i++){
+    for (i = 0; i < temp_index; i++) {
         int hundred_bases_ago = *matches_index - 100;
         matches[(*matches_index)] = temp[i];
-        if(temp[i])
+        if (temp[i])
             (*num_matches)++;
-        if(matches[hundred_bases_ago])
+        if (matches[hundred_bases_ago])
             (*num_matches)--;
         (*matches_index)++;
-        if(*num_matches < 85)
+        if (*num_matches < 85)
             return i;
     }
     return temp_index;
