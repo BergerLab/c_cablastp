@@ -122,11 +122,11 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             putc((link->dir?'0':'1'), coarse_db->file_links);
             /*0 is used as a delimiter to signify that there are more links
               for this sequence*/
-            if(link->next != NULL)
+            if (link->next != NULL)
                 putc(0, coarse_db->file_links);
         }
         /*'#' is used as a delimiter to signify the last link of the sequence*/
-        if(i+1 < coarse_db->seqs->size)
+        if (i+1 < coarse_db->seqs->size)
             putc('#', coarse_db->file_links);
     }
 }

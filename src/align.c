@@ -267,11 +267,12 @@ if(dp_len1 > 25)fprintf(stderr, "Found the best edge space\n");
 if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the last 4-mer match\n");
     int i = 0;
     if (best[0] <= 0) {
+        if(dp_len1 > 25)fprintf(stderr, "best[0] <= 0\n");
         align.ref = "\0";
         align.org = "\0";
         align.length = -1;
         free(best);
-        for(i = 0; i <= dp_len1; i++){
+        for (i = 0; i <= dp_len1; i++) {
             free(tables.dp_score[i]);
             free(tables.dp_from[i]);
         }
@@ -326,6 +327,7 @@ if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the top left\n");
         matches_to_add[num_steps-1-i] = matches_to_add[i];
         matches_to_add[i] = temp;
     }
+if(dp_len1 > 25)fprintf(stderr, "Finished flipping matches_to_add, dp_len1 = %d\n", dp_len1);
 
     /* note: need to flip order */
     if (dp_len1 < compress_flags.min_match_len)
@@ -341,10 +343,12 @@ if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the top left\n");
                         matches_to_add, num_steps) != num_steps)
         align.length = -1;
     else {
+if(dp_len1 > 25)fprintf(stderr, "Starting to copy the alignment\n");
         align.length = num_steps;
         align.org = malloc((align.length+1)*sizeof(char));
         align.ref = malloc((align.length+1)*sizeof(char));
-        for(i = 0; i < align.length; i++){
+if(dp_len1 > 25)fprintf(stderr, "Allocated align.org and align.ref\n");
+        for (i = 0; i < align.length; i++) {
             /*Don't update the matches array if we are running Needleman-Wunsch
               alignment on a match.*/
             if (dp_len1 < compress_flags.min_match_len)
@@ -353,19 +357,25 @@ if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the top left\n");
             align.ref[i] = subs1_dp[align.length-i-1];
             align.org[i] = subs2_dp[align.length-i-1];
         }
+if(dp_len1 > 25)fprintf(stderr, "Adding null terminators to the end of the alignment\n");
         align.org[align.length] = '\0';
         align.ref[align.length] = '\0';
     }
+if(dp_len1 > 25)fprintf(stderr, "Starting to free data\n");
     free(best);
+if(dp_len1 > 25)fprintf(stderr, "Freed best\n");
     for (i = 0; i <= dp_len1; i++) {
         free(tables.dp_score[i]);
         free(tables.dp_from[i]);
     }
     free(tables.dp_score);
     free(tables.dp_from);
+if(dp_len1 > 25)fprintf(stderr, "Freed tables\n");
     free(subs1_dp);
     free(subs2_dp);
+if(dp_len1 > 25)fprintf(stderr, "Freed subs1 and subs2\n");
     free(matches_to_add);
+if(dp_len1 > 25)fprintf(stderr, "Freed matches_to_add.  Now returning\n");
     return align;
 }
 

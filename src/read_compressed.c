@@ -145,7 +145,8 @@ struct cbp_compressed_seq **read_compressed(FILE *f){
         length++;
     }
 
-    compressed_seqs=realloc(compressed_seqs, (length+1)*sizeof(*compressed_seqs));
+    compressed_seqs = realloc(compressed_seqs,
+                              (length+1)*sizeof(*compressed_seqs));
     compressed_seqs[length] = NULL;
     return compressed_seqs;
 }

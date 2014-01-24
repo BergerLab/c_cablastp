@@ -180,6 +180,8 @@ static int32_t residue_value(char residue)
     return val;
 }
 
+/*Takes in as input a seeds table and a k-mer and returns the k-mer's index
+  in the seeds table*/
 static int32_t hash_kmer(struct cbp_seeds *seeds, char *kmer)
 {
     int32_t i, key;
@@ -190,25 +192,28 @@ static int32_t hash_kmer(struct cbp_seeds *seeds, char *kmer)
     return key;
 }
 
+/*Convert an integer to the k-mer that it represents.  Currently only works for
+  size k = 10*/
 char *unhash_kmer(struct cbp_seeds *seeds, int hash){
     char *kmer = malloc(11*sizeof(char));
     int i;
     char nucleotides[4] = {'A','C','G','T'};
     kmer[10] = '\0';
-    for(i = 0; i < seeds -> seed_size; i++){
+    for (i = 0; i < seeds -> seed_size; i++) {
         kmer[i] = nucleotides[hash%4];
         hash /= 4;
     }
     return kmer;
 }
 
+/*Output the seeds table in plain text format for debugging*/
 void print_seeds(struct cbp_seeds *seeds){
     int32_t i, j;
     char *kmer = malloc(seeds->seed_size * sizeof(*kmer));
-    for(i = 0; i < seeds->locs_length; i++){
+    for (i = 0; i < seeds->locs_length; i++) {
         printf("%s\n", kmer);
         uint32_t new_kmer = (uint32_t)0;
-        for(j = 0; j < seeds->seed_size; j++){
+        for (j = 0; j < seeds->seed_size; j++) {
             new_kmer <<= 2;
             new_kmer |= ((i >> (2*j)) & ((uint32_t)3));
         }
@@ -216,7 +221,7 @@ void print_seeds(struct cbp_seeds *seeds){
         printf("%s\n", kmer);
         free(kmer);
         struct cbp_seed_loc *s = seeds->locs[i];
-        while(s){
+        while (s) {
             printf("(%d %d) > ", s->coarse_seq_id, s->residue_index);
             s = s->next;
         }
