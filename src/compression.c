@@ -176,7 +176,7 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
         matches_temp[i] = true;
     }
     for (current = 0; current <= org_seq->length - seed_size - ext_seed; current++) {
-if(chunks >= 500){break;}
+/*if(chunks >= 500){break;}*/
         found_match = false;
        /*If we are at the beginning of the first chunk of the first sequence,
         *add the first chunk without a match and skip ahead to the start of
@@ -205,13 +205,13 @@ fprintf(stderr, "%d chunks\n", chunks);
         kmer = org_seq->residues + current;
 	revcomp = kmer_revcomp(kmer);
 
-if(org_seq -> id > 1){
+/*if(org_seq -> id > 1){
    int base = 0;
    for(base = 0; base < 10; base++)
         printf("%c", *(kmer+base));
    printf("!\n");
    printf("Current index in chunk: %d", current - start_of_section);
-}
+}*/
 
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
@@ -525,7 +525,7 @@ fprintf(stderr, "%d chunks\n", chunks);
 
                 /*Update the current position in the sequence*/
                 if(current + mlens_rev.olen < org_seq->length - seed_size - ext_seed - 1){
-if(org_seq -> id > 1)fprintf(stderr, "%d %d %d!!!!!!\n", current, mlens_rev.olen, current + mlens_rev.olen - compress_flags.overlap + seed_size);
+if(org_seq -> id > 8)fprintf(stderr, "%d %d %d!!!!!!\n", current, mlens_rev.olen, current + mlens_rev.olen - compress_flags.overlap + seed_size);
                     start_of_section = current + mlens_rev.olen
                                                - compress_flags.overlap + seed_size;
                 }

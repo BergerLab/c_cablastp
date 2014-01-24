@@ -48,4 +48,4 @@ cablastp-compress [flags] database-directory fasta-file [fasta-file ...]
 
 Current progress:  Can compress and decompress two same-direction matches, two reverse-complement matches,
 one same-direction match and one reverse-complement match, and two matches that are at least one chunk
-apart.  On real test data, can currently compress and decompress six Brucella sequences.
+apart.  On real test data, can currently compress and decompress nine Brucella sequences.
