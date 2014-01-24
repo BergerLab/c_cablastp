@@ -327,10 +327,10 @@ if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the top left\n");
         matches_to_add[num_steps-1-i] = matches_to_add[i];
         matches_to_add[i] = temp;
     }
-if(dp_len1 > 25)fprintf(stderr, "Finished flipping matches_to_add, dp_len1 = %d\n", dp_len1);
+if(dp_len1 > 25)fprintf(stderr, "Finished flipping matches_to_add, dp_len1 = %d, dp_len2 = %d\n", dp_len1, dp_len2);
 
     /* note: need to flip order */
-    if (dp_len1 < compress_flags.min_match_len)
+    if (dp_len1 < compress_flags.min_match_len && dp_len2 < compress_flags.min_match_len)
         for (i = *matches_index - 100; i < *matches_index; i++)
             if (matches[i])
                 matches_count++;
@@ -339,6 +339,7 @@ if(dp_len1 > 25)fprintf(stderr, "Finished flipping matches_to_add, dp_len1 = %d\
        throw out this alignment.  Otherwise, copy the alignment into align.org
        and align.ref. */
     if (dp_len1 < compress_flags.min_match_len &&
+        dp_len2 < compress_flags.min_match_len &&
        check_and_update(matches, matches_index, &matches_count,
                         matches_to_add, num_steps) != num_steps)
         align.length = -1;
@@ -351,7 +352,8 @@ if(dp_len1 > 25)fprintf(stderr, "Allocated align.org and align.ref\n");
         for (i = 0; i < align.length; i++) {
             /*Don't update the matches array if we are running Needleman-Wunsch
               alignment on a match.*/
-            if (dp_len1 < compress_flags.min_match_len)
+            if (dp_len1 < compress_flags.min_match_len &&
+                dp_len2 < compress_flags.min_match_len)
                 matches[(*matches_index)+i] = matches_to_add[i];
 
             align.ref[i] = subs1_dp[align.length-i-1];

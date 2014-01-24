@@ -441,7 +441,6 @@ printf("<--\n");
                                          org_match, original_align_len,
                                          original_align_len-1, -1,
                                          matches, NULL);
-if(org_seq->id==6&&chunks==286)continue;
 free(cor_match);free(org_match);
                 /*If the length of either the coarse or original match
                   was changed from backtracking in the alignment, update
@@ -570,7 +569,6 @@ if(org_seq -> id > -1)printf("________________________END OF CHUNK\n");
 fprintf(stderr, "%d chunks\n", chunks);
             chunks++;
         }
-if(org_seq->id==6&&chunks>=287)break;
     }
     
 fprintf(stderr, "Compress finished       %d\n", org_seq->id);
@@ -646,17 +644,17 @@ printf("%d@@@%d\n", dp_len2, dp_len1);
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
-        if(alignment.length == -1)
+        if (alignment.length == -1)
             break;
 
         printf("%s\n%s\n", alignment.org, alignment.ref);
         matches_count = 0;
         /*Check for a bad window manually and end the extension if a bad
           window is found.*/
-        for(i = matches_index - 100; i < matches_index; i++)
+        for (i = matches_index - 100; i < matches_index; i++)
             if(matches[i])
                 matches_count++;
-        if(matches_count < compress_flags.window_ident_thresh)
+        if (matches_count < compress_flags.window_ident_thresh)
             break;
 
         r_align_len = cbp_align_length_nogaps(alignment.ref);
