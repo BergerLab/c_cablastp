@@ -617,7 +617,7 @@ extend_match(struct cbp_align_nw_memory *mem,
         /*Check for a bad window manually and end the extension if a bad
           window is found.*/
         for (i = matches_index - 100; i < matches_index; i++)
-            if(matches[i])
+            if (matches[i])
                 matches_count++;
         if (matches_count < compress_flags.window_ident_thresh)
             break;
