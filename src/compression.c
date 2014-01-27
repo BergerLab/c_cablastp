@@ -228,6 +228,9 @@ fprintf(stderr, "%d chunks\n", chunks);
             char *cor_match, *org_match;
             int i1, i2;
 
+            if (found_match)
+                break;
+
             resind = seedLoc->residue_index;
             coarse_seq = cbp_coarse_get(coarse_db, seedLoc->coarse_seq_id);
 
@@ -244,7 +247,7 @@ fprintf(stderr, "%d chunks\n", chunks);
                 attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50){
 /*printf("Starting extend_match in seeds\n");*/
-printf("-->\n");
+/*printf("-->\n");*/
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
                                           org_seq->residues, start_of_section, end_of_section, current, -1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
@@ -255,7 +258,7 @@ printf("-->\n");
                     continue;
                 found_match = true;
                 changed = false;
-                printf("MATCH!!!\n");
+                /*printf("MATCH!!!\n");*/
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
 
@@ -341,6 +344,7 @@ fprintf(stderr, "%d chunks\n", chunks);
                     chunks++;
                 }
 
+fprintf(stderr, "Adding link in compressed sequence for forward match\n");
                 /*Add a link to the coarse sequence in the compressed
                   sequence.*/
                 cbp_compressed_seq_addlink(cseq,
@@ -351,6 +355,7 @@ fprintf(stderr, "%d chunks\n", chunks);
                                             resind + seed_size + mlens_fwd.rlen,
                                             alignment, true));
 
+fprintf(stderr, "Adding link in coarse sequence for forward match\n");
                 /*Add a link to the compressed sequence in the coarse
                   sequence.*/
                 cbp_coarse_seq_addlink(coarse_seq,
@@ -358,7 +363,6 @@ fprintf(stderr, "%d chunks\n", chunks);
                                        org_seq->id,
                                        resind - mlens_rev.rlen,
                                        resind + seed_size + mlens_fwd.rlen, true));
-
                 /*Update the current position in the sequence*/
                 if (current + mlens_fwd.olen < org_seq->length - seed_size - ext_seed - 1) {
                     start_of_section = current + mlens_fwd.olen
@@ -404,7 +408,7 @@ fprintf(stderr, "%d chunks\n", chunks);
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
                             resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > 50) {
-printf("<--\n");
+/*printf("<--\n");*/
 /*printf("Starting extend_match in seeds_r, total: %d\n", mlens_rev.olen+seed_size+mlens_fwd.olen);*/
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
                                          org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
@@ -417,7 +421,7 @@ printf("<--\n");
 
                 found_match = true;
                 changed = false;
-                printf("MATCH\n");
+                /*printf("MATCH\n");*/
 
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
                 original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
@@ -507,6 +511,7 @@ fprintf(stderr, "%d chunks\n", chunks);
 
                 /*Add a link to the coarse sequence in the compressed
                   sequence.*/
+fprintf(stderr, "Adding link in compressed sequence for reverse match\n");
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
                                             current - mlens_fwd.olen,
@@ -517,11 +522,13 @@ fprintf(stderr, "%d chunks\n", chunks);
 
                 /*Add a link to the compressed sequence in the coarse
                   sequence.*/
+fprintf(stderr, "Adding link in coarse sequence for reverse match\n");
                 cbp_coarse_seq_addlink(coarse_seq,
                                        cbp_link_to_compressed_init(
                                        org_seq->id,
                                        resind - mlens_rev.rlen,
                                        resind + seed_size + mlens_fwd.rlen, false));
+/*printf("Finished adding links for reverse match\n");*/
 
                 /*Update the current position in the sequence*/
                 if(current + mlens_rev.olen < org_seq->length - seed_size - ext_seed - 1){
@@ -543,9 +550,12 @@ fprintf(stderr, "%d chunks\n", chunks);
             }
 /*printf("Finished seed in seeds_r\n");*/
         }
-printf("#######\n");
+/*printf("#######\n");*/
+if(org_seq->id==9)fprintf(stderr, "Freeing seeds\n");
         cbp_seed_loc_free(seeds);
+if(org_seq->id==9)fprintf(stderr, "Freeing seeds_r\n");
         cbp_seed_loc_free(seeds_r);
+/*if(org_seq->id == 9 && chunks == 319)break;*/
 
       /*If we have traversed an entire chunk of bases without finding a match,
         then add the whole chunk as a sequence in the database and update
@@ -640,14 +650,14 @@ extend_match(struct cbp_align_nw_memory *mem,
           found a bad window or couldn't find a 4-mer match in the alignment.*/
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
-printf("%d@@@%d\n", dp_len2, dp_len1);
+/*printf("%d@@@%d\n", dp_len2, dp_len1);*/
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
         if (alignment.length == -1)
             break;
 
-        printf("%s\n%s\n", alignment.org, alignment.ref);
+/*        printf("%s\n%s\n", alignment.org, alignment.ref);*/
         matches_count = 0;
         /*Check for a bad window manually and end the extension if a bad
           window is found.*/
