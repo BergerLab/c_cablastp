@@ -8,7 +8,7 @@ COMPRESS_OBJS=align.o blosum62.o blosum62_matrix.o \
 COMPRESS_HEADERS=align.o blosum62.h coarse.h compressed.h compression.h \
 								 database.h fasta.h flags.h seeds.h seq.h util.h
 
-all: cablastp-compress cablastp-decompress
+all: cablastp-compress cablastp-decompress cablastp-search
 
 compress: blosum62.h cablastp-compress
 
@@ -29,6 +29,21 @@ decompress: blosum62.h cablastp-decompress
 cablastp-decompress: cablastp-decompress.o $(DECOMPRESS_HEADERS) $(DECOMPRESS_OBJS)
 
 cablastp-decompress.o: cablastp-decompress.c blosum62.h database.h fasta.h
+
+
+
+SEARCH_OBJS=align.o blosum62.o blosum62_matrix.o \
+							bitpack.o coarse.o compressed.o compression.o database.o DNAutils.o edit_scripts.o fasta.o flags.o \
+							read_compressed.o seeds.o seq.o util.o
+SEARCH_HEADERS=align.o blosum62.h coarse.h compressed.h compression.h \
+								 database.h fasta.h flags.h read_compressed.o seeds.h seq.h util.h
+
+search: blosum62.h cablastp-search
+
+cablastp-search: cablastp-search.o $(SEARCH_HEADERS) $(SEARCH_OBJS)
+
+cablastp-search.o: cablastp-search.c blosum62.h database.h fasta.h
+
 
 align.o: align.c align.h blosum62.h
 bitpack.o: bitpack.c bitpack.h

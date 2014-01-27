@@ -1,4 +1,4 @@
-all: cablastp-compress cablastp-decompress
+all: cablastp-compress cablastp-decompress cablastp-search
 
 cablastp-compress: src/cablastp-compress
 	cp src/cablastp-compress .
@@ -11,6 +11,13 @@ cablastp-decompress: src/cablastp-decompress
 
 src/cablastp-decompress:
 	(cd src && make decompress)
+
+cablastp-search: src/cablastp-search
+	cp src/cablastp-search .
+
+src/cablastp-search:
+	(cd src && make search)
+
 
 clean:
 	(cd src && make clean)
