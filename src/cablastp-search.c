@@ -17,10 +17,22 @@
 #include "seq.h"
 #include "util.h"
 
+static char *path_join(char *a, char *b)
+{
+    char *joined;
+
+    joined = malloc((1 + strlen(a) + 1 + strlen(b)) * sizeof(*joined));
+    assert(joined);
+
+    sprintf(joined, "%s/%s", a, b);
+    return joined;
+}
+
+
+/*Takes in the filename for a FASTA file and returns the file's sequences in a
+  struct fasta_file*/
 struct fasta_file *get_input_fasta(const char *filename){
-    FILE *f = fopen(filename, "r");
     struct fasta_file *input_fasta_query = fasta_read_all(filename, "");
-    fclose(f);
     return input_fasta_query;
 }
 
@@ -38,7 +50,7 @@ main(int argc, char **argv)
     int i, org_seq_id;
     struct timeval start, current;
     long double elapsed;*/
-    conf = load_compress_args();
+    conf = load_search_args();
     args = opt_config_parse(conf, argc, argv);
     if (args->nargs < 2) {
         fprintf(stderr, 
@@ -47,11 +59,12 @@ main(int argc, char **argv)
         opt_config_print_usage(conf);
         exit(1);
     }
-    struct fasta_file *input_fasta_query = get_input_fasta(argv[1]);
+    struct fasta_file *input_fasta_query = get_input_fasta(path_join(argv[1], CABLASTP_COARSE_FASTA));
     int i = 0;
     for(i = 0; i < input_fasta_query->length; i++){
         fprintf(stderr, "%s\n", input_fasta_query->seqs[i]->seq);
     }
+    struct cbp_database *db = cbp_database_read(argv[1], search_flags.map_seed_size);
 /*
     db = cbp_database_init(args->args[0], compress_flags.map_seed_size, false);
     workers = cbp_compress_start_workers(db, compress_flags.procs);
