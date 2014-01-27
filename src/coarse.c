@@ -228,52 +228,35 @@ void
 cbp_coarse_seq_addlink(struct cbp_coarse_seq *seq,
                        struct cbp_link_to_compressed *newlink)
 {
-printf("addlink %d %d %d %d\n", (newlink -> dir == 1 ? 1:-1), newlink->org_seq_id, newlink->coarse_start, newlink->coarse_end);
     struct cbp_link_to_compressed *link;
 
     assert(newlink->next == NULL);
-printf("passed assertion in cbp_coarse_seq_addlink\n");
     pthread_rwlock_wrlock(&seq->lock_links);
     if (seq->links == NULL) {
-printf("seq->links = null\n");
         seq->links = newlink;
-printf("unlocking\n");
         pthread_rwlock_unlock(&seq->lock_links);
-printf("returning\n");
         return;
     }
 
-printf("Looping through the links\n");
     for (link = seq->links; link->next != NULL; link = link->next);
-printf("Setting link->next\n");
     link->next = newlink;
-printf("Unlocking\n");
     pthread_rwlock_unlock(&seq->lock_links);
-printf("Returning\n");
 }
 
 struct cbp_link_to_compressed *
 cbp_link_to_compressed_init(int32_t org_seq_id,
                             int16_t coarse_start, int16_t coarse_end, bool dir)
 {
-if(org_seq_id==9)fprintf(stderr, "Starting cbp_link_to_compressed_init\n");
     struct cbp_link_to_compressed *link;
 
     link = malloc(sizeof(*link));
-if(org_seq_id==9)fprintf(stderr, "Called malloc to allocate the link\n");
     assert(link);
-if(org_seq_id==9)fprintf(stderr, "Assertion passed\n");
 
     link->org_seq_id = org_seq_id;
-if(org_seq_id==9)fprintf(stderr, "Assigned org_seq_id\n");
     link->coarse_start = coarse_start;
-if(org_seq_id==9)fprintf(stderr, "Assigned coarse_start\n");
     link->coarse_end = coarse_end;
-if(org_seq_id==9)fprintf(stderr, "Assigned coarse_end\n");
     link->dir = dir;
-if(org_seq_id==9)fprintf(stderr, "Assigned dir\n");
     link->next = NULL;
-if(org_seq_id==9)fprintf(stderr, "Assigned next.  Returning.\n");
 
     return link;
 }

@@ -337,7 +337,6 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id,
     link->diff = make_edit_script(alignment.org, alignment.ref, dir, alignment.length);
     assert(link->diff);
 
-fprintf(stderr, "New link: %d %ld %ld %d %d!\n", coarse_seq_id, original_start, original_end, coarse_start, coarse_end);
     return link;
 }
 
@@ -360,7 +359,6 @@ cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id,
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
     link->next = NULL;
-fprintf(stderr, "New link: %d %ld %ld %d %d\n", coarse_seq_id, original_start, original_end, coarse_start, coarse_end);
 
     return link;
 }

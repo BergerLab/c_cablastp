@@ -259,15 +259,11 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     bool *current_match;
     int matches_count = 0;
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq, dp_len2, i2, dir2);
-if(dp_len1 > 25)fprintf(stderr, "Made the tables\n");
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
-if(dp_len1 > 25)fprintf(stderr, "Found the best edge space\n");
 
     best = backtrack_to_clump(tables, best);
-if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the last 4-mer match\n");
     int i = 0;
     if (best[0] <= 0) {
-        if(dp_len1 > 25)fprintf(stderr, "best[0] <= 0\n");
         align.ref = "\0";
         align.org = "\0";
         align.length = -1;
@@ -321,13 +317,11 @@ if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the last 4-mer match\n
         num_steps++;
         cur_j1 = prev_j1; cur_j2 = prev_j2;
     }
-if(dp_len1 > 25)fprintf(stderr, "Finished backtracking to the top left\n");
     for (i = 0; i < num_steps/2; i++) { /* flip order */
         bool temp = matches_to_add[num_steps-i-1];
         matches_to_add[num_steps-1-i] = matches_to_add[i];
         matches_to_add[i] = temp;
     }
-if(dp_len1 > 25)fprintf(stderr, "Finished flipping matches_to_add, dp_len1 = %d, dp_len2 = %d\n", dp_len1, dp_len2);
 
     /* note: need to flip order */
     if (dp_len1 < compress_flags.min_match_len && dp_len2 < compress_flags.min_match_len)
@@ -344,11 +338,9 @@ if(dp_len1 > 25)fprintf(stderr, "Finished flipping matches_to_add, dp_len1 = %d,
                         matches_to_add, num_steps) != num_steps)
         align.length = -1;
     else {
-if(dp_len1 > 25)fprintf(stderr, "Starting to copy the alignment\n");
         align.length = num_steps;
         align.org = malloc((align.length+1)*sizeof(char));
         align.ref = malloc((align.length+1)*sizeof(char));
-if(dp_len1 > 25)fprintf(stderr, "Allocated align.org and align.ref\n");
         for (i = 0; i < align.length; i++) {
             /*Don't update the matches array if we are running Needleman-Wunsch
               alignment on a match.*/
@@ -359,25 +351,19 @@ if(dp_len1 > 25)fprintf(stderr, "Allocated align.org and align.ref\n");
             align.ref[i] = subs1_dp[align.length-i-1];
             align.org[i] = subs2_dp[align.length-i-1];
         }
-if(dp_len1 > 25)fprintf(stderr, "Adding null terminators to the end of the alignment\n");
         align.org[align.length] = '\0';
         align.ref[align.length] = '\0';
     }
-if(dp_len1 > 25)fprintf(stderr, "Starting to free data\n");
     free(best);
-if(dp_len1 > 25)fprintf(stderr, "Freed best\n");
     for (i = 0; i <= dp_len1; i++) {
         free(tables.dp_score[i]);
         free(tables.dp_from[i]);
     }
     free(tables.dp_score);
     free(tables.dp_from);
-if(dp_len1 > 25)fprintf(stderr, "Freed tables\n");
     free(subs1_dp);
     free(subs2_dp);
-if(dp_len1 > 25)fprintf(stderr, "Freed subs1 and subs2\n");
     free(matches_to_add);
-if(dp_len1 > 25)fprintf(stderr, "Freed matches_to_add.  Now returning\n");
     return align;
 }
 
