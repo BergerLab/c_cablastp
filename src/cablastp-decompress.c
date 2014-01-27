@@ -77,9 +77,6 @@ main(int argc, char **argv)
               decompressed sequence currently being decompressed.*/
             overlap = last_end - link->original_start;
 
-if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %lu %lu %d %d\n", overlap, link->coarse_seq_id, link->diff[0], link->diff,
-                                                                  link->original_start, link->original_end,
-                                                                  link->coarse_start, link->coarse_end);
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
@@ -102,10 +99,8 @@ if(i<=2)fprintf(stderr, "%d, #%d, %d '%s' %lu %lu %d %d\n", overlap, link->coars
             current_chunk++;
             if (link->original_end > last_end)
                 last_end = link->original_end;
-/*            if(i==2&&current_chunk==216)break;*/
         }
         putc('\n', stdout);
-        /*if(i==2)break;*/
     }
 
     fasta_generator_free(fsg);

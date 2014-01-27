@@ -57,7 +57,6 @@ struct cbp_link_to_coarse *read_link(FILE *f){
         coarse_seq_id <<= 8;
         coarse_seq_id |= (uint64_t)c;
     }
-fprintf(stderr, "%ld\n", coarse_seq_id);
     for (i = 0; i < 22; i++){
         c = getc(f);
         if (feof(f)) {
@@ -95,7 +94,6 @@ fprintf(stderr, "%ld\n", coarse_seq_id);
         }
         half_bytes[i] = (char)c;
     }
-fprintf(stderr, "Original: %ld %ld %d %d\n", original_start, original_end, coarse_start, coarse_end);
     diff = half_bytes_to_ASCII(half_bytes, script_length);
     link->diff = diff;
     link->coarse_seq_id = coarse_seq_id;
