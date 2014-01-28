@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-g -O3 -ansi -Wall -Wextra -pedantic -lpthread -I.
+CFLAGS=-g -O3 -ansi -Wall -Wextra -pedantic -lpthread -I. -I/usr/include/libxml2
 LDLIBS=-lds -lpthread -lopt
 
 COMPRESS_OBJS=align.o blosum62.o blosum62_matrix.o \
