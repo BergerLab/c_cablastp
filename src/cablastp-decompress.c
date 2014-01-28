@@ -11,7 +11,6 @@
 #include "coarse.h"
 #include "compressed.h"
 #include "database.h"
-#include "DNAutils.h"
 #include "edit_scripts.h"
 #include "flags.h"
 #include "fasta.h"
@@ -99,13 +98,18 @@ main(int argc, char **argv)
             current_chunk++;
             if (link->original_end > last_end)
                 last_end = link->original_end;
+
+            cbp_seq_free(chunk);
         }
         putc('\n', stdout);
     }
 
     fasta_generator_free(fsg);
+    for(i = 0; i < num_coarse_sequences; i++)
+        free(coarse_sequences[i]);
+    free(coarse_sequences);
 
-    /*cbp_database_free(db);*/
+    cbp_database_free(db);
     opt_config_free(conf);
     opt_args_free(args);
 
