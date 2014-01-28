@@ -17,6 +17,17 @@
 #include "seq.h"
 #include "util.h"
 
+static char *path_join(char *a, char *b)
+{
+    char *joined;
+
+    joined = malloc((1 + strlen(a) + 1 + strlen(b)) * sizeof(*joined));
+    assert(joined);
+
+    sprintf(joined, "%s/%s", a, b);
+    return joined;
+}
+
 int
 main(int argc, char **argv)
 { 
@@ -74,6 +85,18 @@ main(int argc, char **argv)
     cbp_compressed_save_plain(db->com_db);
     /*cbp_compressed_save_binary(db->com_db);*/
 
+    char *coarse_filename = path_join(args->args[0], "coarse.fasta");
+    int len_filename = strlen(coarse_filename);
+    int len_command = strlen("makeblastdb -dbtype nucl -in  -out") + len_filename + 1;
+    char *makeblastdb = malloc(len_command * sizeof(makeblastdb));
+    strcpy(makeblastdb, "makeblastdb -dbtype nucl -in ");
+    strcat(makeblastdb, coarse_filename);
+    strcat(makeblastdb, " -out ");
+    strcat(makeblastdb, coarse_filename);
+
+    system(makeblastdb);
+
+    free(makeblastdb);
     cbp_database_free(db);
     opt_config_free(conf);
     opt_args_free(args);
