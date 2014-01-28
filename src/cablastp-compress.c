@@ -87,12 +87,11 @@ main(int argc, char **argv)
 
     char *coarse_filename = path_join(args->args[0], "coarse.fasta");
     int len_filename = strlen(coarse_filename);
-    int len_command = strlen("makeblastdb -dbtype nucl -in  -out") + len_filename + 1;
+    int len_command = strlen("makeblastdb -dbtype nucl -in  -out") +
+                      2 * len_filename + 1;
     char *makeblastdb = malloc(len_command * sizeof(makeblastdb));
-    strcpy(makeblastdb, "makeblastdb -dbtype nucl -in ");
-    strcat(makeblastdb, coarse_filename);
-    strcat(makeblastdb, " -out ");
-    strcat(makeblastdb, coarse_filename);
+    sprintf(makeblastdb, "makeblastdb -dbtype nucl -in %s -out %s",
+                                 coarse_filename, coarse_filename);
 
     system(makeblastdb);
 
