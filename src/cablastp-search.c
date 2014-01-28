@@ -31,11 +31,20 @@ static char *path_join(char *a, char *b)
 
 /*Takes in the filename for a FASTA file and returns the file's sequences in a
   struct fasta_file*/
-struct fasta_file *get_input_fasta(const char *filename){
+/*struct fasta_file *get_input_fasta(const char *filename){
     struct fasta_file *input_fasta_query = fasta_read_all(filename, "");
     return input_fasta_query;
-}
+}*/
 
+void blast_coarse(char *input_dir, char *query){
+    char *input_path = path_join(input_dir, CABLASTP_COARSE_FASTA);
+    char *blastn_command = "blastn -db  -outfmt 5 -query %s";
+    int command_length = strlen(blastn_command) + strlen(input_path) + strlen(query) + 1;
+    char *blastn = malloc(command_length*sizeof(*blastn));
+    sprintf(blastn, "blastn -db %s -outfmt 5 -query %s", input_path, query);
+    fprintf(stderr, "%s\n", blastn);
+    system(blastn);
+}
 
 int
 main(int argc, char **argv)
@@ -59,12 +68,13 @@ main(int argc, char **argv)
         opt_config_print_usage(conf);
         exit(1);
     }
-    struct fasta_file *input_fasta_query = get_input_fasta(path_join(argv[1], CABLASTP_COARSE_FASTA));
+    /*struct fasta_file *input_fasta_query = get_input_fasta(path_join(argv[1], CABLASTP_COARSE_FASTA));
     int i = 0;
     for(i = 0; i < input_fasta_query->length; i++){
         fprintf(stderr, "%s\n", input_fasta_query->seqs[i]->seq);
     }
-    struct cbp_database *db = cbp_database_read(argv[1], search_flags.map_seed_size);
+    struct cbp_database *db = cbp_database_read(argv[1], search_flags.map_seed_size);*/
+    blast_coarse(args->args[0], args->args[1]);
 /*
     db = cbp_database_init(args->args[0], compress_flags.map_seed_size, false);
     workers = cbp_compress_start_workers(db, compress_flags.procs);
