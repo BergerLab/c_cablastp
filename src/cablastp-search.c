@@ -19,6 +19,7 @@
 #include "fasta.h"
 #include "seq.h"
 #include "util.h"
+#include "xml.h"
 
 static char *path_join(char *a, char *b)
 {

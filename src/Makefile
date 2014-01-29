@@ -36,7 +36,7 @@ SEARCH_OBJS=align.o blosum62.o blosum62_matrix.o \
 							bitpack.o coarse.o compressed.o compression.o database.o DNAutils.o edit_scripts.o fasta.o flags.o \
 							read_compressed.o seeds.o seq.o util.o
 SEARCH_HEADERS=align.o blosum62.h coarse.h compressed.h compression.h \
-								 database.h fasta.h flags.h read_compressed.o seeds.h seq.h util.h
+								 database.h fasta.h flags.h read_compressed.o seeds.h seq.h util.h xml.h
 
 search: blosum62.h cablastp-search
 
