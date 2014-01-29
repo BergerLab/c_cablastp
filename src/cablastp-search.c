@@ -1,4 +1,6 @@
 #include <assert.h>
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -36,14 +38,39 @@ static char *path_join(char *a, char *b)
     return input_fasta_query;
 }*/
 
+/*Runs BLAST on the coarse database and stores the results in a temporary XML file*/
 void blast_coarse(char *input_dir, char *query){
     char *input_path = path_join(input_dir, CABLASTP_COARSE_FASTA);
-    char *blastn_command = "blastn -db  -outfmt 5 -query %s";
+    char *blastn_command = "blastn -db  -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml";
     int command_length = strlen(blastn_command) + strlen(input_path) + strlen(query) + 1;
     char *blastn = malloc(command_length*sizeof(*blastn));
-    sprintf(blastn, "blastn -db %s -outfmt 5 -query %s", input_path, query);
+    sprintf(blastn, "blastn -db %s -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml", input_path, query);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
+}
+
+void print_name(xmlNode *node){
+   if(node->type==XML_ELEMENT_NODE)fprintf(stderr, "%s\n", node->name);
+}
+
+void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *)){
+    for(; root; root = root->next){
+        f(root);
+        traverse_blast_xml(root->children, f);
+    }
+}
+
+void expand_blast_hits(){
+    xmlDoc *doc = NULL;
+    xmlNode *root = NULL;
+    doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
+    if(doc == NULL)
+        fprintf(stderr, "Could not parse CaBLAST_temp_blast_results.xml\n");
+    root = xmlDocGetRootElement(doc);
+    /*fprintf(stderr, "%s\n", root->name);*/
+    traverse_blast_xml(root, print_name);
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
 }
 
 int
@@ -75,6 +102,7 @@ main(int argc, char **argv)
     }
     struct cbp_database *db = cbp_database_read(argv[1], search_flags.map_seed_size);*/
     blast_coarse(args->args[0], args->args[1]);
+    expand_blast_hits();
 /*
     db = cbp_database_init(args->args[0], compress_flags.map_seed_size, false);
     workers = cbp_compress_start_workers(db, compress_flags.procs);
