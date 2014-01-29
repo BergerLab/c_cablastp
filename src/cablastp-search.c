@@ -43,8 +43,10 @@ static char *path_join(char *a, char *b)
 /*Runs BLAST on the coarse database and stores the results in a temporary XML file*/
 void blast_coarse(char *input_dir, char *query){
     char *input_path = path_join(input_dir, CABLASTP_COARSE_FASTA);
-    char *blastn_command = "blastn -db  -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml";
-    int command_length = strlen(blastn_command) + strlen(input_path) + strlen(query) + 1;
+    char *blastn_command =
+           "blastn -db  -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml";
+    int command_length = strlen(blastn_command) + strlen(input_path) +
+                                                       strlen(query) + 1;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
            "blastn -db %s -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml",
@@ -63,22 +65,45 @@ void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
     }
 }
 
+/*Takes in the xmlNode representing a BLAST hsp and populates a struct hsp
+  with its data.*/
+struct hsp *populate_blast_hsp(xmlNode *node){
+    struct hsp *h = malloc(sizeof(*h));
+    h->xml_name = "Hsp";
+    for (; node; node = node->next){
+        if (!strcmp((char *)node->name, "Hsp_num"))
+            h->num = atoi((char *)node->children->content);
+        if (!strcmp((char *)node->name, "Hsp_evalue"))
+            h->evalue = atof((char *)node->children->content);
+        if (!strcmp((char *)node->name, "Hsp_query-from"))
+            h->query_from = atoi((char *)node->children->content);
+        if (!strcmp((char *)node->name, "Hsp_query-to"))
+            h->query_to = atoi((char *)node->children->content);
+        if (!strcmp((char *)node->name, "Hsp_hit-from"))
+            h->hit_from = atoi((char *)node->children->content);
+        if (!strcmp((char *)node->name, "Hsp_hit-to"))
+            h->hit_to = atoi((char *)node->children->content);
+    }
+    return h;
+}
+
 /*Takes in the xmlNode representing a BLAST hit and populates a struct hit
   with its data.*/
 struct hit *populate_blast_hit(xmlNode *node){
     struct hit *h = malloc(sizeof(*h));
+    h->xml_name = "Hit";
     for (; node; node = node->next) {
-        if (!strcmp((char *)node->name, "Hit_id")) {
-            int name_length = strlen((char *)node->name) + 1;
-            h->xml_name = malloc(name_length * sizeof(*(h->xml_name)));
-            strcpy(h->xml_name, (char *)node->children->content);
-        }
         if (!strcmp((char *)node->name, "Hit_num"))
             h->num = atoi((char *)node->children->content);
         if (!strcmp((char *)node->name, "Hit_accession")) 
             h->accession = atoi((char *)node->children->content);
-        /*if (!strcmp((char *)node->name, "Hit_accession")) 
-            h->hsps = populate_blast_hsp(node->children);*/
+        if (!strcmp((char *)node->name, "Hit_hsps")){
+            struct DSLinkedList *hsps = ds_list_create();
+            xmlNode *hsp_node = node->children;
+            for(; hsp_node; hsp_node = hsp_node->next)
+                ds_list_append(hsps,
+                       (void *)populate_blast_hsp(hsp_node->children));
+        }
     }
     return h;
 }
