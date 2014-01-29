@@ -57,17 +57,53 @@ void blast_coarse(char *input_dir, char *query){
  *accumulator and traverses the tree, applying the function on each node.
  */
 void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
-    for (; root; root = root->next ){
+    for (; root; root = root->next) {
         f(root, acc);
         traverse_blast_xml(root->children, f, acc);
     }
+}
+
+/*Takes in the xmlNode representing a BLAST hit and populates a struct hit
+  with its data.*/
+struct hit *populate_blast_hit(xmlNode *node){
+    struct hit *h = malloc(sizeof(*h));
+    for (; node; node = node->next) {
+        if (!strcmp((char *)node->name, "Hit_id")) {
+            int name_length = strlen((char *)node->name) + 1;
+            h->xml_name = malloc(name_length * sizeof(*(h->xml_name)));
+            strcpy(h->xml_name, (char *)node->children->content);
+        }
+        if (!strcmp((char *)node->name, "Hit_num"))
+            h->num = atoi((char *)node->children->content);
+        if (!strcmp((char *)node->name, "Hit_accession")) 
+            h->accession = atoi((char *)node->children->content);
+        /*if (!strcmp((char *)node->name, "Hit_accession")) 
+            h->hsps = populate_blast_hsp(node->children);*/
+    }
+    return h;
 }
 
 /*Takes in an xmlNode and a linked list of xmlNodes converted to a void *
   and adds the node to the list if the node represents a BLAST hit.*/
 void add_blast_hit(xmlNode *node, void *hits){
     if (!strcmp((char *)(node->name), "Hit"))
-        ds_list_append((struct DSLinkedList *)hits, (void *)node);
+        ds_list_append((struct DSLinkedList *)hits,
+                       (void *)populate_blast_hit(node->children));
+}
+
+/*Takes in an xmlNode and a linked list of xmlNodes converted to a void *
+  and adds the node to the list if the node represents a BLAST hsp.*/
+void add_blast_hsp(xmlNode *node, void *hsps){
+    if (!strcmp((char *)(node->name), "Hsp"))
+        ds_list_append((struct DSLinkedList *)hsps, (void *)node);
+}
+
+/*Takes in the xmlNode for a hit in a parsed BLAST XML tree and returns a
+  linked list of all of the nodes in the tree that represent BLAST hits.*/
+struct DSLinkedList *get_hit_hsps(xmlNode *hit){ 
+    struct DSLinkedList *hsps = ds_list_create();
+    traverse_blast_xml(hit, add_blast_hsp, hsps);
+    return hsps;
 }
 
 /*Takes in the xmlNode for the root of a parsed BLAST XML tree and returns
