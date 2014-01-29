@@ -266,3 +266,8 @@ cbp_link_to_compressed_free(struct cbp_link_to_compressed *link)
 {
     free(link);
 }
+
+struct cbp_seq *
+cbp_coarse_expand(struct cbp_compressed *comdb, int32_t id, int32_t start, int32_t end){
+    return NULL;
+}

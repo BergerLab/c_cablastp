@@ -13,6 +13,7 @@
 
 #include "blosum62.h"
 #include "coarse.h"
+#include "compressed.h"
 #include "compression.h"
 #include "database.h"
 #include "flags.h"
@@ -116,21 +117,6 @@ void add_blast_hit(xmlNode *node, void *hits){
                        (void *)populate_blast_hit(node->children));
 }
 
-/*Takes in an xmlNode and a linked list of xmlNodes converted to a void *
-  and adds the node to the list if the node represents a BLAST hsp.*/
-void add_blast_hsp(xmlNode *node, void *hsps){
-    if (!strcmp((char *)(node->name), "Hsp"))
-        ds_list_append((struct DSLinkedList *)hsps, (void *)node);
-}
-
-/*Takes in the xmlNode for a hit in a parsed BLAST XML tree and returns a
-  linked list of all of the nodes in the tree that represent BLAST hits.*/
-struct DSLinkedList *get_hit_hsps(xmlNode *hit){ 
-    struct DSLinkedList *hsps = ds_list_create();
-    traverse_blast_xml(hit, add_blast_hsp, hsps);
-    return hsps;
-}
-
 /*Takes in the xmlNode for the root of a parsed BLAST XML tree and returns
   a linked list of all of the nodes in the tree that represent BLAST hits.*/
 struct DSLinkedList *get_blast_hits(xmlNode *node){
@@ -139,7 +125,7 @@ struct DSLinkedList *get_blast_hits(xmlNode *node){
     return hits;
 }
 
-void expand_blast_hits(){
+void expand_blast_hits(struct cbp_database *db){
     xmlDoc *doc = NULL;
     xmlNode *root = NULL;
     doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
@@ -156,8 +142,7 @@ void expand_blast_hits(){
 int
 main(int argc, char **argv)
 { 
-    /*struct cbp_database *db;
-    struct cbp_compress_workers *workers;*/
+    struct cbp_database *db;
     struct opt_config *conf;
     struct opt_args *args;
     /*struct fasta_seq_gen *fsg;
@@ -179,14 +164,12 @@ main(int argc, char **argv)
     int i = 0;
     for(i = 0; i < input_fasta_query->length; i++){
         fprintf(stderr, "%s\n", input_fasta_query->seqs[i]->seq);
-    }
-    struct cbp_database *db = cbp_database_read(argv[1], search_flags.map_seed_size);*/
-    blast_coarse(args->args[0], args->args[1]);
-    expand_blast_hits();
-/*
-    db = cbp_database_init(args->args[0], compress_flags.map_seed_size, false);
-    workers = cbp_compress_start_workers(db, compress_flags.procs);
+    }*/
+    db = cbp_database_read(args->args[0], search_flags.map_seed_size);
 
+    blast_coarse(args->args[0], args->args[1]);
+    expand_blast_hits(db);
+/*
     org_seq_id = 0;
     gettimeofday(&start, NULL);
     for (i = 1; i < args->nargs; i++) {

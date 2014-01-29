@@ -10,6 +10,7 @@
 
 #include "ds.h"
 
+#include "compressed.h"
 #include "seeds.h"
 #include "seq.h"
 #include "stdbool.h"
@@ -78,4 +79,6 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db);
 void
 cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db);
 
+struct cbp_seq*
+cbp_coarse_expand(struct cbp_compressed *comdb, int32_t id, int32_t start, int32_t end);
 #endif
