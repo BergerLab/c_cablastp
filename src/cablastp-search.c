@@ -19,6 +19,11 @@
 #include "seq.h"
 #include "util.h"
 
+struct xml_linked_list{
+    xmlNode *node;
+    struct xml_linked_list *next;
+};
+
 static char *path_join(char *a, char *b)
 {
     char *joined;
@@ -43,32 +48,56 @@ void blast_coarse(char *input_dir, char *query){
     char *input_path = path_join(input_dir, CABLASTP_COARSE_FASTA);
     char *blastn_command = "blastn -db  -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml";
     int command_length = strlen(blastn_command) + strlen(input_path) + strlen(query) + 1;
-    char *blastn = malloc(command_length*sizeof(*blastn));
-    sprintf(blastn, "blastn -db %s -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml", input_path, query);
+    char *blastn = malloc(command_length * sizeof(*blastn));
+    sprintf(blastn,
+           "blastn -db %s -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml",
+           input_path, query);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
 }
-
-void print_name(xmlNode *node){
-   if(node->type==XML_ELEMENT_NODE)fprintf(stderr, "%s\n", node->name);
+/*A function for traversing a parsed XML tree.  Takes in the root node, a
+ *void * accumulator, and a function that takes in an xmlNode and a void *
+ *accumulator and traverses the tree, applying the function on each node.
+ */
+void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
+    for (; root; root = root->next ){
+        f(root, acc);
+        traverse_blast_xml(root->children, f, acc);
+    }
 }
 
-void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *)){
-    for(; root; root = root->next){
-        f(root);
-        traverse_blast_xml(root->children, f);
+/*Takes in an xmlNode and a linked list of xmlNodes converted to a void *
+  and adds the node to the list if the node represents a BLAST hit.*/
+void add_blast_hit(xmlNode *node, void *hits){
+    if (!strcmp((char *)(node->name), "Hit")) {
+        struct xml_linked_list *hit = malloc(sizeof(*hit));
+        hit->next = *(struct xml_linked_list **)hits;
+        hit->node = node;
+        *(struct xml_linked_list **)hits = hit;
     }
+}
+
+/*Takes in the xmlNode for the root of a parsed BLAST XML tree and returns
+  a linked list of all of the nodes in the tree that represent BLAST hits.*/
+struct xml_linked_list **get_blast_hits(xmlNode *node){
+    struct xml_linked_list **hits = malloc(sizeof(*hits));
+    traverse_blast_xml(node, add_blast_hit, hits);
+    struct xml_linked_list *i = *hits;
+    for(; i; i = i->next)
+        fprintf(stderr, "%s\n", i->node->name);
+    return hits;
 }
 
 void expand_blast_hits(){
     xmlDoc *doc = NULL;
     xmlNode *root = NULL;
     doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
-    if(doc == NULL)
+    if (doc == NULL) {
         fprintf(stderr, "Could not parse CaBLAST_temp_blast_results.xml\n");
+        return;
+    }
     root = xmlDocGetRootElement(doc);
-    /*fprintf(stderr, "%s\n", root->name);*/
-    traverse_blast_xml(root, print_name);
+    struct xml_linked_list **hits = get_blast_hits(root);
     xmlFreeDoc(doc);
     xmlCleanupParser();
 }
