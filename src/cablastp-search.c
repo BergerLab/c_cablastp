@@ -8,6 +8,7 @@
 #include <sys/time.h>
 #include <unistd.h>
 
+#include "ds.h"
 #include "opt.h"
 
 #include "blosum62.h"
@@ -18,11 +19,6 @@
 #include "fasta.h"
 #include "seq.h"
 #include "util.h"
-
-struct xml_linked_list{
-    xmlNode *node;
-    struct xml_linked_list *next;
-};
 
 static char *path_join(char *a, char *b)
 {
@@ -69,22 +65,15 @@ void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
 /*Takes in an xmlNode and a linked list of xmlNodes converted to a void *
   and adds the node to the list if the node represents a BLAST hit.*/
 void add_blast_hit(xmlNode *node, void *hits){
-    if (!strcmp((char *)(node->name), "Hit")) {
-        struct xml_linked_list *hit = malloc(sizeof(*hit));
-        hit->next = *(struct xml_linked_list **)hits;
-        hit->node = node;
-        *(struct xml_linked_list **)hits = hit;
-    }
+    if (!strcmp((char *)(node->name), "Hit"))
+        ds_list_append((struct DSLinkedList *)hits, (void *)node);
 }
 
 /*Takes in the xmlNode for the root of a parsed BLAST XML tree and returns
   a linked list of all of the nodes in the tree that represent BLAST hits.*/
-struct xml_linked_list **get_blast_hits(xmlNode *node){
-    struct xml_linked_list **hits = malloc(sizeof(*hits));
+struct DSLinkedList *get_blast_hits(xmlNode *node){
+    struct DSLinkedList *hits = ds_list_create();
     traverse_blast_xml(node, add_blast_hit, hits);
-    struct xml_linked_list *i = *hits;
-    for(; i; i = i->next)
-        fprintf(stderr, "%s\n", i->node->name);
     return hits;
 }
 
@@ -97,7 +86,7 @@ void expand_blast_hits(){
         return;
     }
     root = xmlDocGetRootElement(doc);
-    struct xml_linked_list **hits = get_blast_hits(root);
+    struct DSLinkedList *hits = get_blast_hits(root);
     xmlFreeDoc(doc);
     xmlCleanupParser();
 }
