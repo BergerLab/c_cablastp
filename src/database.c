@@ -119,7 +119,7 @@ cbp_database_read(char *dir, int32_t seed_size)
 }
 
 void cbp_database_populate(struct cbp_database *db, const char *pfasta){
-    struct fasta_seq_gen *fsg = fasta_generator_start(pfasta, "JOU", 100);
+    struct fasta_seq_gen *fsg = fasta_generator_start(pfasta, "", 100);
     struct fasta_seq *seq;
     while (NULL != (seq = fasta_generator_next(fsg))){
         int len = 0;
