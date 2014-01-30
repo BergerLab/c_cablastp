@@ -13,12 +13,12 @@ char *get_compressed_header(FILE *f){
     char *header = malloc(10000*sizeof(*header));
     int header_length = 10000;
     int i = 0;
-    while (c != EOF && c != '\n'){
+    while (c != EOF && c != '\n') {
         c = getc(f);
-        if (c != EOF){
+        if (c != EOF) {
             header[i] = (char)c;
             i++;
-            if (i == header_length-1){
+            if (i == header_length-1) {
                 header_length *= 2;
                 header = realloc(header, header_length*sizeof(*header));
             }
@@ -48,7 +48,7 @@ struct cbp_link_to_coarse *read_compressed_link(FILE *f){
     char *diff;
     unsigned char indices[22];
 
-    for (i = 0; i < 8; i++){
+    for (i = 0; i < 8; i++) {
         c = getc(f);
         if (feof(f)) {
             free(link);
@@ -57,7 +57,7 @@ struct cbp_link_to_coarse *read_compressed_link(FILE *f){
         coarse_seq_id <<= 8;
         coarse_seq_id |= (uint64_t)c;
     }
-    for (i = 0; i < 22; i++){
+    for (i = 0; i < 22; i++) {
         c = getc(f);
         if (feof(f)) {
             free(link);
