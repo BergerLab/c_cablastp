@@ -77,6 +77,9 @@ void
 cbp_coarse_save_plain(struct cbp_coarse *coarse_db);
 
 void
+cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db);
+
+void
 cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db);
 
 struct cbp_seq*

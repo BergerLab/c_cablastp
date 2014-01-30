@@ -151,6 +151,35 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
     }
 }
 
+
+void
+cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db)
+{
+    struct cbp_coarse_seq *seq;
+    struct cbp_link_to_compressed *link;
+    int32_t i, j;
+    char *kmer;
+    uint32_t mask = (uint32_t)3;
+
+    for (i = 0; i < coarse_db->seeds->locs_length; i++) {
+        kmer = unhash_kmer(coarse_db->seeds, i);
+        struct cbp_seed_loc *loc = cbp_seeds_lookup(coarse_db->seeds, kmer);
+        if (loc) {
+            output_int_to_file(i,4,coarse_db->file_seeds);    
+            struct cbp_seed_loc *loc_first = loc;
+            while (loc) {
+                output_int_to_file(loc->coarse_seq_id, 4, coarse_db->file_seeds);
+                output_int_to_file(loc->residue_index, 2, coarse_db->file_seeds);
+                loc = loc->next;
+                if (loc) putc((char)0, coarse_db->file_seeds);
+            }
+            putc((char)1, coarse_db->file_seeds);
+            cbp_seed_loc_free(loc_first);
+        }
+        free(kmer);
+    }
+}
+
 void
 cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db)
 {
