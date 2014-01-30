@@ -106,6 +106,7 @@ struct hit *populate_blast_hit(xmlNode *node){
             for(; hsp_node; hsp_node = hsp_node->next)
                 ds_vector_append(hsps,
                        (void *)populate_blast_hsp(hsp_node->children));
+            h->hsps = hsps;
         }
     }
     return h;
@@ -128,6 +129,8 @@ struct DSVector *get_blast_hits(xmlNode *node){
 }
 
 void expand_blast_hits(struct cbp_database *db){
+    int32_t i = 0;
+    int32_t j = 0;
     xmlDoc *doc = NULL;
     xmlNode *root = NULL;
     doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
@@ -137,6 +140,14 @@ void expand_blast_hits(struct cbp_database *db){
     }
     root = xmlDocGetRootElement(doc);
     struct DSVector *hits = get_blast_hits(root);
+    for (i = 0; i < hits->size; i++) {
+        struct hit *current_hit = (struct hit *)ds_vector_get(hits, i); 
+        struct DSVector *hsps = current_hit->hsps;
+        for (j = 0; j < hsps->size; j++) {
+            struct hsp *current_hsp = (struct hsp *)ds_vector_get(hsps, j);
+            fprintf(stderr, "%d %d\n", current_hsp->query_from, current_hsp->query_to);
+        }
+    }
     
     xmlFreeDoc(doc);
     xmlCleanupParser();

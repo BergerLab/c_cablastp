@@ -5,14 +5,14 @@
 #define __CABLASTP_SEARCH_XML_H__
 struct blast{
     char *xml_name;
-    struct DSLinkedList *hits;
+    struct DSVector *hits;
 };
 
 struct hit{
     char *xml_name;
     int32_t num;
     int32_t accession;
-    struct DSLinkedList *hsps; 
+    struct DSVector *hsps; 
 };
 
 struct hsp{
