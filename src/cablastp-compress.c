@@ -12,8 +12,8 @@
 #include "coarse.h"
 #include "compression.h"
 #include "database.h"
-#include "flags.h"
 #include "fasta.h"
+#include "flags.h"
 #include "seq.h"
 #include "util.h"
 

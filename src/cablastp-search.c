@@ -16,8 +16,10 @@
 #include "compressed.h"
 #include "compression.h"
 #include "database.h"
-#include "flags.h"
 #include "fasta.h"
+#include "flags.h"
+#include "read_coarse.h"
+#include "read_compressed.h"
 #include "seq.h"
 #include "util.h"
 #include "xml.h"
@@ -99,28 +101,28 @@ struct hit *populate_blast_hit(xmlNode *node){
         if (!strcmp((char *)node->name, "Hit_accession")) 
             h->accession = atoi((char *)node->children->content);
         if (!strcmp((char *)node->name, "Hit_hsps")){
-            struct DSLinkedList *hsps = ds_list_create();
+            struct DSVector *hsps = ds_vector_create();
             xmlNode *hsp_node = node->children;
             for(; hsp_node; hsp_node = hsp_node->next)
-                ds_list_append(hsps,
+                ds_vector_append(hsps,
                        (void *)populate_blast_hsp(hsp_node->children));
         }
     }
     return h;
 }
 
-/*Takes in an xmlNode and a linked list of xmlNodes converted to a void *
-  and adds the node to the list if the node represents a BLAST hit.*/
+/*Takes in an xmlNode and a vector of xmlNodes converted to a void *
+  and adds the node to the vector if the node represents a BLAST hit.*/
 void add_blast_hit(xmlNode *node, void *hits){
     if (!strcmp((char *)(node->name), "Hit"))
-        ds_list_append((struct DSLinkedList *)hits,
+        ds_vector_append((struct DSVector *)hits,
                        (void *)populate_blast_hit(node->children));
 }
 
 /*Takes in the xmlNode for the root of a parsed BLAST XML tree and returns
-  a linked list of all of the nodes in the tree that represent BLAST hits.*/
-struct DSLinkedList *get_blast_hits(xmlNode *node){
-    struct DSLinkedList *hits = ds_list_create();
+  a vector of all of the nodes in the tree that represent BLAST hits.*/
+struct DSVector *get_blast_hits(xmlNode *node){
+    struct DSVector *hits = ds_vector_create();
     traverse_blast_xml(node, add_blast_hit, hits);
     return hits;
 }
@@ -134,7 +136,8 @@ void expand_blast_hits(struct cbp_database *db){
         return;
     }
     root = xmlDocGetRootElement(doc);
-    struct DSLinkedList *hits = get_blast_hits(root);
+    struct DSVector *hits = get_blast_hits(root);
+    
     xmlFreeDoc(doc);
     xmlCleanupParser();
 }
