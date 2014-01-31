@@ -10,6 +10,7 @@
 /*A function for getting the header for an entry in the coarse links file.
   Returns NULL if EOF is found before a newline.*/
 char *get_coarse_header(FILE *f){
+fprintf(stderr, "get_coarse_header\n");
     int c = 0;
     char *header = malloc(30*sizeof(*header));
     int header_length = 30;
@@ -35,6 +36,7 @@ char *get_coarse_header(FILE *f){
 /*Reads one link from a file with the links to the compressed database and
   converts its data to a struct cbp_link_to_compressed*/
 struct cbp_link_to_compressed *read_coarse_link(FILE *f){    
+fprintf(stderr, "read_coarse_link\n");
     int i;
     unsigned int c = 0;
     struct cbp_link_to_compressed *link = malloc(sizeof(*link));
@@ -61,7 +63,6 @@ struct cbp_link_to_compressed *read_coarse_link(FILE *f){
         }
         indices[i] = (char)c;
     }
-
     coarse_start |= (uint16_t)indices[0];
     coarse_start <<= 8;
     coarse_start |= (uint16_t)indices[1];
@@ -97,8 +98,7 @@ void read_coarse(struct cbp_coarse *coarse_db, FILE *links_file,
             break;
 
         current_sequence = cbp_coarse_add(coarse_db, coarse_fasta_seq->seq, 0,
-                                          strlen(coarse_fasta_seq->name));
-
+                                          strlen(coarse_fasta_seq->seq));
         /*Read each link in the sequence*/
         while (true) {
             char c = 1;
@@ -106,16 +106,6 @@ void read_coarse(struct cbp_coarse *coarse_db, FILE *links_file,
                                           read_coarse_link(links_file);
             if (current_link == NULL)
                 break;
-            current_link->next = links;
-            if (current_link->next == NULL)
-                links = current_link;
-            else {
-                while (current_link->next->next != NULL)
-                    current_link->next = current_link->next->next;
-                current_link->next->next = current_link;
-                current_link->next = NULL;
-            }
-
             cbp_coarse_seq_addlink(current_sequence, current_link);
 
             c = getc(links_file);
