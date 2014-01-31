@@ -94,7 +94,6 @@ struct hsp *populate_blast_hsp(xmlNode *node){
 /*Takes in the xmlNode representing a BLAST hit and populates a struct hit
   with its data.*/
 struct hit *populate_blast_hit(xmlNode *node){
-fprintf(stderr, "populate_blast_hit\n");
     struct hit *h = malloc(sizeof(*h));
     h->xml_name = "Hit";
     for (; node; node = node->next) {
@@ -148,7 +147,6 @@ void expand_blast_hits(struct cbp_database *db){
         struct DSVector *hsps = current_hit->hsps;
         for (j = 0; j < hsps->size; j++) {
             struct hsp *current_hsp = (struct hsp *)ds_vector_get(hsps, j);
-            fprintf(stderr, "%d %d\n", current_hsp->query_from, current_hsp->query_to);
         }
     }
     

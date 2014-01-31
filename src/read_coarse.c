@@ -10,7 +10,6 @@
 /*A function for getting the header for an entry in the coarse links file.
   Returns NULL if EOF is found before a newline.*/
 char *get_coarse_header(FILE *f){
-fprintf(stderr, "get_coarse_header\n");
     int c = 0;
     char *header = malloc(30*sizeof(*header));
     int header_length = 30;
@@ -36,7 +35,6 @@ fprintf(stderr, "get_coarse_header\n");
 /*Reads one link from a file with the links to the compressed database and
   converts its data to a struct cbp_link_to_compressed*/
 struct cbp_link_to_compressed *read_coarse_link(FILE *f){    
-fprintf(stderr, "read_coarse_link\n");
     int i;
     unsigned int c = 0;
     struct cbp_link_to_compressed *link = malloc(sizeof(*link));
