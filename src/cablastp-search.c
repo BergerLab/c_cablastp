@@ -71,6 +71,7 @@ void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
 /*Takes in the xmlNode representing a BLAST hsp and populates a struct hsp
   with its data.*/
 struct hsp *populate_blast_hsp(xmlNode *node){
+/*fprintf(stderr, "populate_blast_hsp\n");*/
     struct hsp *h = malloc(sizeof(*h));
     h->xml_name = "Hsp";
     for (; node; node = node->next){
@@ -93,6 +94,7 @@ struct hsp *populate_blast_hsp(xmlNode *node){
 /*Takes in the xmlNode representing a BLAST hit and populates a struct hit
   with its data.*/
 struct hit *populate_blast_hit(xmlNode *node){
+fprintf(stderr, "populate_blast_hit\n");
     struct hit *h = malloc(sizeof(*h));
     h->xml_name = "Hit";
     for (; node; node = node->next) {
@@ -104,8 +106,9 @@ struct hit *populate_blast_hit(xmlNode *node){
             struct DSVector *hsps = ds_vector_create();
             xmlNode *hsp_node = node->children;
             for(; hsp_node; hsp_node = hsp_node->next)
-                ds_vector_append(hsps,
-                       (void *)populate_blast_hsp(hsp_node->children));
+                if(!strcmp((char *)hsp_node->name, "Hsp"))
+                    ds_vector_append(hsps,
+                           (void *)populate_blast_hsp(hsp_node->children));
             h->hsps = hsps;
         }
     }
