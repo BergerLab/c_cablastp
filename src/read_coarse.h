@@ -5,11 +5,14 @@
 #include <stdio.h>
 
 #include "ds.h"
+
 #include "coarse.h"
+#include "fasta.h"
+
 #include "stdbool.h"
 
 char *get_coarse_header(FILE *f);
 struct cbp_link_to_compressed *read_coarse_link(FILE *f);
-struct cbp_coarse_seq **read_coarse(FILE *f);
+struct cbp_coarse_seq **read_coarse(FILE *links_file, struct fasta_seq_gen *fsg);
 
 #endif
