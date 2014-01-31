@@ -11,6 +11,7 @@
 #include "compressed.h"
 #include "database.h"
 #include "fasta.h"
+#include "read_coarse.h"
 
 static FILE * open_db_file(char *path, char *fopen_mode);
 
@@ -113,20 +114,17 @@ cbp_database_read(char *dir, int32_t seed_size)
 
     db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks);
     db->com_db = cbp_compressed_init(fcompressed, findex);
-    cbp_database_populate(db, pfasta);
+    cbp_database_populate(db, pfasta, plinks);
 
     return db;
 }
 
-void cbp_database_populate(struct cbp_database *db, const char *pfasta){
+void cbp_database_populate(struct cbp_database *db, const char *pfasta,
+                           const char *plinks){
     struct fasta_seq_gen *fsg = fasta_generator_start(pfasta, "", 100);
-    struct fasta_seq *seq;
-    while (NULL != (seq = fasta_generator_next(fsg))){
-        int len = 0;
-        char *residues = seq->seq;
-        while (residues[len] != '\0') len++;
-        cbp_coarse_add(db->coarse_db, residues, 0, len-1);
-    }
+    FILE *flinks = fopen(plinks, "r");
+    read_coarse(db->coarse_db, flinks, fsg);
+    fclose(flinks);
 }
 
 void

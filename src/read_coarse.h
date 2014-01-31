@@ -13,6 +13,7 @@
 
 char *get_coarse_header(FILE *f);
 struct cbp_link_to_compressed *read_coarse_link(FILE *f);
-struct cbp_coarse_seq **read_coarse(FILE *links_file, struct fasta_seq_gen *fsg);
+void read_coarse(struct cbp_coarse *coarse_db, FILE *links_file,
+                 struct fasta_seq_gen *fsg);
 
 #endif
