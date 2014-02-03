@@ -9,7 +9,8 @@
 
 struct cbp_coarse *
 cbp_coarse_init(int32_t seed_size,
-                FILE *file_fasta, FILE *file_seeds, FILE *file_links)
+                FILE *file_fasta, FILE *file_seeds, FILE *file_links,
+                FILE *file_index)
 {
     struct cbp_coarse *coarse_db;
     int32_t errno;
@@ -22,6 +23,7 @@ cbp_coarse_init(int32_t seed_size,
     coarse_db->file_fasta = file_fasta;
     coarse_db->file_seeds = file_seeds;
     coarse_db->file_links = file_links;
+    coarse_db->file_index = file_index;
 
     if (0 != (errno = pthread_rwlock_init(&coarse_db->lock_seq, NULL))) {
         fprintf(stderr, "Could not create rwlock. Errno: %d\n", errno);
@@ -40,6 +42,7 @@ cbp_coarse_free(struct cbp_coarse *coarse_db)
     fclose(coarse_db->file_fasta);
     fclose(coarse_db->file_seeds);
     fclose(coarse_db->file_links);
+    fclose(coarse_db->file_index);
 
     if (0 != (errno = pthread_rwlock_destroy(&coarse_db->lock_seq))) {
         fprintf(stderr, "Could not destroy rwlock. Errno: %d\n", errno);
@@ -93,7 +96,7 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
     struct cbp_link_to_compressed *link;
     int64_t i;
     int j;
-    uint64_t index;
+    uint64_t index = (uint64_t)0;
     
     int16_t mask = (((int16_t)1)<<8)-1;
 
