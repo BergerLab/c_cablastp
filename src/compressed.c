@@ -207,6 +207,8 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
     struct cbp_link_to_coarse *link;
     int16_t mask = (((int16_t)1)<<8)-1;
     char *id_string = malloc(20*sizeof(*id_string));
+    uint64_t index = ftell(com_db->file_compressed);
+    output_int_to_file(index, 8, com_db->file_index);
     sprintf(id_string, "%ld", seq->id);
 
     /*Output the header for the sequence*/
