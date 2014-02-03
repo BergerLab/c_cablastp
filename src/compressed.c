@@ -8,9 +8,6 @@
 #include "compressed.h"
 #include "edit_scripts.h"
 
-static struct cbp_compressed_seq *
-seq_at(struct cbp_compressed *com_db, int32_t i);
-
 struct cbp_compressed *
 cbp_compressed_init(FILE *file_compressed, FILE *file_index)
 {
@@ -35,7 +32,7 @@ cbp_compressed_free(struct cbp_compressed *com_db)
     fclose(com_db->file_index);
 
     for (i = 0; i < com_db->seqs->size; i++)
-        cbp_compressed_seq_free(seq_at(com_db, i));
+        cbp_compressed_seq_free(cbp_compressed_seq_at(com_db, i));
 
     ds_vector_free_no_data(com_db->seqs);
     free(com_db);
@@ -73,7 +70,7 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
         char *id_bytes;
 
         output_int_to_file(index, 8, com_db->file_index);
-        seq = seq_at(com_db, i);
+        seq = cbp_compressed_seq_at(com_db, i);
         id_bytes = read_int_to_bytes(seq->id, 8);
 
         putc('>', com_db->file_compressed);
@@ -172,7 +169,7 @@ cbp_compressed_save_plain(struct cbp_compressed *com_db)
     struct cbp_link_to_coarse *link;
 
     for (i = 0; i < com_db->seqs->size; i++) {
-        seq = seq_at(com_db, i);
+        seq = cbp_compressed_seq_at(com_db, i);
         fprintf(com_db->file_compressed, "> %ld; %s\n", seq->id, seq->name);
         for (link = seq->links; link != NULL; link = link->next)
             fprintf(com_db->file_compressed,
@@ -391,7 +388,7 @@ cbp_link_to_coarse_free(struct cbp_link_to_coarse *link)
 }
 
 static struct cbp_compressed_seq *
-seq_at(struct cbp_compressed *com_db, int32_t i)
+cbp_compressed_seq_at(struct cbp_compressed *com_db, int32_t i)
 {
     return (struct cbp_compressed_seq *) ds_vector_get(com_db->seqs, i);
 }
