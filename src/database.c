@@ -131,7 +131,7 @@ void cbp_database_populate(struct cbp_database *db, const char *pfasta,
                            const char *plinks){
     struct fasta_seq_gen *fsg = fasta_generator_start(pfasta, "", 100);
     FILE *flinks = fopen(plinks, "r");
-    read_coarse(db->coarse_db, flinks, fsg);
+    /*read_coarse(db->coarse_db, flinks, fsg);*/
     fclose(flinks);
 }
 
