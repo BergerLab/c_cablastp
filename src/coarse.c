@@ -327,17 +327,35 @@ cbp_link_to_compressed_free(struct cbp_link_to_compressed *link)
 struct cbp_seq *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end){
-    /*FILE *links = coarsedb->file_links;
+    FILE *links = coarsedb->file_links;
+    FILE *coarse_index = coarsedb->file_index;
     FILE *fasta = coarsedb->file_fasta;
     FILE *compressed = comdb->file_compressed;
-    fopen(links, "r");
-    fopen(fasta, "r");
-    fopen(compressed, "r");
 
-    go_to_seq(id);
-
-    fclose(links);
-    fclose(fasta);
-    fclose(compressed);*/
+    /*go_to_seq(id);*/
     return NULL;
+}
+
+/*Takes in a coarse database and the ID number for a sequence in the dtaabase's
+ *coarse FASTA file and uses the coarse.links.index file to find the byte
+ *offset in the coarse.links file for the sequence with the ID number passed
+ *into the function.
+ */
+uint64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id){
+    int i;
+    int try_off = id * 8;
+    int real_off = fseek(coarsedb->file_index, try_off, SEEK_SET);
+    uint64_t mask = make_mask(8);
+    uint64_t offset = (uint64_t)0;
+    if (try_off != real_off) {
+        fprintf(stderr, "Tried to seek to offset %d in the coarse links index "
+                        "but seeked to %d instead", try_off, real_off);
+        return (uint64_t)0;
+    }
+    for (i = 0; i < 8; i++) {
+        uint64_t current_byte = ((uint64_t)getc(coarsedb->file_index)) | mask;
+        offset <<= 8;
+        offset |= current_byte;
+    }
+    return offset;
 }
