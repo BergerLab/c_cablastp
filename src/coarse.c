@@ -1,6 +1,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "bitpack.h"
 #include "coarse.h"
@@ -96,6 +97,8 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
     struct cbp_link_to_compressed *link;
     int64_t i;
     int j;
+
+    /*Keeps track of the index to be printed to coarse.links.index*/
     uint64_t index = (uint64_t)0;
     
     int16_t mask = (((int16_t)1)<<8)-1;
@@ -105,12 +108,19 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
         char *link_header = malloc(30*sizeof(*fasta_output));
         seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
         sprintf(fasta_output, "> %ld\n%s\n", i, seq->seq->residues);
+        output_int_to_file(index, 8, coarse_db->file_index);
+
         for(j = 0; fasta_output[j] != '\0'; j++)
             putc(fasta_output[j], coarse_db->file_fasta);
 
         sprintf(link_header, "> %ld\n", i);
         for(j = 0; link_header[j] != '\0'; j++)
             putc(link_header[j], coarse_db->file_links);
+
+        index += strlen(link_header);
+        free(fasta_output);
+        free(link_header);
+
         for (link = seq->links; link != NULL; link = link->next) {
             int j;
             char *id_bytes = read_int_to_bytes(link->org_seq_id, 8);
@@ -131,14 +141,21 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             putc(end_left, coarse_db->file_links);
             putc(end_right, coarse_db->file_links);
             putc((link->dir?'0':'1'), coarse_db->file_links);
+
+            index += 13;
+
             /*0 is used as a delimiter to signify that there are more links
               for this sequence*/
-            if (link->next != NULL)
+            if (link->next != NULL){
                 putc(0, coarse_db->file_links);
+                index++;
+            }
         }
         /*'#' is used as a delimiter to signify the last link of the sequence*/
-        if (i+1 < coarse_db->seqs->size)
+        if (i+1 < coarse_db->seqs->size){
             putc('#', coarse_db->file_links);
+            index++;
+        }
     }
 }
 
