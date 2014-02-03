@@ -332,6 +332,9 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
     FILE *fasta = coarsedb->file_fasta;
     FILE *compressed = comdb->file_compressed;
 
+    uint64_t offset = cbp_coarse_link_offset(coarsedb, id);
+    fseek(links, offset, SEEK_SET);
+
     /*go_to_seq(id);*/
     return NULL;
 }
@@ -344,12 +347,11 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
 uint64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id){
     int i;
     int try_off = id * 8;
-    int real_off = fseek(coarsedb->file_index, try_off, SEEK_SET);
+    bool fseek_success = fseek(coarsedb->file_index, try_off, SEEK_SET) == 0;
     uint64_t mask = make_mask(8);
     uint64_t offset = (uint64_t)0;
-    if (try_off != real_off) {
-        fprintf(stderr, "Tried to seek to offset %d in the coarse links index "
-                        "but seeked to %d instead", try_off, real_off);
+    if (!fseek_success) {
+        fprintf(stderr, "Error in seeking to offset %d", try_off);
         return (uint64_t)0;
     }
     for (i = 0; i < 8; i++) {
