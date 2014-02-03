@@ -336,9 +336,20 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
     uint64_t offset = cbp_coarse_link_offset(coarsedb, id);
     fseek(links, offset, SEEK_SET);
 
+    struct DSHashMap *ids = ds_hashmap_create();
     struct DSVector *links_vector = get_sequence_links(links);
     int32_t links_count = links_vector->size;
-    fprintf(stderr, "%d\n", links_count);
+    int32_t i = 0;
+    for (; i < links_count; i++) {
+        struct cbp_link_to_compressed *current_link =
+            (struct cbp_link_to_compressed *)ds_vector_get(links_vector,i);
+        if ((int16_t)start < current_link->coarse_start ||
+            (int16_t)end > current_link->coarse_end)
+            continue;
+        if (!ds_hashmap_get_int(ids, current_link->org_seq_id))
+            continue;
+    }
+    ds_hashmap_free(ids, false, true);
     ds_vector_free(links_vector);
     /*go_to_seq(id);*/
     return NULL;

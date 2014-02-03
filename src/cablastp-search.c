@@ -147,6 +147,8 @@ void expand_blast_hits(struct cbp_database *db){
         struct DSVector *hsps = current_hit->hsps;
         for (j = 0; j < hsps->size; j++) {
             struct hsp *current_hsp = (struct hsp *)ds_vector_get(hsps, j);
+            cbp_coarse_expand(db->coarse_db, db->com_db,current_hit->accession,
+                              current_hsp->hit_from, current_hsp->hit_to);
         }
     }
     

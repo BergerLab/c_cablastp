@@ -66,21 +66,31 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
     struct cbp_link_to_coarse *link;
 
     int16_t mask = (((int16_t)1)<<8)-1;
+    uint64_t index = (uint64_t)0;
+
     for (i = 0; i < com_db->seqs->size; i++) {
         int j;
         char *id_bytes;
+
+        output_int_to_file(index, 8, com_db->file_index);
         seq = seq_at(com_db, i);
         id_bytes = read_int_to_bytes(seq->id, 8);
 
         putc('>', com_db->file_compressed);
         putc(' ', com_db->file_compressed);
-        for(j = 0; j < 8; j++)
+        for (j = 0; j < 8; j++)
             putc(id_bytes[j], com_db->file_compressed);
         putc(';', com_db->file_compressed);
         putc(' ', com_db->file_compressed);
+
+        index += 12;
+
         for(j = 0; seq->name[j] != '\0'; j++)
             putc(seq->name[j], com_db->file_compressed);
+        index += j;
         putc('\n', com_db->file_compressed);
+        index++;
+
         for (link = seq->links; link != NULL; link = link->next){
             /*Convert the start and end indices for the link to two
               characters.*/
@@ -105,6 +115,7 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
                 char b = shift_right(coarse_seq_id, j*8) & mask;
                 putc(b, com_db->file_compressed);
             }
+            index += 8;
 
             /*Represent the length of the edit script as two characters and get
               the edit script as a sequence of half-bytes*/
@@ -127,21 +138,28 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
             putc(cor_end_right, com_db->file_compressed);
             putc(script_left, com_db->file_compressed);
             putc(script_right, com_db->file_compressed);
+            index += 6;
 
             /*Output all of the characters of the edit script as half-bytes*/
             for (j = 0; j < script_length/2; j++)
                 putc(script[j], com_db->file_compressed);
+            index += j;
+
 
             /*If there are more links for this sequence, the character after
              *the edit script is a space.  Otherwise, the character after the
              *edit script is the > of the FASTA header.  If we are printing the
              *last link of the last sequence, print a newline.
              */
-            if (link->next)
+            if (link->next) {
                 putc(' ', com_db->file_compressed);
+                index++;
+            }
             else
-                if (i == com_db->seqs->size-1)
+                if (i == com_db->seqs->size-1) {
                     putc('\n', com_db->file_compressed);
+                    index++;
+                }
         }
     }
 }
@@ -171,7 +189,7 @@ cbp_compressed_write(struct cbp_compressed *com_db,
     struct cbp_link_to_coarse *link;
 
     fprintf(com_db->file_compressed, "> %ld; %s\n", seq->id, seq->name);
-    for (link = seq->links; link != NULL; link = link->next){
+    for (link = seq->links; link != NULL; link = link->next) {
         fprintf(com_db->file_compressed,
             "reference sequence id: %d, reference range: (%d, %d)\n%s\n",
             link->coarse_seq_id, link->coarse_start, link->coarse_end,
