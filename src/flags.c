@@ -30,9 +30,6 @@ load_compress_args()
         &compress_flags.match_seq_id_threshold, "match-seq-id-threshold", 70,
         "The sequence identity threshold of an entire match.");
     opt_flag_int(conf,
-        &compress_flags.min_match_len, "min-match-len", 50,
-        "The minimum length of a match.");
-    opt_flag_int(conf,
         &compress_flags.procs, "procs", cpus,
         "The number of total CPUs to use to divide work.");
     opt_flag_int(conf,
@@ -73,6 +70,10 @@ load_compress_args()
     opt_flag_double(conf,
         &compress_flags.btwn_match_ident_thresh, "btwn-match-ident_thresh", ((double)0.5),
         "The identity threshold for continuing align_ungapped if it has been more than 10 bases since the last clump of matches.");
+    opt_flag_int(conf,
+        &compress_flags.attempt_ext_len, "attempt-ext-len", 50,
+        "The minimum total length of an extension after running attempt_ext in both directions needed to call extend_match.");/**/
+
 
     return conf;
 }

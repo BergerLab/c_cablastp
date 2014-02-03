@@ -6,6 +6,7 @@
 #include "bitpack.h"
 #include "coarse.h"
 #include "DNAutils.h"
+#include "read_coarse.h"
 #include "seeds.h"
 
 struct cbp_coarse *
@@ -335,6 +336,10 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
     uint64_t offset = cbp_coarse_link_offset(coarsedb, id);
     fseek(links, offset, SEEK_SET);
 
+    struct DSVector *links_vector = get_sequence_links(links);
+    int32_t links_count = links_vector->size;
+    fprintf(stderr, "%d\n", links_count);
+    ds_vector_free(links_vector);
     /*go_to_seq(id);*/
     return NULL;
 }
