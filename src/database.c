@@ -114,7 +114,7 @@ cbp_database_read(char *dir, int32_t seed_size)
 
     db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks);
     db->com_db = cbp_compressed_init(fcompressed, findex);
-    cbp_database_populate(db, pfasta, plinks);
+    /*cbp_database_populate(db, pfasta, plinks);*/
 
     return db;
 }

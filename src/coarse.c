@@ -92,15 +92,23 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
     struct cbp_coarse_seq *seq;
     struct cbp_link_to_compressed *link;
     int64_t i;
+    int j;
+    uint64_t index;
     
     int16_t mask = (((int16_t)1)<<8)-1;
 
     for (i = 0; i < coarse_db->seqs->size; i++) {
+        char *fasta_output = malloc(30000*sizeof(*fasta_output));
+        char *link_header = malloc(30*sizeof(*fasta_output));
         seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
-        fprintf(coarse_db->file_fasta, "> %ld\n%s\n", i, seq->seq->residues);
+        sprintf(fasta_output, "> %ld\n%s\n", i, seq->seq->residues);
+        for(j = 0; fasta_output[j] != '\0'; j++)
+            putc(fasta_output[j], coarse_db->file_fasta);
 
-        fprintf(coarse_db->file_links, "> %ld\n", i);
-        for (link = seq->links; link != NULL; link = link->next){
+        sprintf(link_header, "> %ld\n", i);
+        for(j = 0; link_header[j] != '\0'; j++)
+            putc(link_header[j], coarse_db->file_links);
+        for (link = seq->links; link != NULL; link = link->next) {
             int j;
             char *id_bytes = read_int_to_bytes(link->org_seq_id, 8);
             for (j = 0; j < 8; j++)
@@ -299,6 +307,17 @@ cbp_link_to_compressed_free(struct cbp_link_to_compressed *link)
 struct cbp_seq *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end){
-    
+    /*FILE *links = coarsedb->file_links;
+    FILE *fasta = coarsedb->file_fasta;
+    FILE *compressed = comdb->file_compressed;
+    fopen(links, "r");
+    fopen(fasta, "r");
+    fopen(compressed, "r");
+
+    go_to_seq(id);
+
+    fclose(links);
+    fclose(fasta);
+    fclose(compressed);*/
     return NULL;
 }
