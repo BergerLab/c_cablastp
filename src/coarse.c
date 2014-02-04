@@ -46,6 +46,7 @@ cbp_coarse_free(struct cbp_coarse *coarse_db)
 
     fclose(coarse_db->file_fasta);
     fclose(coarse_db->file_seeds);
+    fclose(coarse_db->file_links);
     fclose(coarse_db->file_links_index);
     fclose(coarse_db->file_fasta_index);
 
@@ -123,7 +124,7 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
 
         sprintf(link_header, "> %ld\n", i);
         for(j = 0; link_header[j] != '\0'; j++)
-            putc(link_header[j], coarse_db->file_links_index);
+            putc(link_header[j], coarse_db->file_links);
 
         index += strlen(link_header);
         free(fasta_output);
@@ -133,7 +134,7 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             int j;
             char *id_bytes = read_int_to_bytes(link->org_seq_id, 8);
             for (j = 0; j < 8; j++)
-                putc(id_bytes[j], coarse_db->file_links_index);
+                putc(id_bytes[j], coarse_db->file_links);
             /*Convert the start and end indices for the link to two
               characters.*/
             int16_t start = (int16_t)link->coarse_start;
@@ -144,24 +145,24 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             char end_right   = end & mask;
             /*Prints the binary representations of the indices and the
               direction of the link to the links file*/
-            putc(start_left, coarse_db->file_links_index);
-            putc(start_right, coarse_db->file_links_index);
-            putc(end_left, coarse_db->file_links_index);
-            putc(end_right, coarse_db->file_links_index);
-            putc((link->dir?'0':'1'), coarse_db->file_links_index);
+            putc(start_left, coarse_db->file_links);
+            putc(start_right, coarse_db->file_links);
+            putc(end_left, coarse_db->file_links);
+            putc(end_right, coarse_db->file_links);
+            putc((link->dir?'0':'1'), coarse_db->file_links);
 
             index += 13;
 
             /*0 is used as a delimiter to signify that there are more links
               for this sequence*/
             if (link->next != NULL){
-                putc(0, coarse_db->file_links_index);
+                putc(0, coarse_db->file_links);
                 index++;
             }
         }
         /*'#' is used as a delimiter to signify the last link of the sequence*/
         if (i+1 < coarse_db->seqs->size){
-            putc('#', coarse_db->file_links_index);
+            putc('#', coarse_db->file_links);
             index++;
         }
     }
@@ -178,7 +179,7 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
         seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
         fprintf(coarse_db->file_fasta, "> %d\n%s\n", i, seq->seq->residues);
 
-        fprintf(coarse_db->file_links_index, "> %d\n", i);
+        fprintf(coarse_db->file_links, "> %d\n", i);
         for (link = seq->links; link != NULL; link = link->next)
             fprintf(coarse_db->file_links_index,
                 "original sequence id: %d, reference range: (%d, %d), direction: %c\n",
