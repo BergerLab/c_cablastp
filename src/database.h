@@ -9,9 +9,10 @@
 #define CABLASTP_COARSE_FASTA "coarse.fasta"
 #define CABLASTP_COARSE_LINKS "coarse.links"
 #define CABLASTP_COARSE_SEEDS "coarse.seeds"
-#define CABLASTP_INDEX_COARSE "coarse.links.index"
+#define CABLASTP_COARSE_LINKS_INDEX "coarse.links.index"
+#define CABLASTP_COARSE_FASTA_INDEX "coarse.fasta.index"
 #define CABLASTP_COMPRESSED "compressed.cbp"
-#define CABLASTP_INDEX_COMPRESSED "compressed.cbp.index"
+#define CABLASTP_COMPRESSED_INDEX "compressed.cbp.index"
 
 struct cbp_database {
     char *name;

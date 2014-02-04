@@ -14,7 +14,7 @@
 struct cbp_coarse *
 cbp_coarse_init(int32_t seed_size,
                 FILE *file_fasta, FILE *file_seeds, FILE *file_links,
-                FILE *file_index)
+                FILE *file_links_index, FILE *file_fasta_index)
 {
     struct cbp_coarse *coarse_db;
     int32_t errno;
@@ -27,7 +27,8 @@ cbp_coarse_init(int32_t seed_size,
     coarse_db->file_fasta = file_fasta;
     coarse_db->file_seeds = file_seeds;
     coarse_db->file_links = file_links;
-    coarse_db->file_index = file_index;
+    coarse_db->file_fasta_index = file_fasta_index;
+    coarse_db->file_links_index = file_links_index;
 
     if (0 != (errno = pthread_rwlock_init(&coarse_db->lock_seq, NULL))) {
         fprintf(stderr, "Could not create rwlock. Errno: %d\n", errno);
@@ -45,8 +46,8 @@ cbp_coarse_free(struct cbp_coarse *coarse_db)
 
     fclose(coarse_db->file_fasta);
     fclose(coarse_db->file_seeds);
-    fclose(coarse_db->file_links);
-    fclose(coarse_db->file_index);
+    fclose(coarse_db->file_links_index);
+    fclose(coarse_db->file_fasta_index);
 
     if (0 != (errno = pthread_rwlock_destroy(&coarse_db->lock_seq))) {
         fprintf(stderr, "Could not destroy rwlock. Errno: %d\n", errno);
@@ -107,18 +108,22 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
     int16_t mask = (((int16_t)1)<<8)-1;
 
     for (i = 0; i < coarse_db->seqs->size; i++) {
+        uint64_t coarse_fasta_loc;
         char *fasta_output = malloc(30000*sizeof(*fasta_output));
         char *link_header = malloc(30*sizeof(*fasta_output));
         seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
         sprintf(fasta_output, "> %ld\n%s\n", i, seq->seq->residues);
-        output_int_to_file(index, 8, coarse_db->file_index);
+        output_int_to_file(index, 8, coarse_db->file_links_index);
 
         for(j = 0; fasta_output[j] != '\0'; j++)
             putc(fasta_output[j], coarse_db->file_fasta);
 
+        coarse_fasta_loc = ftell(coarse_db->file_fasta);
+        output_int_to_file(coarse_fasta_loc, 8, coarse_db->file_fasta_index);
+
         sprintf(link_header, "> %ld\n", i);
         for(j = 0; link_header[j] != '\0'; j++)
-            putc(link_header[j], coarse_db->file_links);
+            putc(link_header[j], coarse_db->file_links_index);
 
         index += strlen(link_header);
         free(fasta_output);
@@ -128,7 +133,7 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             int j;
             char *id_bytes = read_int_to_bytes(link->org_seq_id, 8);
             for (j = 0; j < 8; j++)
-                putc(id_bytes[j], coarse_db->file_links);
+                putc(id_bytes[j], coarse_db->file_links_index);
             /*Convert the start and end indices for the link to two
               characters.*/
             int16_t start = (int16_t)link->coarse_start;
@@ -139,24 +144,24 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             char end_right   = end & mask;
             /*Prints the binary representations of the indices and the
               direction of the link to the links file*/
-            putc(start_left, coarse_db->file_links);
-            putc(start_right, coarse_db->file_links);
-            putc(end_left, coarse_db->file_links);
-            putc(end_right, coarse_db->file_links);
-            putc((link->dir?'0':'1'), coarse_db->file_links);
+            putc(start_left, coarse_db->file_links_index);
+            putc(start_right, coarse_db->file_links_index);
+            putc(end_left, coarse_db->file_links_index);
+            putc(end_right, coarse_db->file_links_index);
+            putc((link->dir?'0':'1'), coarse_db->file_links_index);
 
             index += 13;
 
             /*0 is used as a delimiter to signify that there are more links
               for this sequence*/
             if (link->next != NULL){
-                putc(0, coarse_db->file_links);
+                putc(0, coarse_db->file_links_index);
                 index++;
             }
         }
         /*'#' is used as a delimiter to signify the last link of the sequence*/
         if (i+1 < coarse_db->seqs->size){
-            putc('#', coarse_db->file_links);
+            putc('#', coarse_db->file_links_index);
             index++;
         }
     }
@@ -173,9 +178,9 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
         seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
         fprintf(coarse_db->file_fasta, "> %d\n%s\n", i, seq->seq->residues);
 
-        fprintf(coarse_db->file_links, "> %d\n", i);
+        fprintf(coarse_db->file_links_index, "> %d\n", i);
         for (link = seq->links; link != NULL; link = link->next)
-            fprintf(coarse_db->file_links,
+            fprintf(coarse_db->file_links_index,
                 "original sequence id: %d, reference range: (%d, %d), direction: %c\n",
                 link->org_seq_id, link->coarse_start, link->coarse_end,
                 (link->dir?'0':'1'));
@@ -330,8 +335,8 @@ cbp_link_to_compressed_free(struct cbp_link_to_compressed *link)
 struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end){
-    FILE *links = coarsedb->file_links;
-    FILE *coarse_index = coarsedb->file_index;
+    FILE *links = coarsedb->file_links_index;
+    FILE *coarse_links_index = coarsedb->file_links_index;
     FILE *fasta = coarsedb->file_fasta;
     FILE *compressed = comdb->file_compressed;
 
@@ -365,7 +370,7 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
 uint64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id){
     int i;
     int try_off = id * 8;
-    bool fseek_success = fseek(coarsedb->file_index, try_off, SEEK_SET) == 0;
+    bool fseek_success = fseek(coarsedb->file_links_index, try_off, SEEK_SET) == 0;
     uint64_t mask = make_mask(8);
     uint64_t offset = (uint64_t)0;
     if (!fseek_success) {
@@ -373,7 +378,7 @@ uint64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id){
         return (uint64_t)0;
     }
     for (i = 0; i < 8; i++) {
-        uint64_t current_byte = ((uint64_t)getc(coarsedb->file_index)) | mask;
+        uint64_t current_byte=((uint64_t)getc(coarsedb->file_links_index))|mask;
         offset <<= 8;
         offset |= current_byte;
     }

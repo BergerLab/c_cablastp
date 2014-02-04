@@ -24,17 +24,18 @@ cbp_database_init(char *dir, int32_t seed_size, bool add)
 {
     struct cbp_database *db;
     struct stat buf;
-    FILE *ffasta, *fseeds, *flinks, *fcompressed, *findex_coarse,
+    FILE *ffasta, *fseeds, *flinks, *fcompressed, *findex_coarse_links, *findex_coarse_fasta,
          *findex_compressed;
-    char *pfasta, *pseeds, *plinks, *pcompressed, *pindex_coarse,
+    char *pfasta, *pseeds, *plinks, *pcompressed, *pindex_coarse_links, *pindex_coarse_fasta,
          *pindex_compressed;
 
     pfasta = path_join(dir, CABLASTP_COARSE_FASTA);
     pseeds = path_join(dir, CABLASTP_COARSE_SEEDS);
     plinks = path_join(dir, CABLASTP_COARSE_LINKS);
-    pindex_coarse = path_join(dir, CABLASTP_INDEX_COARSE);
+    pindex_coarse_links = path_join(dir, CABLASTP_COARSE_LINKS_INDEX);
+    pindex_coarse_fasta = path_join(dir, CABLASTP_COARSE_FASTA_INDEX);
     pcompressed = path_join(dir, CABLASTP_COMPRESSED);
-    pindex_compressed = path_join(dir, CABLASTP_INDEX_COMPRESSED);
+    pindex_compressed = path_join(dir, CABLASTP_COMPRESSED_INDEX);
 
     /* If we're not adding to a database, make sure `dir` does not exist. */
     if (!add && 0 == stat(dir, &buf)) {
@@ -49,7 +50,8 @@ cbp_database_init(char *dir, int32_t seed_size, bool add)
         unlink(pfasta);
         unlink(pseeds);
         unlink(plinks);
-        unlink(pindex_coarse);
+        unlink(pindex_coarse_links);
+        unlink(pindex_coarse_fasta);
         unlink(pcompressed);
         unlink(pindex_compressed);
         rmdir(dir);
@@ -73,17 +75,19 @@ cbp_database_init(char *dir, int32_t seed_size, bool add)
     ffasta = open_db_file(pfasta, "r+");
     fseeds = open_db_file(pseeds, "r+");
     flinks = open_db_file(plinks, "r+");
-    findex_coarse = open_db_file(pindex_coarse, "r+");
+    findex_coarse_links = open_db_file(pindex_coarse_links, "r+");
+    findex_coarse_fasta = open_db_file(pindex_coarse_fasta, "r+");
     fcompressed = open_db_file(pcompressed, "r+");
     findex_compressed = open_db_file(pindex_compressed, "r+");
 
-    db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks, findex_coarse);
+    db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks, findex_coarse_links, findex_coarse_fasta);
     db->com_db = cbp_compressed_init(fcompressed, findex_compressed);
 
     free(pfasta);
     free(pseeds);
     free(plinks);
-    free(pindex_coarse);
+    free(pindex_coarse_links);
+    free(pindex_coarse_fasta);
     free(pcompressed);
     free(pindex_compressed);
 
@@ -95,13 +99,14 @@ cbp_database_read(char *dir, int32_t seed_size)
 {
     struct cbp_database *db;
     struct stat buf;
-    FILE *ffasta, *fseeds, *flinks, *fcompressed, *findex_coarse, *findex_compressed;
+    FILE *ffasta, *fseeds, *flinks, *fcompressed, *findex_coarse_links, *findex_coarse_fasta, *findex_compressed;
     char *pfasta  = path_join(dir, CABLASTP_COARSE_FASTA);
     char *pseeds = path_join(dir, CABLASTP_COARSE_SEEDS);
     char *plinks = path_join(dir, CABLASTP_COARSE_LINKS);
-    char *pindex_coarse = path_join(dir, CABLASTP_INDEX_COARSE);
+    char *pindex_coarse_links = path_join(dir, CABLASTP_COARSE_LINKS_INDEX);
+    char *pindex_coarse_fasta = path_join(dir, CABLASTP_COARSE_FASTA_INDEX);
     char *pcompressed = path_join(dir, CABLASTP_COMPRESSED);
-    char *pindex_compressed = path_join(dir, CABLASTP_INDEX_COMPRESSED);
+    char *pindex_compressed = path_join(dir, CABLASTP_COMPRESSED_INDEX);
 
     /* Make sure the database directory exists. */
     if (0 != stat(dir, &buf)) {
@@ -116,11 +121,12 @@ cbp_database_read(char *dir, int32_t seed_size)
     ffasta = open_db_file(pfasta, "r");
     fseeds = open_db_file(pseeds, "r");
     flinks = open_db_file(plinks, "r");
-    findex_coarse = open_db_file(pindex_coarse, "r");
+    findex_coarse_links = open_db_file(pindex_coarse_links, "r");
+    findex_coarse_fasta = open_db_file(pindex_coarse_fasta, "r");
     fcompressed = open_db_file(pcompressed, "r");
     findex_compressed = open_db_file(pindex_compressed, "r");
 
-    db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks, findex_coarse);
+    db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks, findex_coarse_links, findex_coarse_fasta);
     db->com_db = cbp_compressed_init(fcompressed, findex_compressed);
     /*cbp_database_populate(db, pfasta, plinks);*/
 

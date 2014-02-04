@@ -54,14 +54,15 @@ struct cbp_coarse {
     FILE *file_fasta;
     FILE *file_seeds;
     FILE *file_links;
-    FILE *file_index;
+    FILE *file_links_index;
+    FILE *file_fasta_index;
     pthread_rwlock_t lock_seq;
 };
 
 struct cbp_coarse *
 cbp_coarse_init(int32_t seed_size,
                 FILE *file_fasta, FILE *file_seeds, FILE *file_links,
-                FILE *file_index);
+                FILE *file_links_index, FILE *file_fasta_index);
 
 void
 cbp_coarse_free(struct cbp_coarse *coarse_db);
