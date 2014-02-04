@@ -387,8 +387,26 @@ cbp_link_to_coarse_free(struct cbp_link_to_coarse *link)
     free(link);
 }
 
-static struct cbp_compressed_seq *
+struct cbp_compressed_seq *
 cbp_compressed_seq_at(struct cbp_compressed *com_db, int32_t i)
 {
     return (struct cbp_compressed_seq *) ds_vector_get(com_db->seqs, i);
+}
+
+uint64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id){
+    int i;
+    int try_off = id * 8;
+    uint64_t offset = (uint64_t)0;
+    bool fseek_success = fseek(comdb->file_index, try_off, SEEK_SET) == 0;
+    uint64_t mask = make_mask(8);
+    if (!fseek_success) {
+        fprintf(stderr, "Error in seeking to offset %d", try_off);
+        return (uint64_t)0;
+    }
+    for (i = 0; i < 8; i++) {
+        uint64_t current_byte = ((uint64_t)getc(comdb->file_index)) | mask;
+        offset <<= 8;
+        offset |= current_byte;
+    }
+    return offset;
 }

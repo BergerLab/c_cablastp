@@ -348,6 +348,7 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
             continue;
         if (!ds_hashmap_get_int(ids, current_link->org_seq_id))
             continue;
+        
     }
     ds_hashmap_free(ids, false, true);
     ds_vector_free(links_vector);
