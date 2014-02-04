@@ -5,8 +5,10 @@
 #include "ds.h"
 
 #include "bitpack.h"
+#include "coarse.h"
 #include "compressed.h"
 #include "edit_scripts.h"
+#include "read_compressed.h"
 
 struct cbp_compressed *
 cbp_compressed_init(FILE *file_compressed, FILE *file_index)
@@ -409,4 +411,12 @@ uint64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id){
         offset |= current_byte;
     }
     return offset;
+}
+
+struct cbp_seq* cbp_compressed_read_seq(struct cbp_compressed *com_db,
+                                        struct cbp_coarse *coarse_db, int id){
+    uint64_t offset = cbp_compressed_link_offset(com_db, id);
+    bool fseek_success = fseek(com_db->file_compressed, offset, SEEK_SET) == 0;
+    
+    return NULL;
 }

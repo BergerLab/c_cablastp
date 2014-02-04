@@ -9,6 +9,7 @@
 #include "align.h"
 #include "bitpack.h"
 #include "edit_scripts.h"
+#include "seq.h"
 
 #include "stdbool.h"
 
@@ -53,6 +54,8 @@ void
 cbp_compressed_seq_addlink(struct cbp_compressed_seq *seq,
                            struct cbp_link_to_coarse *link);
 
+struct cbp_coarse;
+
 struct cbp_compressed {
     struct DSVector *seqs;
     FILE *file_compressed;
@@ -90,4 +93,7 @@ struct cbp_compressed_seq *
 cbp_compressed_seq_at(struct cbp_compressed *com_db, int32_t i);
 
 uint64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id);
+
+struct cbp_seq* cbp_compressed_read_seq(struct cbp_compressed *com_db,
+                                        struct cbp_coarse *coarse_db, int id);
 #endif

@@ -10,6 +10,7 @@
 
 char *get_compressed_header(FILE *f);
 struct cbp_link_to_coarse *read_link(FILE *f);
+struct DSVector *get_compressed_sequence_links(FILE *f);
 struct cbp_compressed_seq **read_compressed(FILE *f);
 
 #endif

@@ -5,9 +5,11 @@
 
 #include "bitpack.h"
 #include "coarse.h"
+#include "compressed.h"
 #include "DNAutils.h"
 #include "read_coarse.h"
 #include "seeds.h"
+#include "seq.h"
 
 struct cbp_coarse *
 cbp_coarse_init(int32_t seed_size,
@@ -325,7 +327,7 @@ cbp_link_to_compressed_free(struct cbp_link_to_compressed *link)
     free(link);
 }
 
-struct cbp_seq *
+struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end){
     FILE *links = coarsedb->file_links;
@@ -337,7 +339,7 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
     fseek(links, offset, SEEK_SET);
 
     struct DSHashMap *ids = ds_hashmap_create();
-    struct DSVector *links_vector = get_sequence_links(links);
+    struct DSVector *links_vector = get_coarse_sequence_links(links);
     int32_t links_count = links_vector->size;
     int32_t i = 0;
     for (; i < links_count; i++) {
@@ -348,7 +350,6 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
             continue;
         if (!ds_hashmap_get_int(ids, current_link->org_seq_id))
             continue;
-        
     }
     ds_hashmap_free(ids, false, true);
     ds_vector_free(links_vector);

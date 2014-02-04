@@ -10,7 +10,6 @@
 
 #include "ds.h"
 
-#include "compressed.h"
 #include "seeds.h"
 #include "seq.h"
 #include "stdbool.h"
@@ -46,6 +45,8 @@ cbp_coarse_seq_free(struct cbp_coarse_seq *seq);
 void
 cbp_coarse_seq_addlink(struct cbp_coarse_seq *seq,
                        struct cbp_link_to_compressed *newlink);
+
+struct cbp_compressed;
 
 struct cbp_coarse {
     struct DSVector *seqs;
@@ -84,7 +85,7 @@ cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db);
 void
 cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db);
 
-struct cbp_seq *
+struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end);
 
