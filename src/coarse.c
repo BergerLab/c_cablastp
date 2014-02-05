@@ -393,11 +393,12 @@ fprintf(stderr, "cbp_coarse_link_offset id = %d\n", id);
         fprintf(stderr, "Error in seeking to offset %d\n", try_off);
         return (uint64_t)0;
     }
+fprintf(stderr, "try_off = %d\n", try_off);
     for (i = 0; i < 8; i++) {
-        uint64_t current_byte=((uint64_t)getc(coarsedb->file_links_index))|mask;
+        uint64_t current_byte=((uint64_t)(getc(coarsedb->file_links_index))&mask);
+fprintf(stderr, "current byte = %lu\n", current_byte);
         offset <<= 8;
         offset |= current_byte;
-fprintf(stderr, "current byte = %lu\n", current_byte);
     }
 fprintf(stderr, "cbp_coarse_link_offset = %lu\n", offset);
     return offset;

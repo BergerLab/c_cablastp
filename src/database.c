@@ -107,7 +107,7 @@ cbp_database_read(char *dir, int32_t seed_size)
     char *pindex_coarse_fasta = path_join(dir, CABLASTP_COARSE_FASTA_INDEX);
     char *pcompressed = path_join(dir, CABLASTP_COMPRESSED);
     char *pindex_compressed = path_join(dir, CABLASTP_COMPRESSED_INDEX);
-
+fprintf(stderr, "pindex_coarse_links = %s\n", pindex_coarse_links);
     /* Make sure the database directory exists. */
     if (0 != stat(dir, &buf)) {
         fprintf(stderr, "Could not open '%s' database for reading.", dir);
