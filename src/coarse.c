@@ -113,23 +113,31 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
         char *fasta_output = malloc(30000*sizeof(*fasta_output));
         char *link_header = malloc(30*sizeof(*fasta_output));
         seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
-        sprintf(fasta_output, "> %ld\n%s\n", i, seq->seq->residues);
+
+        /*At the start of outputting each sequence, output the indices for the
+          coarse links and FASTA files to their index files.*/
         output_int_to_file(index, 8, coarse_db->file_links_index);
-
-        for(j = 0; fasta_output[j] != '\0'; j++)
-            putc(fasta_output[j], coarse_db->file_fasta);
-
         coarse_fasta_loc = ftell(coarse_db->file_fasta);
         output_int_to_file(coarse_fasta_loc, 8, coarse_db->file_fasta_index);
 
+        /*Output the FASTA sequence to the coarse FASTA file*/
+        sprintf(fasta_output, "> %ld\n%s\n", i, seq->seq->residues);
+        for(j = 0; fasta_output[j] != '\0'; j++)
+            putc(fasta_output[j], coarse_db->file_fasta);
+
+        /*Output the link header for the sequence to the coarse links file*/
         sprintf(link_header, "> %ld\n", i);
         for(j = 0; link_header[j] != '\0'; j++)
             putc(link_header[j], coarse_db->file_links);
 
+        /*For each character outputted to the coarse links file, increment
+          "index"*/
         index += strlen(link_header);
+
         free(fasta_output);
         free(link_header);
 
+        /*Output all links for the current sequence to the coarse links file*/
         for (link = seq->links; link != NULL; link = link->next) {
             int j;
             char *id_bytes = read_int_to_bytes(link->org_seq_id, 8);
@@ -155,7 +163,7 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
 
             /*0 is used as a delimiter to signify that there are more links
               for this sequence*/
-            if (link->next != NULL){
+            if (link->next != NULL) {
                 putc(0, coarse_db->file_links);
                 index++;
             }
@@ -336,13 +344,19 @@ cbp_link_to_compressed_free(struct cbp_link_to_compressed *link)
 struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end){
-    FILE *links = coarsedb->file_links_index;
+    FILE *links = coarsedb->file_links;
     FILE *coarse_links_index = coarsedb->file_links_index;
     FILE *fasta = coarsedb->file_fasta;
     FILE *compressed = comdb->file_compressed;
 
+    /*Seek to the links for the sequence being expanded*/
+fprintf(stderr, "%d\n", id);
     uint64_t offset = cbp_coarse_link_offset(coarsedb, id);
-    fseek(links, offset, SEEK_SET);
+    bool fseek_success = fseek(links, offset, SEEK_SET) == 0;
+    if (!fseek_success) { 
+        fprintf(stderr, "Error in seeking to offset %lu\n", offset);
+        return NULL;
+    }
 
     struct DSHashMap *ids = ds_hashmap_create();
     struct DSVector *links_vector = get_coarse_sequence_links(links);
@@ -350,11 +364,11 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
     int32_t i = 0;
     for (; i < links_count; i++) {
         struct cbp_link_to_compressed *current_link =
-            (struct cbp_link_to_compressed *)ds_vector_get(links_vector,i);
+            (struct cbp_link_to_compressed *)ds_vector_get(links_vector, i);
         if ((int16_t)start < current_link->coarse_start ||
             (int16_t)end > current_link->coarse_end)
             continue;
-        if (!ds_hashmap_get_int(ids, current_link->org_seq_id))
+        if (ds_hashmap_get_int(ids, current_link->org_seq_id))
             continue;
     }
     ds_hashmap_free(ids, false, true);
@@ -369,19 +383,22 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
  *into the function.
  */
 uint64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id){
+fprintf(stderr, "cbp_coarse_link_offset id = %d\n", id);
     int i;
     int try_off = id * 8;
     bool fseek_success = fseek(coarsedb->file_links_index, try_off, SEEK_SET) == 0;
     uint64_t mask = make_mask(8);
     uint64_t offset = (uint64_t)0;
     if (!fseek_success) {
-        fprintf(stderr, "Error in seeking to offset %d", try_off);
+        fprintf(stderr, "Error in seeking to offset %d\n", try_off);
         return (uint64_t)0;
     }
     for (i = 0; i < 8; i++) {
         uint64_t current_byte=((uint64_t)getc(coarsedb->file_links_index))|mask;
         offset <<= 8;
         offset |= current_byte;
+fprintf(stderr, "current byte = %lu\n", current_byte);
     }
+fprintf(stderr, "cbp_coarse_link_offset = %lu\n", offset);
     return offset;
 }

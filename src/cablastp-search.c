@@ -119,7 +119,7 @@ struct hit *populate_blast_hit(xmlNode *node){
 void add_blast_hit(xmlNode *node, void *hits){
     if (!strcmp((char *)(node->name), "Hit"))
         ds_vector_append((struct DSVector *)hits,
-                       (void *)populate_blast_hit(node->children));
+                         (void *)populate_blast_hit(node->children));
 }
 
 /*Takes in the xmlNode for the root of a parsed BLAST XML tree and returns
