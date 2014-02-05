@@ -373,6 +373,7 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
             continue;
         if (ds_hashmap_get_int(ids, current_link->org_seq_id))
             continue;
+fprintf(stderr, "%d!\n", current_link->org_seq_id);
         struct cbp_seq *oseq = cbp_compressed_read_seq(comdb, coarsedb,
                                                     current_link->org_seq_id);
         if (oseq != NULL)

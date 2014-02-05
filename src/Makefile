@@ -4,9 +4,9 @@ LDLIBS=-lds -lpthread -lopt -lxml2
 
 COMPRESS_OBJS=align.o blosum62.o blosum62_matrix.o \
 							bitpack.o coarse.o compressed.o compression.o database.o DNAutils.o edit_scripts.o fasta.o flags.o \
-							read_coarse.o seeds.o seq.o util.o
+							read_coarse.o read_compressed.o seeds.o seq.o util.o
 COMPRESS_HEADERS=align.o blosum62.h coarse.h compressed.h compression.h \
-							database.h fasta.h flags.h read_coarse.o seeds.h seq.h util.h
+							database.h fasta.h flags.h read_coarse.o read_compressed.o seeds.h seq.h util.h
 
 all: cablastp-compress cablastp-decompress cablastp-search
 

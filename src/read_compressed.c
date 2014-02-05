@@ -110,26 +110,33 @@ struct cbp_link_to_coarse *read_compressed_link(FILE *f){
  *properly the file pointer must be pointing to the start of the header of a
  *sequence entry in the links file.
  */
-struct DSVector *get_compressed_sequence_links(FILE *f){
-    struct DSVector *links = ds_vector_create();
+struct cbp_compressed_seq *get_compressed_sequence(FILE *f){
     char *h = get_compressed_header(f);
+    struct cbp_link_to_coarse *first_link = NULL;
+    struct cbp_link_to_coarse *last_link = NULL;
+    struct cbp_compressed_seq *seq = cbp_compressed_seq_init(-1, h);
+
     if (h == NULL) {
-        ds_vector_free(links);
+        fprintf(stderr, "Could not get compressed sequence\n");
         return NULL;
     }
-    free(h);
 
     while (true) {
         char c = 1;
         struct cbp_link_to_coarse *current_link = read_compressed_link(f);
         if (current_link == NULL)
             break;
-        ds_vector_append(links, (void *)current_link);
+        if (!first_link)
+            first_link = current_link;
+        else
+            last_link->next = current_link;
+        last_link = current_link;
         c = getc(f);
         if (c == '#')
             break;
     }
-    return links;
+    seq->links = first_link;
+    return seq;
 }
 
 
