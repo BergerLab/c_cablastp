@@ -395,18 +395,18 @@ cbp_compressed_seq_at(struct cbp_compressed *com_db, int32_t i)
     return (struct cbp_compressed_seq *) ds_vector_get(com_db->seqs, i);
 }
 
-uint64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id){
+int64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id){
     int i;
     int try_off = id * 8;
-    uint64_t offset = (uint64_t)0;
+    int64_t offset = (uint64_t)0;
     bool fseek_success = fseek(comdb->file_index, try_off, SEEK_SET) == 0;
-    uint64_t mask = make_mask(8);
+    int64_t mask = make_mask(8);
     if (!fseek_success) {
         fprintf(stderr, "Error in seeking to offset %d", try_off);
-        return (uint64_t)0;
+        return (int64_t)(-1);
     }
     for (i = 0; i < 8; i++) {
-        uint64_t current_byte = ((uint64_t)getc(comdb->file_index)) | mask;
+        int64_t current_byte = ((int64_t)getc(comdb->file_index)) | mask;
         offset <<= 8;
         offset |= current_byte;
     }
@@ -415,8 +415,13 @@ uint64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id){
 
 struct cbp_seq* cbp_compressed_read_seq(struct cbp_compressed *com_db,
                                         struct cbp_coarse *coarse_db, int id){
-    uint64_t offset = cbp_compressed_link_offset(com_db, id);
+    int64_t offset = cbp_compressed_link_offset(com_db, id);
+    if (offset < 0)
+        return -1;
     bool fseek_success = fseek(com_db->file_compressed, offset, SEEK_SET) == 0;
-    
+    if (!fseek_success) {
+        fprintf(stderr, "Error in seeking to offset %d", offset);
+        return NULL;
+    }    
     return NULL;
 }

@@ -90,5 +90,5 @@ struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end);
 
-uint64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id);
+int64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id);
 #endif

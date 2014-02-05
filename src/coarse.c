@@ -350,8 +350,9 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
     FILE *compressed = comdb->file_compressed;
 
     /*Seek to the links for the sequence being expanded*/
-fprintf(stderr, "%d\n", id);
-    uint64_t offset = cbp_coarse_link_offset(coarsedb, id);
+    int64_t offset = cbp_coarse_link_offset(coarsedb, id);
+    if (offset < 0)
+        return NULL;
     bool fseek_success = fseek(links, offset, SEEK_SET) == 0;
     if (!fseek_success) { 
         fprintf(stderr, "Error in seeking to offset %lu\n", offset);
@@ -360,6 +361,8 @@ fprintf(stderr, "%d\n", id);
 
     struct DSHashMap *ids = ds_hashmap_create();
     struct DSVector *links_vector = get_coarse_sequence_links(links);
+    struct DSVector *oseqs = ds_vector_create();
+
     int32_t links_count = links_vector->size;
     int32_t i = 0;
     for (; i < links_count; i++) {
@@ -370,6 +373,10 @@ fprintf(stderr, "%d\n", id);
             continue;
         if (ds_hashmap_get_int(ids, current_link->org_seq_id))
             continue;
+        struct cbp_seq *oseq = cbp_compressed_read_seq(comdb, coarsedb,
+                                                    current_link->org_seq_id);
+        if (oseq != NULL)
+            ds_vector_append(oseqs, oseq);
     }
     ds_hashmap_free(ids, false, true);
     ds_vector_free(links_vector);
@@ -382,24 +389,20 @@ fprintf(stderr, "%d\n", id);
  *offset in the coarse.links file for the sequence with the ID number passed
  *into the function.
  */
-uint64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id){
-fprintf(stderr, "cbp_coarse_link_offset id = %d\n", id);
+int64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id){
     int i;
     int try_off = id * 8;
-    bool fseek_success = fseek(coarsedb->file_links_index, try_off, SEEK_SET) == 0;
-    uint64_t mask = make_mask(8);
-    uint64_t offset = (uint64_t)0;
+    bool fseek_success=fseek(coarsedb->file_links_index,try_off,SEEK_SET) == 0;
+    int64_t mask = make_mask(8);
+    int64_t offset = (int64_t)(-1);
     if (!fseek_success) {
         fprintf(stderr, "Error in seeking to offset %d\n", try_off);
-        return (uint64_t)0;
+        return (int64_t)0;
     }
-fprintf(stderr, "try_off = %d\n", try_off);
     for (i = 0; i < 8; i++) {
-        uint64_t current_byte=((uint64_t)(getc(coarsedb->file_links_index))&mask);
-fprintf(stderr, "current byte = %lu\n", current_byte);
+        int64_t current_byte=((int64_t)(getc(coarsedb->file_links_index))&mask);
         offset <<= 8;
         offset |= current_byte;
     }
-fprintf(stderr, "cbp_coarse_link_offset = %lu\n", offset);
     return offset;
 }
