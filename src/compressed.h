@@ -91,9 +91,4 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
 
 struct cbp_compressed_seq *
 cbp_compressed_seq_at(struct cbp_compressed *com_db, int32_t i);
-
-int64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id);
-
-struct cbp_seq* cbp_compressed_read_seq(struct cbp_compressed *com_db,
-                                        struct cbp_coarse *coarse_db, int id);
 #endif

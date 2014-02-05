@@ -5,7 +5,6 @@
 #include "ds.h"
 
 #include "bitpack.h"
-#include "coarse.h"
 #include "compressed.h"
 #include "edit_scripts.h"
 #include "read_compressed.h"

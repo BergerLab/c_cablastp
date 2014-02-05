@@ -46,8 +46,6 @@ void
 cbp_coarse_seq_addlink(struct cbp_coarse_seq *seq,
                        struct cbp_link_to_compressed *newlink);
 
-struct cbp_compressed;
-
 struct cbp_coarse {
     struct DSVector *seqs;
     struct cbp_seeds *seeds;
@@ -85,10 +83,4 @@ cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db);
 
 void
 cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db);
-
-struct DSVector *
-cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
-                  int32_t id, int32_t start, int32_t end);
-
-int64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id);
 #endif
