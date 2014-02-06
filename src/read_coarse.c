@@ -6,6 +6,7 @@
 
 #include "read_coarse.h"
 #include "seq.h"
+#include "util.h"
 
 /*A function for getting the header for an entry in the coarse links file.
   Returns NULL if EOF is found before a newline.*/
@@ -195,7 +196,7 @@ int64_t cbp_coarse_find_offset(FILE *index_file, int id){
     int64_t offset = (int64_t)(-1);
     if (!fseek_success) {
         fprintf(stderr, "Error in seeking to offset %d\n", try_off);
-        return (int64_t)0;
+        return (int64_t)(-1);
     }
     for (i = 0; i < 8; i++) {
         int64_t current_byte=((int64_t)(getc(index_file))&mask);
@@ -205,3 +206,27 @@ int64_t cbp_coarse_find_offset(FILE *index_file, int id){
     return offset;
 }
 
+/*Takes in as arguments a coarse database and the ID number of the sequence in
+  the coarse FASTA file to read in and gets the residues of that sequence.*/
+char *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb, int id){
+    int64_t offset = cbp_coarse_find_offset(coarsedb->file_fasta_index, id);
+    if (offset == -1)
+        return NULL;
+    bool fseek_success = fseek(coarsedb->file_fasta, offset, SEEK_SET) == 0;
+    if (!fseek_success) {
+        fprintf(stderr, "Error in seeking to offset %d\n", offset);
+        return NULL;
+    }
+    char *fasta_header = NULL;
+    int r = readline(coarsedb->file_fasta, &fasta_header);
+    free(fasta_header);
+    if (r == 0)
+        return NULL;
+    char *residues = NULL;
+    r = readline(coarsedb->file_fasta, &residues);
+    if (r == 0) {
+        free(residues);
+        return NULL;
+    }
+    return residues;
+}
