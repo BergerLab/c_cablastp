@@ -211,7 +211,6 @@ int64_t cbp_coarse_find_offset(FILE *index_file, int id){
  *sequence.
  */
 struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb, int id){
-    struct fasta_seq *seq = NULL;
     int64_t offset = cbp_coarse_find_offset(coarsedb->file_fasta_index, id);
     if (offset < 0)
         return NULL;
