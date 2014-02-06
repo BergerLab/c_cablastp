@@ -422,7 +422,7 @@ struct cbp_seq* cbp_compressed_read_seq(struct cbp_compressed *com_db,
         fprintf(stderr, "Error in seeking to offset %ld", offset);
         return NULL;
     }
-    struct cbp_compressed_seq *seq =
-              get_compressed_sequence(com_db->file_compressed);
+    /*struct cbp_compressed_seq *seq =
+              get_compressed_sequence(com_db->file_compressed);*/
     return NULL;
 }

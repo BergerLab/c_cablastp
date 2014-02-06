@@ -207,26 +207,18 @@ int64_t cbp_coarse_find_offset(FILE *index_file, int id){
 }
 
 /*Takes in as arguments a coarse database and the ID number of the sequence in
-  the coarse FASTA file to read in and gets the residues of that sequence.*/
-char *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb, int id){
+ *the coarse FASTA file to read in and gets a struct fasta_seq for that
+ *sequence.
+ */
+struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb, int id){
+    struct fasta_seq *seq = NULL;
     int64_t offset = cbp_coarse_find_offset(coarsedb->file_fasta_index, id);
-    if (offset == -1)
+    if (offset < 0)
         return NULL;
     bool fseek_success = fseek(coarsedb->file_fasta, offset, SEEK_SET) == 0;
     if (!fseek_success) {
         fprintf(stderr, "Error in seeking to offset %d\n", offset);
         return NULL;
     }
-    char *fasta_header = NULL;
-    int r = readline(coarsedb->file_fasta, &fasta_header);
-    free(fasta_header);
-    if (r == 0)
-        return NULL;
-    char *residues = NULL;
-    r = readline(coarsedb->file_fasta, &residues);
-    if (r == 0) {
-        free(residues);
-        return NULL;
-    }
-    return residues;
+    return fasta_read_next(coarsedb->file_fasta,"");
 }
