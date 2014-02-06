@@ -141,29 +141,6 @@ struct DSVector *get_coarse_sequence_links(FILE *f){
     }
 }*/
 
-/*Takes in a coarse database and the ID number for a sequence in the dtaabase's
- *coarse FASTA file and uses the coarse.links.index file to find the byte
- *offset in the coarse.links file for the sequence with the ID number passed
- *into the function.
- */
-int64_t cbp_coarse_link_offset(struct cbp_coarse *coarsedb, int id){
-    int i;
-    int try_off = id * 8;
-    bool fseek_success=fseek(coarsedb->file_links_index,try_off,SEEK_SET) == 0;
-    int64_t mask = make_mask(8);
-    int64_t offset = (int64_t)(-1);
-    if (!fseek_success) {
-        fprintf(stderr, "Error in seeking to offset %d\n", try_off);
-        return (int64_t)0;
-    }
-    for (i = 0; i < 8; i++) {
-        int64_t current_byte=((int64_t)(getc(coarsedb->file_links_index))&mask);
-        offset <<= 8;
-        offset |= current_byte;
-    }
-    return offset;
-}
-
 struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end){
@@ -173,7 +150,7 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
     FILE *compressed = comdb->file_compressed;
 
     /*Seek to the links for the sequence being expanded*/
-    int64_t offset = cbp_coarse_link_offset(coarsedb, id);
+    int64_t offset = cbp_coarse_find_offset(coarse_links_index, id);
     if (offset < 0)
         return NULL;
     bool fseek_success = fseek(links, offset, SEEK_SET) == 0;
@@ -196,7 +173,6 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
             continue;
         if (ds_hashmap_get_int(ids, current_link->org_seq_id))
             continue;
-fprintf(stderr, "%d!\n", current_link->org_seq_id);
         struct cbp_seq *oseq = cbp_compressed_read_seq(comdb, coarsedb,
                                                     current_link->org_seq_id);
         if (oseq != NULL)
@@ -207,3 +183,25 @@ fprintf(stderr, "%d!\n", current_link->org_seq_id);
     /*go_to_seq(id);*/
     return NULL;
 }
+
+/*Takes in an index file from a coarse database and the ID number of the
+  sequence in the corresponding database file that the user wants to seek to
+  and returns the byte offset of the sequence in its database file.*/
+int64_t cbp_coarse_find_offset(FILE *index_file, int id){
+    int i;
+    int try_off = id * 8;
+    bool fseek_success = fseek(index_file, try_off, SEEK_SET) == 0;
+    int64_t mask = make_mask(8);
+    int64_t offset = (int64_t)(-1);
+    if (!fseek_success) {
+        fprintf(stderr, "Error in seeking to offset %d\n", try_off);
+        return (int64_t)0;
+    }
+    for (i = 0; i < 8; i++) {
+        int64_t current_byte=((int64_t)(getc(index_file))&mask);
+        offset <<= 8;
+        offset |= current_byte;
+    }
+    return offset;
+}
+
