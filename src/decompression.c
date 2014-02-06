@@ -10,7 +10,6 @@
 #include "decompression.h"
 #include "fasta.h"
 #include "read_coarse.h"
-#include "read_compressed.h"
 #include "seq.h"
 
 /*Takes in an entry in a compressed database and a coarse database and returns

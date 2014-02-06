@@ -4,6 +4,7 @@
 
 #include "ds.h"
 
+#include "decompression.h"
 #include "read_compressed.h"
 
 /*A function for getting the header for an entry in the compressed links file.
@@ -203,17 +204,17 @@ int64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id){
     return offset;
 }
 
-struct cbp_seq* cbp_compressed_read_seq(struct cbp_compressed *com_db,
-                                        struct cbp_coarse *coarse_db, int id){
-    int64_t offset = cbp_compressed_link_offset(com_db, id);
+struct cbp_seq *cbp_compressed_read_seq(struct cbp_compressed *comdb,
+                                        struct cbp_coarse *coarsedb, int id){
+    int64_t offset = cbp_compressed_link_offset(comdb, id);
     if (offset < 0)
         return NULL;
-    bool fseek_success = fseek(com_db->file_compressed, offset, SEEK_SET) == 0;
+    bool fseek_success = fseek(comdb->file_compressed, offset, SEEK_SET) == 0;
     if (!fseek_success) {
         fprintf(stderr, "Error in seeking to offset %ld", offset);
         return NULL;
     }
-    struct cbp_compressed_seq *seq =
-              get_compressed_sequence(com_db->file_compressed);
-    return NULL;
+    struct cbp_compressed_seq *cseq =
+              get_compressed_sequence(comdb->file_compressed);
+    return cbp_decompress_seq(cseq, coarsedb);
 }

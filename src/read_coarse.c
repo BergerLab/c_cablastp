@@ -4,6 +4,7 @@
 
 #include "ds.h"
 
+#include "read_compressed.h"
 #include "read_coarse.h"
 #include "seq.h"
 #include "util.h"
@@ -172,17 +173,20 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
         if ((int16_t)start < current_link->coarse_start ||
             (int16_t)end > current_link->coarse_end)
             continue;
-        if (ds_hashmap_get_int(ids, current_link->org_seq_id))
+        if (ds_geti(ids, current_link->org_seq_id))
             continue;
         struct cbp_seq *oseq = cbp_compressed_read_seq(comdb, coarsedb,
                                                     current_link->org_seq_id);
+        bool *t = malloc(sizeof(t));
+        *t = true;
         if (oseq != NULL)
             ds_vector_append(oseqs, oseq);
+        ds_puti(ids, current_link->org_seq_id, t);
     }
     ds_hashmap_free(ids, false, true);
     ds_vector_free(links_vector);
     /*go_to_seq(id);*/
-    return NULL;
+    return oseqs;
 }
 
 /*Takes in an index file from a coarse database and the ID number of the

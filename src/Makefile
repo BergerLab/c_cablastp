@@ -19,10 +19,10 @@ cablastp-compress.o: cablastp-compress.c blosum62.h database.h fasta.h
 
 
 DECOMPRESS_OBJS=align.o blosum62.o blosum62_matrix.o \
-							bitpack.o coarse.o compressed.o compression.o database.o DNAutils.o edit_scripts.o fasta.o flags.o \
+							bitpack.o coarse.o compressed.o compression.o database.o decompression.o DNAutils.o edit_scripts.o fasta.o flags.o \
 							read_coarse.o read_compressed.o seeds.o seq.o util.o
 DECOMPRESS_HEADERS=align.o blosum62.h coarse.h compressed.h compression.h \
-							database.h fasta.h flags.h read_coarse.o read_compressed.o seeds.h seq.h util.h
+							database.h decompression.h fasta.h flags.h read_coarse.o read_compressed.o seeds.h seq.h util.h
 
 decompress: blosum62.h cablastp-decompress
 
