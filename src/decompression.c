@@ -1,5 +1,6 @@
 #include <stdint.h>
 #include <stdio.h>
+#include <string.h>
 
 #include "ds.h"
 #include "stdbool.h"
@@ -20,19 +21,20 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
     uint64_t last_end = 0;
     int overlap;
     struct cbp_link_to_coarse *link;
-    struct cbp_seq *seq = cbp_seq_init(-1, cseq->name, "");
+    struct cbp_seq *seq = NULL;
     int decompressed_length = 0;
     int i = 0;
     int j = 0;
     int copied = 0;
     struct DSVector *decompressed_chunks = ds_vector_create();
+fprintf(stderr, "Entering main loop\n");
     for (link = cseq->links; link != NULL; link = link->next) {
         int length;
         char *dec_chunk;
+fprintf(stderr, "%d\n", link->coarse_seq_id);
         struct fasta_seq *chunk = cbp_coarse_read_fasta_seq(coarsedb,
                                                            link->coarse_seq_id);
-
-        for (length = 0; chunk->seq[length] != '\0'; length++);
+        for (length = 0; chunk->seq[length] != '\0'; length++);/*length = strlen(chunk->seq);*/
 
         /*overlap represents the length of the overlap of the parts of the
           decompressed sequence that has been printed and the parts of the
@@ -40,7 +42,6 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
         overlap = last_end - link->original_start;
 
         dec_chunk = read_edit_script(link->diff, chunk->seq, length);
-
         /*Print all characters of the decompressed chunk past the index
           "overlap" unless overlap is greater than the length of the
           decompressed chunk.*/
@@ -48,10 +49,10 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
         if ((unsigned int)overlap < link->original_end - link->original_start) {
             int chunk_length = 0;
             char *section = NULL;
+
             for (i = 0; dec_chunk[chunk_length] != '\0'; chunk_length++);
 
             section = malloc((chunk_length + 1)*sizeof(*section));
-
             for (; i <= chunk_length; i++)
                 section[i] = dec_chunk[i];
             ds_vector_append(decompressed_chunks, (void *)section);
@@ -61,13 +62,15 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
             free(dec_chunk);
             if (link->original_end > last_end)
                 last_end = link->original_end;
-
+fprintf(stderr, "Freeing chunk\n");
             fasta_free_seq(chunk);
+fprintf(stderr, "Finished freeing chunk\n");
         } else {
             dec_chunk -= overlap;
             free(dec_chunk);
         }
     }
+fprintf(stderr, "Finished main loop\n");
     char *residues = malloc((decompressed_length+1)*sizeof(residues));
     for (i = 0; i < decompressed_chunks->size; i++) {
         char *current_chunk = (char *)ds_vector_get(decompressed_chunks, i);
@@ -75,7 +78,6 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
             residues[copied++] = current_chunk[j];
     }
     residues[copied] = '\0';
-    seq->residues = residues;
-    seq->length = decompressed_length;
-    return NULL;
+    seq = cbp_seq_init(decompressed_length, residues, "");
+    return seq;
 }
