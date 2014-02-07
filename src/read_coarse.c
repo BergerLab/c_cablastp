@@ -169,18 +169,15 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
     int32_t links_count = links_vector->size;
     int32_t i = 0;
     for (; i < links_count; i++) {
-fprintf(stderr, "Checking link at index #%d\n", i);
         struct cbp_link_to_compressed *current_link =
             (struct cbp_link_to_compressed *)ds_vector_get(links_vector, i);
         if ((int16_t)start < current_link->coarse_start ||
-            (int16_t)end > current_link->coarse_end){fprintf(stderr, "Link (%d-%d) out of range (%d-%d)\n", current_link->coarse_start, current_link->coarse_end, start, end);
-            continue;}
-        if (ds_geti(ids, current_link->org_seq_id)){fprintf(stderr, "Sequence %d already decompressed\n", current_link->org_seq_id);
-            continue;}
-fprintf(stderr, "Reading sequence at index #%d\n", i);
+            (int16_t)end > current_link->coarse_end)
+            continue;
+        if (ds_geti(ids, current_link->org_seq_id))
+            continue;
         struct cbp_seq *oseq = cbp_compressed_read_seq(comdb, coarsedb,
                                                     current_link->org_seq_id);
-fprintf(stderr, "Finished reading sequence at index #%d\n", i);
         bool *t = malloc(sizeof(t));
         *t = true;
         if (oseq != NULL)
@@ -227,6 +224,5 @@ struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb, int id)
         fprintf(stderr, "Error in seeking to offset %d\n", offset);
         return NULL;
     }
-/*fprintf(stderr, "%d\n", id);*/
     return fasta_read_next(coarsedb->file_fasta,"");
 }

@@ -130,15 +130,20 @@ struct DSVector *get_blast_hits(xmlNode *node){
     return hits;
 }
 
-void expand_blast_hits(struct cbp_database *db){
-    int32_t i = 0;
-    int32_t j = 0;
+struct DSVector *expand_blast_hits(struct cbp_database *db){
+    int32_t i, j, k = 0;
     xmlDoc *doc = NULL;
     xmlNode *root = NULL;
+    
+    struct DSHashMap *used = ds_hashmap_create();
+    struct DSVector *oseqs = ds_vector_create();
+
     doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
     if (doc == NULL) {
         fprintf(stderr, "Could not parse CaBLAST_temp_blast_results.xml\n");
-        return;
+        ds_hashmap_free(used, true, true);
+        ds_vector_free(oseqs);
+        return NULL;
     }
     root = xmlDocGetRootElement(doc);
     struct DSVector *hits = get_blast_hits(root);
@@ -147,13 +152,31 @@ void expand_blast_hits(struct cbp_database *db){
         struct DSVector *hsps = current_hit->hsps;
         for (j = 0; j < hsps->size; j++) {
             struct hsp *current_hsp = (struct hsp *)ds_vector_get(hsps, j);
-            cbp_coarse_expand(db->coarse_db, db->com_db,current_hit->accession,
-                              current_hsp->hit_from, current_hsp->hit_to);
+            struct DSVector *seqs = cbp_coarse_expand(db->coarse_db,db->com_db,
+                                        current_hit->accession,
+                                        current_hsp->hit_from,
+                                        current_hsp->hit_to);
+            for (k = 0; k < seqs->size; k++) {
+                struct cbp_seq *s = (struct cbp_seq *)ds_vector_get(seqs, k);
+fprintf(stderr, "%d\n", s->id);
+                if (ds_geti(used,s->id))
+                    cbp_seq_free(s);
+                else {
+                    ds_vector_append(oseqs, (void *)s);
+                    bool *t = malloc(sizeof(*t));
+                    ds_puti(used, s->id, (void *)t);
+                }
+            }
+            ds_vector_free_no_data(seqs);
         }
+        ds_vector_free(hsps);
     }
+    ds_vector_free(hits);
     
     xmlFreeDoc(doc);
     xmlCleanupParser();
+    ds_hashmap_free(used, true, true);
+    return oseqs;
 }
 
 int
@@ -185,7 +208,8 @@ main(int argc, char **argv)
     db = cbp_database_read(args->args[0], search_flags.map_seed_size);
 
     blast_coarse(args->args[0], args->args[1]);
-    expand_blast_hits(db);
+    struct DSVector *expanded_hits = expand_blast_hits(db);
+fprintf(stderr,"%d\n",expanded_hits->size);
 /*
     org_seq_id = 0;
     gettimeofday(&start, NULL);

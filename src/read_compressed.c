@@ -111,7 +111,7 @@ struct cbp_link_to_coarse *read_compressed_link(FILE *f){
  *properly the file pointer must be pointing to the start of the header of a
  *sequence entry in the links file.
  */
-struct cbp_compressed_seq *get_compressed_sequence(FILE *f){
+struct cbp_compressed_seq *get_compressed_seq(FILE *f){
     char *h = get_compressed_header(f);
     struct cbp_link_to_coarse *first_link = NULL;
     struct cbp_link_to_coarse *last_link = NULL;
@@ -137,7 +137,6 @@ struct cbp_compressed_seq *get_compressed_sequence(FILE *f){
             break;
     }
     seq->links = first_link;
-fprintf(stderr, "Finished get_compressed_sequence\n");
     return seq;
 }
 
@@ -216,6 +215,6 @@ struct cbp_seq *cbp_compressed_read_seq(struct cbp_compressed *comdb,
         return NULL;
     }
     struct cbp_compressed_seq *cseq =
-              get_compressed_sequence(comdb->file_compressed);
+              get_compressed_seq(comdb->file_compressed);
     return cbp_decompress_seq(cseq, coarsedb);
 }
