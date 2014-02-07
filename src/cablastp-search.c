@@ -179,6 +179,20 @@ fprintf(stderr, "%d\n", s->id);
     return oseqs;
 }
 
+void write_fine_fasta(struct DSVector *oseqs){
+    int i;
+    FILE *temp = fopen("CaBLAST_fine.fasta", "w");
+    if (!temp) {
+        fprintf(stderr, "Could not open CaBLAST_fine.fasta for writing\n");
+        return;
+    }
+    for (i = 0; i < oseqs->size; i++) {
+        struct cbp_seq *current_seq = (struct cbp_seq *)ds_vector_get(oseqs, i);
+        fprintf(temp, "> %s\n%s\n", current_seq->name, current_seq->residues);
+    }
+    fclose(temp);
+}
+
 int
 main(int argc, char **argv)
 { 
@@ -198,6 +212,8 @@ main(int argc, char **argv)
 
     blast_coarse(args->args[0], args->args[1]);
     struct DSVector *expanded_hits = expand_blast_hits(db);
+
+    write_fine_fasta(expanded_hits);
 fprintf(stderr,"%d!!!!!!!!\n",expanded_hits->size);
     ds_vector_free(expanded_hits);
     cbp_database_free(db);
