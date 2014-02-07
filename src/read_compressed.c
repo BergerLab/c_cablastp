@@ -133,10 +133,11 @@ struct cbp_compressed_seq *get_compressed_sequence(FILE *f){
             last_link->next = current_link;
         last_link = current_link;
         c = getc(f);
-        if (c == '#')
+        if (c == '\n')
             break;
     }
     seq->links = first_link;
+fprintf(stderr, "Finished get_compressed_sequence\n");
     return seq;
 }
 

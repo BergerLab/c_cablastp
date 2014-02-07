@@ -27,20 +27,16 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
     int j = 0;
     int copied = 0;
     struct DSVector *decompressed_chunks = ds_vector_create();
-fprintf(stderr, "Entering main loop\n");
     for (link = cseq->links; link != NULL; link = link->next) {
         int length;
         char *dec_chunk;
-fprintf(stderr, "%d\n", link->coarse_seq_id);
         struct fasta_seq *chunk = cbp_coarse_read_fasta_seq(coarsedb,
                                                            link->coarse_seq_id);
         for (length = 0; chunk->seq[length] != '\0'; length++);/*length = strlen(chunk->seq);*/
-
         /*overlap represents the length of the overlap of the parts of the
           decompressed sequence that has been printed and the parts of the
           decompressed sequence currently being decompressed.*/
         overlap = last_end - link->original_start;
-
         dec_chunk = read_edit_script(link->diff, chunk->seq, length);
         /*Print all characters of the decompressed chunk past the index
           "overlap" unless overlap is greater than the length of the
@@ -62,15 +58,11 @@ fprintf(stderr, "%d\n", link->coarse_seq_id);
             free(dec_chunk);
             if (link->original_end > last_end)
                 last_end = link->original_end;
-fprintf(stderr, "Freeing chunk\n");
-            fasta_free_seq(chunk);
-fprintf(stderr, "Finished freeing chunk\n");
         } else {
             dec_chunk -= overlap;
             free(dec_chunk);
         }
     }
-fprintf(stderr, "Finished main loop\n");
     char *residues = malloc((decompressed_length+1)*sizeof(residues));
     for (i = 0; i < decompressed_chunks->size; i++) {
         char *current_chunk = (char *)ds_vector_get(decompressed_chunks, i);
@@ -78,6 +70,7 @@ fprintf(stderr, "Finished main loop\n");
             residues[copied++] = current_chunk[j];
     }
     residues[copied] = '\0';
-    seq = cbp_seq_init(decompressed_length, residues, "");
+    seq = cbp_seq_init(cseq->id, cseq->name, residues);
+/*fprintf(stderr, "!!!!!\n");*/
     return seq;
 }

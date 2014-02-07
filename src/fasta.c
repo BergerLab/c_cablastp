@@ -50,7 +50,7 @@ fasta_read_all(const char *file_name, const char *exclude)
     }
 
     fclose(f);
-    
+
     return ff;
 }
 
@@ -61,8 +61,8 @@ fasta_read_next(FILE *f, const char *exclude)
     char *line = NULL;
 
     /* check to make sure the next line starts a new sequence record */
-    if (!is_new_sequence_start(f))
-        return NULL;
+    if (!is_new_sequence_start(f)){
+        return NULL;}
 
     /* read in the sequence id */
     if (0 == readline(f, &line)) {
