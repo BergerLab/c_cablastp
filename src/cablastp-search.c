@@ -182,15 +182,9 @@ fprintf(stderr, "%d\n", s->id);
 int
 main(int argc, char **argv)
 { 
-    struct cbp_database *db;
+    struct cbp_database *db = NULL;
     struct opt_config *conf;
     struct opt_args *args;
-    /*struct fasta_seq_gen *fsg;
-    struct fasta_seq *seq;
-    struct cbp_seq *org_seq;
-    int i, org_seq_id;
-    struct timeval start, current;
-    long double elapsed;*/
     conf = load_search_args();
     args = opt_config_parse(conf, argc, argv);
     if (args->nargs < 2) {
@@ -200,52 +194,15 @@ main(int argc, char **argv)
         opt_config_print_usage(conf);
         exit(1);
     }
-    /*struct fasta_file *input_fasta_query = get_input_fasta(path_join(argv[1], CABLASTP_COARSE_FASTA));
-    int i = 0;
-    for(i = 0; i < input_fasta_query->length; i++){
-        fprintf(stderr, "%s\n", input_fasta_query->seqs[i]->seq);
-    }*/
     db = cbp_database_read(args->args[0], search_flags.map_seed_size);
 
     blast_coarse(args->args[0], args->args[1]);
     struct DSVector *expanded_hits = expand_blast_hits(db);
-fprintf(stderr,"%d\n",expanded_hits->size);
-/*
-    org_seq_id = 0;
-    gettimeofday(&start, NULL);
-    for (i = 1; i < args->nargs; i++) {
-        fsg = fasta_generator_start(
-            args->args[i], FASTA_EXCLUDE_NCBI_BLOSUM62, 100);
-
-        while (NULL != (seq = fasta_generator_next(fsg))) {
-            org_seq = cbp_seq_init(org_seq_id, seq->name, seq->seq);
-            cbp_compress_send_job(workers, org_seq);
-
-            fasta_free_seq(seq);
-
-            org_seq_id++;
-            if (org_seq_id % 1000 == 0) {
-                gettimeofday(&current, NULL);
-                elapsed = (long double)(current.tv_sec - start.tv_sec);
-                printf("%d sequences compressed (%0.4Lf seqs/sec)\n",
-                    org_seq_id, ((long double) org_seq_id) / elapsed);
-            }
-        }
-
-        fasta_generator_free(fsg);
-    }
-
-    cbp_compress_join_workers(workers);
-    cbp_coarse_save_plain(db->coarse_db);
-    /*cbp_coarse_save_binary(db->coarse_db);*//*
-    cbp_coarse_save_seeds_plain(db->coarse_db);
-    cbp_compressed_save_plain(db->com_db);
-    /*cbp_compressed_save_binary(db->com_db);*//*
-
+fprintf(stderr,"%d!!!!!!!!\n",expanded_hits->size);
+    ds_vector_free(expanded_hits);
     cbp_database_free(db);
     opt_config_free(conf);
     opt_args_free(args);
-    cbp_compress_free_workers(workers);*/
 
     return 0;
 }

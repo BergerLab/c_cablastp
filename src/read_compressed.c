@@ -102,6 +102,7 @@ struct cbp_link_to_coarse *read_compressed_link(FILE *f){
     link->original_end = original_end;
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
+    link->next = NULL;
     return link;
 }
 
