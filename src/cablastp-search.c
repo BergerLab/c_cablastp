@@ -153,12 +153,11 @@ struct DSVector *expand_blast_hits(struct cbp_database *db){
         for (j = 0; j < hsps->size; j++) {
             struct hsp *current_hsp = (struct hsp *)ds_vector_get(hsps, j);
             struct DSVector *seqs = cbp_coarse_expand(db->coarse_db,db->com_db,
-                                        current_hit->accession,
-                                        current_hsp->hit_from,
-                                        current_hsp->hit_to);
+                                                      current_hit->accession,
+                                                      current_hsp->hit_from,
+                                                      current_hsp->hit_to);
             for (k = 0; k < seqs->size; k++) {
                 struct cbp_seq *s = (struct cbp_seq *)ds_vector_get(seqs, k);
-fprintf(stderr, "%d\n", s->id);
                 if (ds_geti(used,s->id))
                     cbp_seq_free(s);
                 else {

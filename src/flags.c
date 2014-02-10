@@ -72,8 +72,7 @@ load_compress_args()
         "The identity threshold for continuing align_ungapped if it has been more than 10 bases since the last clump of matches.");
     opt_flag_int(conf,
         &compress_flags.attempt_ext_len, "attempt-ext-len", 50,
-        "The minimum total length of an extension after running attempt_ext in both directions needed to call extend_match.");/**/
-
+        "The minimum total length of an extension after running attempt_ext in both directions needed to call extend_match.");
 
     return conf;
 }

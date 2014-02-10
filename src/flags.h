@@ -25,7 +25,7 @@ struct compress_flags {
     int32_t window_ident_thresh;
     int32_t btwn_match_min_dist_check;
     float   btwn_match_ident_thresh;
-    int32_t attempt_ext_len;/**/
+    int32_t attempt_ext_len;
 } compress_flags;
 
 struct search_flags {

@@ -28,17 +28,25 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
     int copied = 0;
     struct DSVector *decompressed_chunks = ds_vector_create();
     for (link = cseq->links; link != NULL; link = link->next) {
+fprintf(stderr, "%d %d    ", link->original_start, last_end);
         int length;
         char *dec_chunk;
         struct fasta_seq *chunk = cbp_coarse_read_fasta_seq(coarsedb,
                                                            link->coarse_seq_id);
+
+        int coarse_len = link->coarse_end - link->coarse_start;
+        char *coarse_sub = malloc((coarse_len+1)*sizeof(*coarse_sub));
+        memcpy(coarse_sub, chunk->seq + link->coarse_start, coarse_len);
+        coarse_sub[coarse_len] = '\0';
+
         for (length = 0; chunk->seq[length] != '\0'; length++);
 
         /*overlap represents the length of the overlap of the parts of the
           decompressed sequence that has been printed and the parts of the
           decompressed sequence currently being decompressed.*/
         overlap = last_end - link->original_start;
-        dec_chunk = read_edit_script(link->diff, chunk->seq, length);
+        dec_chunk = read_edit_script(link->diff, coarse_sub, length);
+
         /*Print all characters of the decompressed chunk past the index
           "overlap" unless overlap is greater than the length of the
           decompressed chunk.*/
@@ -47,22 +55,21 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
             int chunk_length = 0;
             char *section = NULL;
 
-            for (i = 0; dec_chunk[chunk_length] != '\0'; chunk_length++);
+            for (chunk_length=0; dec_chunk[chunk_length]!='\0'; chunk_length++);
+fprintf(stderr, "%d %d\n", overlap, length);
 
             section = malloc((chunk_length + 1)*sizeof(*section));
-            for (; i <= chunk_length; i++)
+            for (i = 0; i <= chunk_length; i++)
                 section[i] = dec_chunk[i];
             ds_vector_append(decompressed_chunks, (void *)section);
-
             decompressed_length += chunk_length;
-            dec_chunk -= overlap;
-            free(dec_chunk);
             if (link->original_end > last_end)
                 last_end = link->original_end;
-        } else {
-            dec_chunk -= overlap;
-            free(dec_chunk);
         }
+
+        dec_chunk -= overlap;
+        free(dec_chunk);
+        free(coarse_sub);
         free(chunk);
     }
     char *residues = malloc((decompressed_length+1)*sizeof(*residues));
