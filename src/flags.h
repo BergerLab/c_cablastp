@@ -30,6 +30,8 @@ struct compress_flags {
 
 struct search_flags {
     int32_t map_seed_size;
+    double  coarse_evalue;
+    double  fine_evalue;
 } search_flags;
 
 

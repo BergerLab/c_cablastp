@@ -161,6 +161,8 @@ struct DSVector *expand_blast_hits(struct cbp_database *db){
         struct DSVector *hsps = current_hit->hsps;
         for (j = 0; j < hsps->size; j++) {
             struct hsp *current_hsp = (struct hsp *)ds_vector_get(hsps, j);
+            if (current_hsp->evalue > search_flags.coarse_evalue)
+                continue;
             struct DSVector *seqs = cbp_coarse_expand(db->coarse_db,db->com_db,
                                                       current_hit->accession,
                                                       current_hsp->hit_from,
@@ -232,7 +234,8 @@ main(int argc, char **argv)
     cbp_database_free(db);
     opt_config_free(conf);
     opt_args_free(args);
-    system("rm CaBLAST_temp_blast_results.xml");
+    /*system("rm CaBLAST_temp_blast_results.xml");
+    system("rm CaBLAST_fine.fasta");*/
 
     return 0;
 }
