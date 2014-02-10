@@ -35,14 +35,6 @@ static char *path_join(char *a, char *b)
     return joined;
 }
 
-
-/*Takes in the filename for a FASTA file and returns the file's sequences in a
-  struct fasta_file*/
-/*struct fasta_file *get_input_fasta(const char *filename){
-    struct fasta_file *input_fasta_query = fasta_read_all(filename, "");
-    return input_fasta_query;
-}*/
-
 /*Runs BLAST on the coarse database and stores the results in a temporary XML file*/
 void blast_coarse(char *input_dir, char *query){
     char *input_path = path_join(input_dir, CABLASTP_COARSE_FASTA);
@@ -56,7 +48,25 @@ void blast_coarse(char *input_dir, char *query){
            input_path, query);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
+    free(blastn);
 }
+
+/*Runs BLAST on the fine FASTA file*/
+void blast_fine(char *subject, char *query){
+    char *blastn_command =
+           "blastn -subject  -query  > CaBLAST_results.txt";
+    int command_length = strlen(blastn_command) + strlen(subject) +
+                                                       strlen(query) + 1;
+    char *blastn = malloc(command_length * sizeof(*blastn));
+    sprintf(blastn,
+            "blastn -subject %s -query %s > CaBLAST_results.txt",
+            subject, query);
+    fprintf(stderr, "%s\n", blastn);
+    system(blastn);
+    free(blastn);
+}
+
+
 /*A function for traversing a parsed XML tree.  Takes in the root node, a
  *void * accumulator, and a function that takes in an xmlNode and a void *
  *accumulator and traverses the tree, applying the function on each node.
@@ -71,7 +81,6 @@ void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
 /*Takes in the xmlNode representing a BLAST hsp and populates a struct hsp
   with its data.*/
 struct hsp *populate_blast_hsp(xmlNode *node){
-/*fprintf(stderr, "populate_blast_hsp\n");*/
     struct hsp *h = malloc(sizeof(*h));
     h->xml_name = "Hsp";
     for (; node; node = node->next){
@@ -213,7 +222,7 @@ main(int argc, char **argv)
     struct DSVector *expanded_hits = expand_blast_hits(db);
 
     write_fine_fasta(expanded_hits);
-fprintf(stderr,"%d!!!!!!!!\n",expanded_hits->size);
+    blast_fine("CaBLAST_fine.fasta", args->args[1]);
     ds_vector_free(expanded_hits);
     cbp_database_free(db);
     opt_config_free(conf);
