@@ -71,12 +71,10 @@ main(int argc, char **argv)
         int current_chunk = 0;
         printf("%s", compressed[i]->name);
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
-fprintf(stderr, "%d %d    ", link->original_start, last_end);
             /*overlap represents the length of the overlap of the parts of the
               decompressed sequence that has been printed and the parts of the
               decompressed sequence currently being decompressed.*/
             overlap = last_end - link->original_start;
-fprintf(stderr, " %s ", link->diff);
 
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
@@ -85,7 +83,6 @@ fprintf(stderr, " %s ", link->diff);
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
 
-fprintf(stderr, "%d %d\n", overlap, length);
             char *decompressed = read_edit_script(link->diff, chunk->residues,
                                                                       length);
 
@@ -93,8 +90,8 @@ fprintf(stderr, "%d %d\n", overlap, length);
               "overlap" unless overlap is greater than the length of the
               decompressed chunk.*/
             decompressed += overlap;
-            if (overlap < link->original_end - link->original_start){/*if(current_chunk==43)fprintf(stderr, "%s\n", decompressed);*/
-                printf("%s", decompressed);}
+            if (overlap < link->original_end - link->original_start)
+                printf("%s", decompressed);
             decompressed -= overlap;
             free(decompressed);
 

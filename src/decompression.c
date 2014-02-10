@@ -28,7 +28,6 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
     int copied = 0;
     struct DSVector *decompressed_chunks = ds_vector_create();
     for (link = cseq->links; link != NULL; link = link->next) {
-fprintf(stderr, "%d %d    ", link->original_start, last_end);
         int length;
         char *dec_chunk;
         struct fasta_seq *chunk = cbp_coarse_read_fasta_seq(coarsedb,
@@ -56,7 +55,6 @@ fprintf(stderr, "%d %d    ", link->original_start, last_end);
             char *section = NULL;
 
             for (chunk_length=0; dec_chunk[chunk_length]!='\0'; chunk_length++);
-fprintf(stderr, "%d %d\n", overlap, length);
 
             section = malloc((chunk_length + 1)*sizeof(*section));
             for (i = 0; i <= chunk_length; i++)
