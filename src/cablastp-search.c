@@ -203,7 +203,8 @@ void write_fine_fasta(struct DSVector *oseqs){
 
 int
 main(int argc, char **argv)
-{ 
+{
+    int i = 0;
     struct cbp_database *db = NULL;
     struct opt_config *conf;
     struct opt_args *args;
@@ -223,7 +224,11 @@ main(int argc, char **argv)
 
     write_fine_fasta(expanded_hits);
     blast_fine("CaBLAST_fine.fasta", args->args[1]);
-    ds_vector_free(expanded_hits);
+
+    for(i = 0; i < expanded_hits->size; i++)
+        cbp_seq_free((struct cbp_seq *)ds_vector_get(expanded_hits, i));
+
+    ds_vector_free_no_data(expanded_hits);
     cbp_database_free(db);
     opt_config_free(conf);
     opt_args_free(args);

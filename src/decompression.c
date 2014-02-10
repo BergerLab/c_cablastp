@@ -68,7 +68,7 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
         dec_chunk -= overlap;
         free(dec_chunk);
         free(coarse_sub);
-        free(chunk);
+        fasta_free_seq(chunk);
     }
     char *residues = malloc((decompressed_length+1)*sizeof(*residues));
     for (i = 0; i < decompressed_chunks->size; i++) {
