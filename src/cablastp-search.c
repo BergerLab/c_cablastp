@@ -232,6 +232,7 @@ main(int argc, char **argv)
     cbp_database_free(db);
     opt_config_free(conf);
     opt_args_free(args);
+    system("rm CaBLAST_temp_blast_results.xml");
 
     return 0;
 }

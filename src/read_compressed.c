@@ -217,6 +217,5 @@ struct cbp_seq *cbp_compressed_read_seq(struct cbp_compressed *comdb,
     }
     struct cbp_compressed_seq *cseq =
               get_compressed_seq(comdb->file_compressed, id);
-fprintf(stderr, "        %d\n", cseq->id);
     return cbp_decompress_seq(cseq, coarsedb);
 }
