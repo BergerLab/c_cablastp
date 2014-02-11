@@ -92,11 +92,14 @@ load_search_args()
         "The size of a seed in the K-mer map. This size combined with "
         "'ext-seed-size' forms the total seed size.");
     opt_flag_double(conf,
-        &search_flags.coarse_evalue, "coarse-evalue", ((double)1e-20),
+        &search_flags.coarse_evalue, "coarse-evalue", ((double)1e-30),
         "The e-value used during coarse search.");
     opt_flag_double(conf,
-        &search_flags.fine_evalue, "fine-evalue", ((double)1e-30),
+        &search_flags.fine_evalue, "fine-evalue", ((double)1e-20),
         "The e-value used during fine search.");
+    opt_flag_bool(conf,
+        &search_flags.no_cleanup, "no-cleanup",
+        "Set to true to keep the coarse search results XML file and fine database FASTA file.");
 
     return conf;
 }

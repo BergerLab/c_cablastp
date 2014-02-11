@@ -54,12 +54,12 @@ void blast_coarse(char *input_dir, char *query){
 /*Runs BLAST on the fine FASTA file*/
 void blast_fine(char *subject, char *query){
     char *blastn_command =
-           "blastn -subject  -query  > CaBLAST_results.txt";
+           "blastn -subject  -query -outfmt 5 > CaBLAST_results.txt";
     int command_length = strlen(blastn_command) + strlen(subject) +
                                                        strlen(query) + 1;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
-            "blastn -subject %s -query %s > CaBLAST_results.txt",
+            "blastn -subject %s -query %s -outfmt 5 > CaBLAST_results.txt",
             subject, query);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
@@ -227,15 +227,17 @@ main(int argc, char **argv)
     write_fine_fasta(expanded_hits);
     blast_fine("CaBLAST_fine.fasta", args->args[1]);
 
-    for(i = 0; i < expanded_hits->size; i++)
+    for (i = 0; i < expanded_hits->size; i++)
         cbp_seq_free((struct cbp_seq *)ds_vector_get(expanded_hits, i));
 
     ds_vector_free_no_data(expanded_hits);
     cbp_database_free(db);
     opt_config_free(conf);
     opt_args_free(args);
-    /*system("rm CaBLAST_temp_blast_results.xml");
-    system("rm CaBLAST_fine.fasta");*/
+    if (!search_flags.no_cleanup) {
+        system("rm CaBLAST_temp_blast_results.xml");
+        system("rm CaBLAST_fine.fasta");
+    }
 
     return 0;
 }

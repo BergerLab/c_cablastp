@@ -2,6 +2,7 @@
 #define __CABLASTP_OPT_H__
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #include "opt.h"
 
@@ -32,6 +33,7 @@ struct search_flags {
     int32_t map_seed_size;
     double  coarse_evalue;
     double  fine_evalue;
+    bool    no_cleanup;
 } search_flags;
 
 
