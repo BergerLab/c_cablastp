@@ -11,6 +11,7 @@
 #include "ds.h"
 #include "opt.h"
 
+#include "bitpack.h"
 #include "blosum62.h"
 #include "coarse.h"
 #include "compressed.h"
@@ -36,31 +37,31 @@ static char *path_join(char *a, char *b)
 }
 
 /*Runs BLAST on the coarse database and stores the results in a temporary XML file*/
-void blast_coarse(char *input_dir, char *query){
+void blast_coarse(char *input_dir, char *query, uint64_t dbsize){
     char *input_path = path_join(input_dir, CABLASTP_COARSE_FASTA);
     char *blastn_command =
-           "blastn -db  -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml";
+           "blastn -db  -outfmt 5 -query  -dbsize  > CaBLAST_temp_blast_results.xml";
     int command_length = strlen(blastn_command) + strlen(input_path) +
-                                                       strlen(query) + 1;
+                                                       strlen(query) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
-           "blastn -db %s -outfmt 5 -query %s > CaBLAST_temp_blast_results.xml",
-           input_path, query);
+           "blastn -db %s -outfmt 5 -query %s -dbsize %lu > CaBLAST_temp_blast_results.xml",
+           input_path, query, dbsize);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
     free(blastn);
 }
 
 /*Runs BLAST on the fine FASTA file*/
-void blast_fine(char *subject, char *query){
+void blast_fine(char *subject, char *query, uint64_t dbsize){
     char *blastn_command =
-           "blastn -subject  -query -outfmt 5 > CaBLAST_results.txt";
+           "blastn -subject  -query -outfmt 5 -dbsize  > CaBLAST_results.txt";
     int command_length = strlen(blastn_command) + strlen(subject) +
-                                                       strlen(query) + 1;
+                                                       strlen(query) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
-            "blastn -subject %s -query %s -outfmt 5 > CaBLAST_results.txt",
-            subject, query);
+            "blastn -subject %s -query %s -outfmt 5 -dbsize %lu > CaBLAST_results.txt",
+            subject, query, dbsize);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
     free(blastn);
@@ -221,11 +222,12 @@ main(int argc, char **argv)
     }
     db = cbp_database_read(args->args[0], search_flags.map_seed_size);
 
-    blast_coarse(args->args[0], args->args[1]);
+    uint64_t dbsize = read_int_from_file(8,db->coarse_db->file_params);
+    blast_coarse(args->args[0], args->args[1], dbsize);
     struct DSVector *expanded_hits = expand_blast_hits(db);
 
     write_fine_fasta(expanded_hits);
-    blast_fine("CaBLAST_fine.fasta", args->args[1]);
+    blast_fine("CaBLAST_fine.fasta", args->args[1], dbsize);
 
     for (i = 0; i < expanded_hits->size; i++)
         cbp_seq_free((struct cbp_seq *)ds_vector_get(expanded_hits, i));
