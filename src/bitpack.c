@@ -47,3 +47,17 @@ void output_int_to_file(uint64_t number, int length, FILE *f){
         putc(bytes[i], f);
     free(bytes);
 }
+
+/*Takes in a number of bytes to read and a file pointer and reads that number
+  of bytes from the file and copies them into a 64-bit integer.*/
+uint64_t read_int_from_file(int length, FILE *f){
+    int i;
+    uint64_t bytes = (uint64_t)0;
+    uint64_t mask = make_mask(8);
+    for (i = 0; i < length; i++) {
+        uint64_t current_byte = ((uint64_t)getc(f)) & mask;
+        bytes <<= 8;
+        bytes |= current_byte;
+    }
+    return bytes;
+}

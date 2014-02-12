@@ -229,6 +229,7 @@ cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db)
         }
         free(kmer);
     }
+    putc('\n', coarse_db->file_seeds);
 }
 
 void
