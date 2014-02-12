@@ -94,6 +94,7 @@ cbp_database_init(char *dir, int32_t seed_size, bool add)
     free(pindex_coarse_fasta);
     free(pcompressed);
     free(pindex_compressed);
+    free(pindex_params);
 
     return db;
 }
@@ -131,6 +132,7 @@ cbp_database_read(char *dir, int32_t seed_size)
     findex_coarse_fasta = open_db_file(pindex_coarse_fasta, "r");
     fcompressed = open_db_file(pcompressed, "r");
     findex_compressed = open_db_file(pindex_compressed, "r");
+    findex_params = open_db_file(pindex_params, "r");
 
     db->coarse_db = cbp_coarse_init(seed_size, ffasta, fseeds, flinks,
                                     findex_coarse_links, findex_coarse_fasta,

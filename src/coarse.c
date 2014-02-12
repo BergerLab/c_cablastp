@@ -179,6 +179,8 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
         }
     }
     output_int_to_file(coarse_db->dbsize, 8, coarse_db->file_params);
+    putc('\n', coarse_db->file_params);
+    putc('\n', coarse_db->file_links);
 }
 
 void
@@ -200,7 +202,6 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
                 (link->dir?'0':'1'));
     }
 }
-
 
 void
 cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db)
