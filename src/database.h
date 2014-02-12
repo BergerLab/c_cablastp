@@ -13,6 +13,7 @@
 #define CABLASTP_COARSE_FASTA_INDEX "coarse.fasta.index"
 #define CABLASTP_COMPRESSED "compressed.cbp"
 #define CABLASTP_COMPRESSED_INDEX "compressed.cbp.index"
+#define CABLASTP_PARAMS "params"
 
 struct cbp_database {
     char *name;

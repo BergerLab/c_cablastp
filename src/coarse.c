@@ -12,7 +12,8 @@
 struct cbp_coarse *
 cbp_coarse_init(int32_t seed_size,
                 FILE *file_fasta, FILE *file_seeds, FILE *file_links,
-                FILE *file_links_index, FILE *file_fasta_index)
+                FILE *file_links_index, FILE *file_fasta_index,
+                FILE *file_params)
 {
     struct cbp_coarse *coarse_db;
     int32_t errno;
@@ -22,11 +23,13 @@ cbp_coarse_init(int32_t seed_size,
 
     coarse_db->seqs = ds_vector_create_capacity(10000000);
     coarse_db->seeds = cbp_seeds_init(seed_size);
+    coarse_db->dbsize = (uint64_t)0;
     coarse_db->file_fasta = file_fasta;
     coarse_db->file_seeds = file_seeds;
     coarse_db->file_links = file_links;
     coarse_db->file_fasta_index = file_fasta_index;
     coarse_db->file_links_index = file_links_index;
+    coarse_db->file_params = file_params;
 
     if (0 != (errno = pthread_rwlock_init(&coarse_db->lock_seq, NULL))) {
         fprintf(stderr, "Could not create rwlock. Errno: %d\n", errno);
@@ -47,6 +50,7 @@ cbp_coarse_free(struct cbp_coarse *coarse_db)
     fclose(coarse_db->file_links);
     fclose(coarse_db->file_links_index);
     fclose(coarse_db->file_fasta_index);
+    fclose(coarse_db->file_params);
 
     if (0 != (errno = pthread_rwlock_destroy(&coarse_db->lock_seq))) {
         fprintf(stderr, "Could not destroy rwlock. Errno: %d\n", errno);
@@ -91,8 +95,10 @@ cbp_coarse_get(struct cbp_coarse *coarse_db, int32_t i)
     return seq;
 }
 
-/*Outputs the sequences in the coarse database to a FASTA file in plain text
-  and outputs the links to the compressed database in a binary format*/
+/*Outputs the sequences in the coarse database to a FASTA file in plain text,
+ *outputs the links to the compressed database in a binary format, and outputs
+ *the size of the database to the params file.
+ */
 void
 cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
 {
@@ -172,6 +178,7 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
             index++;
         }
     }
+    output_int_to_file(coarse_db->dbsize, 8, coarse_db->file_params);
 }
 
 void

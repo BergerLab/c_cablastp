@@ -116,9 +116,13 @@ cbp_compress_worker(void *data)
     while (NULL != (s = (struct cbp_seq *) ds_queue_get(args->jobs))) {
         cseq = cbp_compress(args->db->coarse_db, s, mem);
         cbp_compressed_write_binary(args->db->com_db, cseq);
+
+        args->db->coarse_db->dbsize += s->length;
+
         cbp_seq_free(s);
         cbp_compressed_seq_free(cseq);
     }
+
     cbp_align_nw_memory_free(mem);
 
     return NULL;
@@ -264,7 +268,8 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
                                          cor_match, coarse_align_len, 0, 1,
                                          org_match, original_align_len, 0, 1,
                                          matches, NULL);
-free(cor_match);free(org_match);
+                free(cor_match);
+                free(org_match);
                 /*If the length of either the coarse or original match
                   was changed from backtracking in the alignment, update
                   the lengths.*/
@@ -278,38 +283,6 @@ free(cor_match);free(org_match);
                     mlens_fwd.olen -= (original_align_len - i2);
                 free(new_cor);
                 free(new_org);
-                /*If we are close to the end of the section, extend the match
-                  to the end of the sequence.*/
-                /*if (current + mlens_fwd.olen + compress_flags.match_extend >=
-                                                            org_seq->length) {
-                   mlens_fwd.olen = org_seq->length - current - seed_size;
-                   changed = true;
-                }*/
-
-                /*If we are close to the start of the section, extend the match
-                  to the start of the sequence.*/
-                /*if (current - mlens_rev.olen - start_of_section <=
-                                    compress_flags.match_extend) {
-                   mlens_rev.olen = current - start_of_section;
-                   changed = true;
-                }*/
-
-                /*If the match was extended, update the alignment*/
-                /*if (changed) {
-                    original_align_len = mlens_rev.olen + seed_size +
-                                                              mlens_fwd.olen;
-                    start_original_align = current - mlens_rev.olen;
-                    end_original_align = current + seed_size + mlens_fwd.olen;
-
-                    org_match = malloc(original_align_len*sizeof(char));
-                    for (i2 = start_original_align; i2<end_original_align; i2++)
-                        org_match[i2-start_original_align] =
-                                                   org_seq->residues[i2];
-                    alignment = cbp_align_nw(mem,
-                                             cor_match, coarse_align_len, 0, 1,
-                                             org_match, original_align_len,
-                                             0, 1, matches, NULL);
-                }*/
                 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
@@ -416,7 +389,9 @@ free(cor_match);free(org_match);
                                          org_match, original_align_len,
                                          original_align_len-1, -1,
                                          matches, NULL);
-free(cor_match);free(org_match);
+                free(cor_match);
+                free(org_match);
+
                 /*If the length of either the coarse or original match
                   was changed from backtracking in the alignment, update
                   the lengths.*/
@@ -431,38 +406,6 @@ free(cor_match);free(org_match);
                 free(new_cor);
                 free(new_org);
 
-                /*If we are close to the end of the section, extend the match
-                  to the end of the sequence.*/
-                /*if (current + mlens_rev.olen + compress_flags.match_extend >=
-                                                            org_seq->length) {
-                    mlens_rev.olen = org_seq->length - current - seed_size;
-                    changed = true;
-                }*/
-
-                /*If we are close to the start of the section, extend the match
-                  to the start of the sequence.*/
-                /*if (current - mlens_fwd.olen - start_of_section <=
-                                    compress_flags.match_extend) {
-                    mlens_fwd.olen = current - start_of_section;
-                    changed = true;
-                }*/
-
-                /*If the match was extended, update the alignment*/
-                /*if (changed) {
-                    original_align_len = mlens_rev.olen + seed_size +
-                                                              mlens_fwd.olen;
-                    start_original_align = current - mlens_fwd.olen;
-                    end_original_align = current + seed_size + mlens_rev.olen;
-                    org_match = malloc(original_align_len*sizeof(char));
-                    for(i2 = start_original_align; i2<end_original_align; i2++)
-                        org_match[i2-start_original_align] = org_seq->residues[i2];
-
-                    alignment = cbp_align_nw(mem,
-                                             cor_match, coarse_align_len, 0, 1,
-                                             org_match, original_align_len,
-                                             original_align_len-1, -1,
-                                             matches, NULL);
-                }*/
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
                 if (current - mlens_fwd.olen - start_of_section > 0) {
@@ -536,7 +479,6 @@ free(cor_match);free(org_match);
             chunks++;
         }
     }
-    
 fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     free(matches);
     free(matches_temp);
