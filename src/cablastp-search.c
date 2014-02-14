@@ -40,13 +40,13 @@ static char *path_join(char *a, char *b)
 void blast_coarse(char *input_dir, char *query, uint64_t dbsize){
     char *input_path = path_join(input_dir, CABLASTP_COARSE_FASTA);
     char *blastn_command =
-           "blastn -db  -outfmt 5 -query  -dbsize  > CaBLAST_temp_blast_results.xml";
+           "blastn -db  -outfmt 5 -query  -dbsize  -task blastn -evalue %s > CaBLAST_temp_blast_results.xml";
     int command_length = strlen(blastn_command) + strlen(input_path) +
                                                        strlen(query) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
-           "blastn -db %s -outfmt 5 -query %s -dbsize %lu > CaBLAST_temp_blast_results.xml",
-           input_path, query, dbsize);
+           "blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn -evalue %s > CaBLAST_temp_blast_results.xml",
+           input_path, query, dbsize, search_flags.coarse_evalue);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
     free(blastn);
@@ -55,12 +55,12 @@ void blast_coarse(char *input_dir, char *query, uint64_t dbsize){
 /*Runs BLAST on the fine FASTA file*/
 void blast_fine(char *subject, char *query, uint64_t dbsize){
     char *blastn_command =
-           "blastn -subject  -query -outfmt 5 -dbsize  > CaBLAST_results.txt";
+           "blastn -subject  -query -outfmt 5 -dbsize  -task blastn > CaBLAST_results.txt";
     int command_length = strlen(blastn_command) + strlen(subject) +
                                                        strlen(query) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
-            "blastn -subject %s -query %s -outfmt 5 -dbsize %lu > CaBLAST_results.txt",
+            "blastn -subject %s -query %s -outfmt 5 -dbsize %lu -task blastn > CaBLAST_results.txt",
             subject, query, dbsize);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
@@ -162,7 +162,7 @@ struct DSVector *expand_blast_hits(struct cbp_database *db){
         struct DSVector *hsps = current_hit->hsps;
         for (j = 0; j < hsps->size; j++) {
             struct hsp *current_hsp = (struct hsp *)ds_vector_get(hsps, j);
-            if (current_hsp->evalue > search_flags.coarse_evalue)
+            if (current_hsp->evalue > atof(search_flags.coarse_evalue))
                 continue;
             struct DSVector *seqs = cbp_coarse_expand(db->coarse_db,db->com_db,
                                                       current_hit->accession,
