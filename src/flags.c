@@ -93,10 +93,7 @@ load_search_args()
         "'ext-seed-size' forms the total seed size.");
     opt_flag_string(conf,
         &search_flags.coarse_evalue, "coarse-evalue", "1e-20",
-        "The e-value used during coarse search.");
-    opt_flag_string(conf,
-        &search_flags.fine_evalue, "fine-evalue", "1e-30",
-        "The e-value used during fine search.");
+        "The e-value used during coarse search.  To set the e-value for fine search, add it as an argument in --blast-args, which is the list of arguments to pass into BLAST during fine search.");
     opt_flag_bool(conf,
         &search_flags.no_cleanup, "no-cleanup",
         "Set to true to keep the coarse search results XML file and fine database FASTA file.");

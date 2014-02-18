@@ -32,7 +32,6 @@ struct compress_flags {
 struct search_flags {
     int32_t map_seed_size;
     char    *coarse_evalue;
-    char    *fine_evalue;
     bool    no_cleanup;
 } search_flags;
 

@@ -204,6 +204,32 @@ void write_fine_fasta(struct DSVector *oseqs){
     fclose(temp);
 }
 
+/*Takes in the arguments for the program and returns a string of all of the
+ *arguments for fine BLAST (the arguments after --blast-args) concatenated and
+ *separated by a space.
+ */
+char *get_blast_args(struct opt_args *args){
+    int i = 0;
+    int index = -1;
+    int length = 1;
+    char *blast_args = NULL;
+    for (i = 0; i < args->nargs; i++)
+        if (index >= 0)
+            length += (strlen(args->args[i]) + 1);
+        else
+            index = strcmp(args->args[i], "--blast-args") == 0 ? i : -1;
+    blast_args = malloc(length*sizeof(*args));
+    if (index == -1)
+        *blast_args = '\0';
+    else
+        for (i = index + 1; i < args->nargs; i++) {
+            blast_args = strcat(blast_args, args->args[i]);
+            if (i < args->nargs - 1)
+                blast_args = strcat(blast_args, " ");
+        }
+    return blast_args;
+}
+
 int
 main(int argc, char **argv)
 {
@@ -213,6 +239,7 @@ main(int argc, char **argv)
     struct opt_args *args;
     conf = load_search_args();
     args = opt_config_parse(conf, argc, argv);
+fprintf(stderr, "%s\n", get_blast_args(args));
     if (args->nargs < 2) {
         fprintf(stderr, 
             "Usage: %s [flags] database-dir fasta-file [ --blast_args BLASTN_ARGUMENTS ]\n",
