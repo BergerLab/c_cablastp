@@ -79,6 +79,12 @@ void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
     }
 }
 
+/*A wrapper function for traverse_blast_xml that treats the xmlNode passed into
+  r as the root of the XML tree, skipping any sibling nodes r has*/
+void traverse_blast_xml_r(xmlNode *r, void (*f)(xmlNode *,void *), void *acc){
+    traverse_blast_xml(r->children, f, acc);
+}
+
 /*Takes in the xmlNode representing a BLAST hsp and populates a struct hsp
   with its data.*/
 struct hsp *populate_blast_hsp(xmlNode *node){
@@ -136,7 +142,7 @@ void add_blast_hit(xmlNode *node, void *hits){
   a vector of all of the nodes in the tree that represent BLAST hits.*/
 struct DSVector *get_blast_hits(xmlNode *node){
     struct DSVector *hits = ds_vector_create();
-    traverse_blast_xml(node, add_blast_hit, hits);
+    traverse_blast_xml_r(node, add_blast_hit, hits);
     return hits;
 }
 
@@ -152,7 +158,7 @@ void add_blast_iteration(xmlNode *node, void *iterations){
   a vector of all of the nodes in the tree that represent iterations.*/
 struct DSVector *get_blast_iterations(xmlNode *node){
     struct DSVector *iterations = ds_vector_create();
-    traverse_blast_xml(node, add_blast_iteration, node);
+    traverse_blast_xml_r(node, add_blast_iteration, iterations);
     return iterations;
 }
 
@@ -268,7 +274,18 @@ main(int argc, char **argv)
     uint64_t dbsize = read_int_from_file(8,db->coarse_db->file_params);
     blast_coarse(args, dbsize);
 
-    struct DSVector *expanded_hits = expand_blast_hits(db);
+    xmlDoc *doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
+    if (doc == NULL) {
+        fprintf(stderr, "Could not parse CaBLAST_temp_blast_results.xml\n");
+        return 0;
+    }
+    xmlNode *root = xmlDocGetRootElement(doc);
+    struct DSVector *iterations = get_blast_iterations(root);
+    for (i = 0; i < iterations->size; i++){
+        struct DSVector *hits = get_blast_hits((xmlNode *)ds_vector_get(iterations, i));
+        fprintf(stderr, "%d\n", hits->size);
+    }
+    /*struct DSVector *expanded_hits = expand_blast_hits(db);
     write_fine_fasta(expanded_hits);
 
     blast_fine("CaBLAST_fine.fasta", args, dbsize);
@@ -283,7 +300,7 @@ main(int argc, char **argv)
     if (!search_flags.no_cleanup) {
         system("rm CaBLAST_temp_blast_results.xml");
         system("rm CaBLAST_fine.fasta");
-    }
+    }*/
 
     return 0;
 }
