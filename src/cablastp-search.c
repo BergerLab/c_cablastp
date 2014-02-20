@@ -140,6 +140,23 @@ struct DSVector *get_blast_hits(xmlNode *node){
     return hits;
 }
 
+/*Takes in an xmlNode and a vector of xmlNodes converted to a void *
+  and adds the node to the vector if the node represents an iteration.*/
+void add_blast_iteration(xmlNode *node, void *iterations){
+    if (!strcmp((char *)(node->name), "Iteration"))
+        ds_vector_append((struct DSVector *)iterations, (void *)node);
+}
+
+
+/*Takes in the xmlNode for the root of a parsed BLAST XML tree and returns
+  a vector of all of the nodes in the tree that represent iterations.*/
+struct DSVector *get_blast_iterations(xmlNode *node){
+    struct DSVector *iterations = ds_vector_create();
+    traverse_blast_xml(node, add_blast_iteration, node);
+    return iterations;
+}
+
+
 struct DSVector *expand_blast_hits(struct cbp_database *db){
     int32_t i, j, k = 0;
     xmlDoc *doc = NULL;
@@ -239,7 +256,6 @@ main(int argc, char **argv)
     struct opt_args *args;
     conf = load_search_args();
     args = opt_config_parse(conf, argc, argv);
-fprintf(stderr, "%s\n", get_blast_args(args));
     if (args->nargs < 2) {
         fprintf(stderr, 
             "Usage: %s [flags] database-dir fasta-file [ --blast_args BLASTN_ARGUMENTS ]\n",
@@ -247,16 +263,14 @@ fprintf(stderr, "%s\n", get_blast_args(args));
         opt_config_print_usage(conf);
         exit(1);
     }
-fprintf(stderr, "Read database\n");
     db = cbp_database_read(args->args[0], search_flags.map_seed_size);
 
     uint64_t dbsize = read_int_from_file(8,db->coarse_db->file_params);
-fprintf(stderr, "blast_coarse\n");
     blast_coarse(args, dbsize);
-return 0;
-    struct DSVector *expanded_hits = expand_blast_hits(db);
 
+    struct DSVector *expanded_hits = expand_blast_hits(db);
     write_fine_fasta(expanded_hits);
+
     blast_fine("CaBLAST_fine.fasta", args, dbsize);
 
     for (i = 0; i < expanded_hits->size; i++)
