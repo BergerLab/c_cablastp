@@ -82,6 +82,7 @@ void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
 /*A wrapper function for traverse_blast_xml that treats the xmlNode passed into
   r as the root of the XML tree, skipping any sibling nodes r has*/
 void traverse_blast_xml_r(xmlNode *r, void (*f)(xmlNode *,void *), void *acc){
+    f(r, acc);
     traverse_blast_xml(r->children, f, acc);
 }
 
@@ -282,8 +283,18 @@ main(int argc, char **argv)
     xmlNode *root = xmlDocGetRootElement(doc);
     struct DSVector *iterations = get_blast_iterations(root);
     for (i = 0; i < iterations->size; i++){
-        struct DSVector *hits = get_blast_hits((xmlNode *)ds_vector_get(iterations, i));
-        fprintf(stderr, "%d\n", hits->size);
+        int j = 0, k = 0;
+        struct DSVector *hits = get_blast_hits((xmlNode *)
+                                               ds_vector_get(iterations, i));
+        for (j = 0; j < hits->size; j++) {
+            struct hit *current_hit = (struct hit *)ds_vector_get(hits, j);
+            struct DSVector *hsps = current_hit->hsps;
+            for (k = 0; k < hsps->size; k++) {
+                struct hsp *h = (struct hsp *)ds_vector_get(hsps, k);
+                int32_t coarse_start = h->hit_from;
+                int32_t coarse_end = h->hit_to;
+            }
+        }
     }
     /*struct DSVector *expanded_hits = expand_blast_hits(db);
     write_fine_fasta(expanded_hits);
