@@ -16,12 +16,12 @@ char *get_coarse_header(FILE *f){
     char *header = malloc(30*sizeof(*header));
     int header_length = 30;
     int i = 0;
-    while (c != EOF && c != '\n'){
+    while (c != EOF && c != '\n') {
         c = getc(f);
         if (c != EOF) {
             header[i] = (char)c;
             i++;
-            if (i == header_length-1) {
+            if (i == header_length - 1) {
                 header_length *= 2;
                 header = realloc(header, header_length*sizeof(*header));
             }
@@ -108,6 +108,25 @@ struct DSVector *get_coarse_sequence_links(FILE *f){
     return links;
 }
 
+/*A wrapper function for get_coarse_sequence_links that handles fseek calls;
+ *seeks to the index in the coarse.links file for the sequence at index id
+ *and then calls get_coarse_sequence_links.  If fseek is successful, then
+ *return the coarse sequence links for the coarse sequence at index id.
+ *Otherwise, return NULL.
+ */
+struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
+                                                           int32_t id){
+    int64_t offset = cbp_coarse_find_offset(index, id);
+    if (offset < 0)
+        return NULL;
+    bool fseek_success = fseek(links, offset, SEEK_SET) == 0;
+    if (!fseek_success) { 
+        fprintf(stderr, "Error in seeking to offset %lu\n", offset);
+        return NULL;
+    }
+    return get_coarse_sequence_links(links);
+}
+
 struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end){
@@ -189,5 +208,5 @@ struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb, int id)
         fprintf(stderr, "Error in seeking to offset %d\n", offset);
         return NULL;
     }
-    return fasta_read_next(coarsedb->file_fasta,"");
+    return fasta_read_next(coarsedb->file_fasta, "");
 }
