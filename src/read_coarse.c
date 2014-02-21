@@ -131,6 +131,7 @@ struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
 struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end){
+fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
     FILE *links = coarsedb->file_links;
     FILE *coarse_links_index = coarsedb->file_links_index;
     FILE *fasta = coarsedb->file_fasta;

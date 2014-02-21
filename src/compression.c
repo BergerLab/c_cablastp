@@ -314,7 +314,9 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
                                        cbp_link_to_compressed_init(
                                        org_seq->id,
                                        resind - mlens_rev.rlen,
-                                       resind + seed_size + mlens_fwd.rlen, true));
+                                       resind + seed_size + mlens_fwd.rlen,
+                                       current - mlens_rev.olen,
+                                       current + seed_size + mlens_fwd.olen, true));
                 /*Update the current position in the sequence*/
                 if (current + mlens_fwd.olen < org_seq->length - seed_size - ext_seed - 1) {
                     start_of_section = current + mlens_fwd.olen
@@ -437,7 +439,9 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
                                        cbp_link_to_compressed_init(
                                        org_seq->id,
                                        resind - mlens_rev.rlen,
-                                       resind + seed_size + mlens_fwd.rlen, false));
+                                       resind + seed_size + mlens_fwd.rlen,
+                                       current - mlens_fwd.olen,
+                                       current + seed_size + mlens_rev.olen, false));
 
                 /*Update the current position in the sequence*/
                 if(current + mlens_rev.olen < org_seq->length - seed_size - ext_seed - 1){
@@ -588,7 +592,8 @@ add_without_match(struct cbp_coarse *coarse_db,
     coarse_seq = cbp_coarse_add(coarse_db, org_seq->residues, ostart, oend);
     cbp_coarse_seq_addlink(
         coarse_seq,
-        cbp_link_to_compressed_init(org_seq->id, 0, oend - ostart, true));
+        cbp_link_to_compressed_init(org_seq->id, 0, oend - ostart,
+                                    ostart, oend, true));
     return coarse_seq->id;
 }
 
