@@ -21,7 +21,8 @@ struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
 
 struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
-                  int32_t id, int32_t start, int32_t end);
+                  int32_t id, int32_t start, int32_t end,
+                  int32_t hit_pad_length);
 
 int64_t cbp_coarse_find_offset(FILE *index_file, int id);
 struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb,

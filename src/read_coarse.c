@@ -39,31 +39,31 @@ char *get_coarse_header(FILE *f){
   converts its data to a struct cbp_link_to_compressed*/
 struct cbp_link_to_compressed *read_coarse_link(FILE *f){
     struct cbp_link_to_compressed *link = malloc(sizeof(*link));
-    link->org_seq_id = (uint64_t)read_int_from_file(8,f);
+    link->org_seq_id = (uint64_t)read_int_from_file(8, f);
     if (feof(f)) {
         free(link);
         return NULL;
     }
 
-    link->coarse_start = (uint16_t)read_int_from_file(2,f);
+    link->coarse_start = (uint16_t)read_int_from_file(2, f);
     if (feof(f)) {
         free(link);
         return NULL;
     }
 
-    link->coarse_end = (uint16_t)read_int_from_file(2,f);
+    link->coarse_end = (uint16_t)read_int_from_file(2, f);
     if (feof(f)) {
         free(link);
         return NULL;
     }
 
-    link->original_start = (uint64_t)read_int_from_file(8,f);
+    link->original_start = (uint64_t)read_int_from_file(8, f);
     if (feof(f)) {
         free(link);
         return NULL;
     }
 
-    link->original_end = (uint64_t)read_int_from_file(8,f);
+    link->original_end = (uint64_t)read_int_from_file(8, f);
     if (feof(f)) {
         free(link);
         return NULL;
@@ -123,7 +123,8 @@ struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
 
 struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
-                  int32_t id, int32_t start, int32_t end){
+                  int32_t id, int32_t start, int32_t end,
+                  int32_t hit_pad_length){
 fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
     FILE *links = coarsedb->file_links;
     FILE *coarse_links_index = coarsedb->file_links_index;
@@ -139,11 +140,28 @@ fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
     for (i = 0; i < coarse_seq_links->size; i++) {
         struct cbp_link_to_compressed *link =
             (struct cbp_link_to_compressed *)ds_vector_get(coarse_seq_links,i);
-        int16_t coarse_start = link->coarse_start;
-        int16_t coarse_end = link->coarse_end;
 
-        if (coarse_start >= start && coarse_end <= end) {
+        if (link->coarse_start >= start && link->coarse_end <= end) {
             bool dir = link->dir;
+
+            uint64_t original_start =
+                fmax(0, dir ? fmin(start + (link->original_start -
+                                            link->coarse_start),
+                                   start + (link->original_end -
+                                            link->coarse_end)) :
+                              fmin(link->original_start + link->coarse_end-end,
+                                   link->original_start-(end-link->coarse_end))
+                             - hit_pad_length);
+
+            uint64_t original_end =
+                (dir ? fmax(end + (link->original_start -
+                                  link->coarse_start),
+                           end + (link->original_end -
+                                  link->coarse_end)) :
+                      fmax(link->original_end - (start - link->coarse_start),
+                           link->coarse_start + link->coarse_end - start))
+                 + hit_pad_length;
+
         }
     }
 

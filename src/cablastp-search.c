@@ -269,7 +269,7 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations,
                 int16_t coarse_end = h->hit_to;
                 int32_t coarse_seq_id = current_hit->accession;
                 cbp_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
-                                  coarse_start, coarse_end);
+                                  coarse_start, coarse_end, 50);
             }
         }
     }
