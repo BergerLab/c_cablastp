@@ -149,21 +149,23 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
                 putc(id_bytes[j], coarse_db->file_links);
             /*Convert the start and end indices for the link to two
               characters.*/
-            int16_t start = (int16_t)link->coarse_start;
-            int16_t end   = (int16_t)link->coarse_end;
-            char start_left  = (start >> 8) & mask;
-            char start_right = start & mask;
-            char end_left    = (end >> 8) & mask;
-            char end_right   = end & mask;
+            int16_t coarse_start = (int16_t)link->coarse_start;
+            int16_t coarse_end   = (int16_t)link->coarse_end;
+            char coarse_start_left  = (coarse_start >> 8) & mask;
+            char coarse_start_right = coarse_start & mask;
+            char coarse_end_left    = (coarse_end >> 8) & mask;
+            char coarse_end_right   = coarse_end & mask;
             /*Prints the binary representations of the indices and the
               direction of the link to the links file*/
-            putc(start_left, coarse_db->file_links);
-            putc(start_right, coarse_db->file_links);
-            putc(end_left, coarse_db->file_links);
-            putc(end_right, coarse_db->file_links);
+            putc(coarse_start_left, coarse_db->file_links);
+            putc(coarse_start_right, coarse_db->file_links);
+            putc(coarse_end_left, coarse_db->file_links);
+            putc(coarse_end_right, coarse_db->file_links);
+            output_int_to_file(link->original_start, 8, coarse_db->file_links);
+            output_int_to_file(link->original_end, 8, coarse_db->file_links);
             putc((link->dir?'0':'1'), coarse_db->file_links);
 
-            index += 13;
+            index += 29;
 
             /*0 is used as a delimiter to signify that there are more links
               for this sequence*/

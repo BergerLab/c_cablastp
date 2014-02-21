@@ -42,8 +42,10 @@ struct cbp_link_to_compressed *read_coarse_link(FILE *f){
     unsigned int c = 0;
     struct cbp_link_to_compressed *link = malloc(sizeof(*link));
     uint64_t org_seq_id = (uint64_t)0;
-    uint16_t coarse_start = (uint64_t)0;
-    uint16_t coarse_end = (uint64_t)0;
+    uint16_t coarse_start = (uint16_t)0;
+    uint16_t coarse_end = (uint16_t)0;
+    uint64_t original_start = (uint64_t)0;
+    uint64_t original_end = (uint64_t)0;
     bool dir;
     unsigned char indices[5];
 
@@ -70,6 +72,10 @@ struct cbp_link_to_compressed *read_coarse_link(FILE *f){
     coarse_end |= (uint16_t)indices[2];
     coarse_end <<= 8;
     coarse_end |= (uint16_t)indices[3];
+
+    link->original_start = read_int_from_file(8, f);
+    link->original_end = read_int_from_file(8, f);
+
     dir = (char)indices[4] == '0';
 
     link->org_seq_id = org_seq_id;
