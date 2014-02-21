@@ -136,21 +136,20 @@ fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
     struct DSVector *oseqs = ds_vector_create();
     struct DSVector *coarse_seq_links =
         get_coarse_sequence_links_at(links, coarse_links_index, id);
-
     for (i = 0; i < coarse_seq_links->size; i++) {
         struct cbp_link_to_compressed *link =
-            (struct cbp_link_to_compressed *)ds_vector_get(coarse_seq_links,i);
-
-        if (link->coarse_start >= start && link->coarse_end <= end) {
+            (struct cbp_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
+        if (link->coarse_start <= end && link->coarse_end >= start) {
             bool dir = link->dir;
 
             uint64_t original_start =
-                fmax(0, dir ? fmin(start + (link->original_start -
-                                            link->coarse_start),
-                                   start + (link->original_end -
-                                            link->coarse_end)) :
-                              fmin(link->original_start + link->coarse_end-end,
-                                   link->original_start-(end-link->coarse_end))
+                fmax(0, (dir ? fmin(start + (link->original_start -
+                                             link->coarse_start),
+                                    start + (link->original_end -
+                                             link->coarse_end)) :
+                               fmin(link->original_start + link->coarse_end-end,
+                                    link->original_start - 
+                                          (end-link->coarse_end)))
                              - hit_pad_length);
 
             uint64_t original_end =
@@ -158,10 +157,9 @@ fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
                                   link->coarse_start),
                            end + (link->original_end -
                                   link->coarse_end)) :
-                      fmax(link->original_end - (start - link->coarse_start),
-                           link->coarse_start + link->coarse_end - start))
+                       fmax(link->original_end - (start - link->coarse_start),
+                            link->coarse_start + link->coarse_end - start))
                  + hit_pad_length;
-
         }
     }
 
