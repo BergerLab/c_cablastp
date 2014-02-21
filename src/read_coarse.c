@@ -38,52 +38,39 @@ char *get_coarse_header(FILE *f){
 /*Reads one link from a file with the links to the compressed database and
   converts its data to a struct cbp_link_to_compressed*/
 struct cbp_link_to_compressed *read_coarse_link(FILE *f){
-    int i;
-    unsigned int c = 0;
     struct cbp_link_to_compressed *link = malloc(sizeof(*link));
-    uint64_t org_seq_id = (uint64_t)0;
-    uint16_t coarse_start = (uint16_t)0;
-    uint16_t coarse_end = (uint16_t)0;
-    uint64_t original_start = (uint64_t)0;
-    uint64_t original_end = (uint64_t)0;
-    bool dir;
-    unsigned char indices[5];
-
-    for (i = 0; i < 8; i++){
-        c = getc(f);
-        if (feof(f)) {
-            free(link);
-            return NULL;
-        }
-        org_seq_id <<= 8;
-        org_seq_id |= (uint64_t)c;
+    link->org_seq_id = (uint64_t)read_int_from_file(8,f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
     }
-    for (i = 0; i < 5; i++){
-        c = getc(f);
-        if (feof(f)) {
-            free(link);
-            return NULL;
-        }
-        indices[i] = (char)c;
+
+    link->coarse_start = (uint16_t)read_int_from_file(2,f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
     }
-    coarse_start |= (uint16_t)indices[0];
-    coarse_start <<= 8;
-    coarse_start |= (uint16_t)indices[1];
-    coarse_end |= (uint16_t)indices[2];
-    coarse_end <<= 8;
-    coarse_end |= (uint16_t)indices[3];
 
-    link->original_start = read_int_from_file(8, f);
-    link->original_end = read_int_from_file(8, f);
+    link->coarse_end = (uint16_t)read_int_from_file(2,f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
+    }
 
-    dir = (char)indices[4] == '0';
+    link->original_start = (uint64_t)read_int_from_file(8,f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
+    }
 
-    link->org_seq_id = org_seq_id;
-    link->coarse_start = coarse_start;
-    link->coarse_end = coarse_end;
-    link->dir = dir;
+    link->original_end = (uint64_t)read_int_from_file(8,f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
+    }
+
+    link->dir = getc(f) == '0';
     link->next = NULL;
-
     return link;
 }
 

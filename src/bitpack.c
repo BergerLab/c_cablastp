@@ -58,6 +58,8 @@ uint64_t read_int_from_file(int length, FILE *f){
         uint64_t current_byte = ((uint64_t)getc(f)) & mask;
         bytes <<= 8;
         bytes |= current_byte;
+        if (feof(f))
+            break;
     }
     return bytes;
 }

@@ -37,51 +37,43 @@ char *get_compressed_header(FILE *f){
 struct cbp_link_to_coarse *read_compressed_link(FILE *f){
     int i;
     unsigned int c = 0;
-    struct cbp_link_to_coarse *link = malloc(sizeof(*link));
-    uint64_t coarse_seq_id = (uint64_t)0;
-    uint64_t original_start = (uint64_t)0;
-    uint64_t original_end = (uint64_t)0;
-    uint16_t coarse_start = (uint16_t)0;
-    uint16_t coarse_end = (uint16_t)0;
     uint16_t script_length = (uint16_t)0;
+    struct cbp_link_to_coarse *link = malloc(sizeof(*link));
     int chars_to_read;
     char *half_bytes;
     char *diff;
-    unsigned char indices[22];
 
-    for (i = 0; i < 8; i++) {
-        c = getc(f);
-        if (feof(f)) {
-            free(link);
-            return NULL;
-        }
-        coarse_seq_id <<= 8;
-        coarse_seq_id |= (uint64_t)c;
-    }
-    for (i = 0; i < 22; i++) {
-        c = getc(f);
-        if (feof(f)) {
-            free(link);
-            return NULL;
-        }
-        indices[i] = (char)c;
+    link->coarse_seq_id = read_int_from_file(8, f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
     }
 
-    for (i = 0; i < 8; i++) {
-        original_start <<= 8;
-        original_start |= (uint64_t)indices[i];
-        original_end <<= 8;
-        original_end |= (uint64_t)indices[8+i];
+    link->original_start = read_int_from_file(8, f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
     }
-    coarse_start |= (uint16_t)indices[16];
-    coarse_start <<= 8;
-    coarse_start |= (uint16_t)indices[17];
-    coarse_end |= (uint16_t)indices[18];
-    coarse_end <<= 8;
-    coarse_end |= (uint16_t)indices[19];
-    script_length |= (uint16_t)indices[20];
-    script_length <<= 8;
-    script_length |= (uint16_t)indices[21];
+
+    link->original_end = read_int_from_file(8, f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
+    }
+ 
+    link->coarse_start = (uint16_t)read_int_from_file(2, f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
+    }
+
+    link->coarse_end = (uint16_t)read_int_from_file(2, f);
+    if (feof(f)) {
+        free(link);
+        return NULL;
+    }
+
+    script_length = (uint16_t)read_int_from_file(2, f);
 
     chars_to_read = script_length / 2;
     if (script_length % 2 == 1)
@@ -97,11 +89,6 @@ struct cbp_link_to_coarse *read_compressed_link(FILE *f){
     }
     diff = half_bytes_to_ASCII(half_bytes, script_length);
     link->diff = diff;
-    link->coarse_seq_id = coarse_seq_id;
-    link->original_start = original_start;
-    link->original_end = original_end;
-    link->coarse_start = coarse_start;
-    link->coarse_end = coarse_end;
     link->next = NULL;
     return link;
 }
