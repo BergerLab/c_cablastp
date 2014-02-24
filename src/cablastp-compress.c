@@ -8,10 +8,10 @@
 
 #include "opt.h"
 
-#include "blosum62.h"
 #include "coarse.h"
 #include "compression.h"
 #include "database.h"
+#include "DNAalphabet.h"
 #include "fasta.h"
 #include "flags.h"
 #include "seq.h"

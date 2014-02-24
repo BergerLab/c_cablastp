@@ -12,11 +12,11 @@
 #include "opt.h"
 
 #include "bitpack.h"
-#include "blosum62.h"
 #include "coarse.h"
 #include "compressed.h"
 #include "compression.h"
 #include "database.h"
+#include "DNAalphabet.h"
 #include "fasta.h"
 #include "flags.h"
 #include "read_coarse.h"

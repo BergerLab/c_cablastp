@@ -6,7 +6,7 @@
 
 #include "DNAutils.h"
 #include "align.h"
-#include "blosum62.h"
+#include "DNAalphabet.h"
 #include "flags.h"
 
 struct ungapped_alignment
