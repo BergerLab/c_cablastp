@@ -160,7 +160,10 @@ int64_t cbp_compressed_get_seq_length(FILE *f){
     return read_int_from_file(8, f);
 }
 
-int64_t *cbp_compressed_get_lengths(FILE *links, FILE *index){
+int64_t *cbp_compressed_get_lengths(struct cbp_compressed *comdb){
+    FILE *links = comdb->file_compressed;
+    FILE *index = comdb->file_index;
+
     bool fseek_success;
     int64_t *lengths = NULL;
     fseek_success = fseek(index, 0, SEEK_END) == 0;
@@ -205,8 +208,13 @@ struct cbp_compressed_seq **read_compressed(FILE *f){
     while (true) {
         struct cbp_link_to_coarse *links = NULL;
         char *header = get_compressed_header(f);
+
         if (header == NULL)
             break;
+
+        /*Skip over the length of the original sequence*/
+        read_int_from_file(8, f);
+
         /*Read each link in the sequence*/
         while (true) {
             char c = 1;

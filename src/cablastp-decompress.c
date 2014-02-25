@@ -80,6 +80,7 @@ main(int argc, char **argv)
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
                                    link->coarse_start, link->coarse_end);
+
             int length;
             for (length = 0; chunk->residues[length] != '\0'; length++);
 

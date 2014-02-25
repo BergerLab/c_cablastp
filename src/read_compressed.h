@@ -20,4 +20,5 @@ struct cbp_compressed_seq *cbp_compressed_read_seq_at(FILE *links,
                                                  struct cbp_compressed *comdb,
                                                  int32_t id);
 int64_t cbp_compressed_get_seq_length(FILE *f);
+int64_t *cbp_compressed_get_lengths(struct cbp_compressed *comdb);
 #endif
