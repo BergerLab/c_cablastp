@@ -186,14 +186,25 @@ int64_t *cbp_compressed_get_lengths(struct cbp_compressed *comdb){
             int links_offset = 0;
             fseek_success = fseek(index, i*8, SEEK_SET) == 0;
             if (!fseek_success) {
-                fprintf(stderr, "Error in seeking to offset %d\n", i*8);
+                fprintf(stderr, "error in seeking to offset %d\n", i*8);
                 free(lengths);
                 return NULL;
             }
+            int64_t offset = read_int_from_file(8, index);
+
+            fseek_success = fseek(links, offset, SEEK_SET) == 0;
+            if (!fseek_success) {
+                fprintf(stderr, "error in seeking to offset %ld\n", offset);
+                free(lengths);
+                return NULL;
+            }
+
             lengths[i] = cbp_compressed_get_seq_length(links);
         }
     }
 
+    fseek(links, 0, SEEK_SET);
+    fseek(index, 0, SEEK_SET);
     return lengths;
 }
 

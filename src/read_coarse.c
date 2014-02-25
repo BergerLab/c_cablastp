@@ -141,8 +141,11 @@ fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
         get_coarse_sequence_links_at(links, coarse_links_index, id);
     int64_t *seq_lengths = cbp_compressed_get_lengths(comdb);
     
-return NULL;
+for (i = 0; i < 10; i++)
+    fprintf(stderr, "%ld\n", seq_lengths[i]);
 
+
+return NULL;
     for (i = 0; i < coarse_seq_links->size; i++) {
         struct cbp_link_to_compressed *link =
             (struct cbp_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
