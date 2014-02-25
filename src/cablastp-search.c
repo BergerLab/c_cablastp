@@ -36,16 +36,19 @@ static char *path_join(char *a, char *b)
     return joined;
 }
 
-/*Runs BLAST on the coarse database and stores the results in a temporary XML file*/
+/*Runs BLAST on the coarse database and stores the results in a temporary
+  XML file.*/
 void blast_coarse(struct opt_args *args, uint64_t dbsize){
     char *input_path = path_join(args->args[0], CABLASTP_COARSE_FASTA);
     char *blastn_command =
-           "blastn -db  -outfmt 5 -query  -dbsize  -task blastn -evalue %s > CaBLAST_temp_blast_results.xml";
+           "blastn -db  -outfmt 5 -query  -dbsize  -task blastn -evalue "
+           "%s > CaBLAST_temp_blast_results.xml";
     int command_length = strlen(blastn_command) + strlen(input_path) +
-                                                       strlen(args->args[1]) + 31;
+                                                  strlen(args->args[1]) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
-           "blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn -evalue %s > CaBLAST_temp_blast_results.xml",
+           "blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn "
+           "-evalue %s > CaBLAST_temp_blast_results.xml",
            input_path, args->args[1], dbsize, search_flags.coarse_evalue);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
@@ -55,12 +58,14 @@ void blast_coarse(struct opt_args *args, uint64_t dbsize){
 /*Runs BLAST on the fine FASTA file*/
 void blast_fine(char *subject, struct opt_args *args, uint64_t dbsize){
     char *blastn_command =
-           "blastn -subject  -query -outfmt 5 -dbsize  -task blastn > CaBLAST_results.txt";
+           "blastn -subject  -query -outfmt 5 -dbsize  -task blastn "
+           "> CaBLAST_results.txt";
     int command_length = strlen(blastn_command) + strlen(subject) +
-                                                       strlen(args->args[1]) + 31;
+                                                  strlen(args->args[1]) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
-            "blastn -subject %s -query %s -outfmt 5 -dbsize %lu -task blastn > CaBLAST_results.txt",
+            "blastn -subject %s -query %s -outfmt 5 -dbsize %lu -task blastn "
+            "> CaBLAST_results.txt",
             subject, args->args[1], dbsize);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
@@ -72,7 +77,7 @@ void blast_fine(char *subject, struct opt_args *args, uint64_t dbsize){
  *void * accumulator, and a function that takes in an xmlNode and a void *
  *accumulator and traverses the tree, applying the function on each node.
  */
-void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
+void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *,void *), void *acc){
     for (; root; root = root->next) {
         f(root, acc);
         traverse_blast_xml(root->children, f, acc);
@@ -81,7 +86,7 @@ void traverse_blast_xml(xmlNode *root, void (*f)(xmlNode *, void *), void *acc){
 
 /*A wrapper function for traverse_blast_xml that treats the xmlNode passed into
   r as the root of the XML tree, skipping any sibling nodes r has*/
-void traverse_blast_xml_r(xmlNode *r, void (*f)(xmlNode *,void *), void *acc){
+void traverse_blast_xml_r(xmlNode *r, void (*f)(xmlNode *, void *), void *acc){
     f(r, acc);
     traverse_blast_xml(r->children, f, acc);
 }
@@ -162,56 +167,6 @@ struct DSVector *get_blast_iterations(xmlNode *node){
     traverse_blast_xml_r(node, add_blast_iteration, iterations);
     return iterations;
 }
-
-/*struct DSVector *expand_blast_hits(struct cbp_database *db){
-    int32_t i, j, k = 0;
-    xmlDoc *doc = NULL;
-    xmlNode *root = NULL;
-    
-    struct DSHashMap *used = ds_hashmap_create();
-    struct DSVector *oseqs = ds_vector_create();
-
-    doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
-    if (doc == NULL) {
-        fprintf(stderr, "Could not parse CaBLAST_temp_blast_results.xml\n");
-        ds_hashmap_free(used, true, true);
-        ds_vector_free(oseqs);
-        return NULL;
-    }
-    root = xmlDocGetRootElement(doc);
-    struct DSVector *hits = get_blast_hits(root);
-    for (i = 0; i < hits->size; i++) {
-        struct hit *current_hit = (struct hit *)ds_vector_get(hits, i); 
-        struct DSVector *hsps = current_hit->hsps;
-        for (j = 0; j < hsps->size; j++) {
-            struct hsp *current_hsp = (struct hsp *)ds_vector_get(hsps, j);
-            if (current_hsp->evalue > atof(search_flags.coarse_evalue))
-                continue;
-            struct DSVector *seqs = cbp_coarse_expand(db->coarse_db,db->com_db,
-                                                      current_hit->accession,
-                                                      current_hsp->hit_from,
-                                                      current_hsp->hit_to);
-            for (k = 0; k < seqs->size; k++) {
-                struct cbp_seq *s = (struct cbp_seq *)ds_vector_get(seqs, k);
-                if (ds_geti(used,s->id))
-                    cbp_seq_free(s);
-                else {
-                    ds_vector_append(oseqs, (void *)s);
-                    bool *t = malloc(sizeof(*t));
-                    ds_puti(used, s->id, (void *)t);
-                }
-            }
-            ds_vector_free_no_data(seqs);
-        }
-        ds_vector_free(hsps);
-    }
-    ds_vector_free(hits);
-    
-    xmlFreeDoc(doc);
-    xmlCleanupParser();
-    ds_hashmap_free(used, true, true);
-    return oseqs;
-}*/
 
 void write_fine_fasta(struct DSVector *oseqs){
     int i;
@@ -335,7 +290,8 @@ main(int argc, char **argv)
     args = opt_config_parse(conf, argc, argv);
     if (args->nargs < 2) {
         fprintf(stderr, 
-            "Usage: %s [flags] database-dir fasta-file [ --blast_args BLASTN_ARGUMENTS ]\n",
+            "Usage: %s [flags] database-dir fasta-file "
+            "[ --blast_args BLASTN_ARGUMENTS ]\n",
             argv[0]);
         opt_config_print_usage(conf);
         exit(1);
@@ -372,7 +328,6 @@ main(int argc, char **argv)
             }
         }
     }*/
-
 
     /*struct DSVector *expanded_hits = expand_blast_hits(db);
     write_fine_fasta(expanded_hits);

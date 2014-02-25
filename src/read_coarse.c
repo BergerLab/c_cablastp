@@ -1,14 +1,17 @@
 #include <assert.h>
-#include <math.h>
 #include <stdlib.h>
 #include <string.h>
 
 #include "ds.h"
 
+#include "edit_scripts.h"
 #include "read_compressed.h"
 #include "read_coarse.h"
 #include "seq.h"
 #include "util.h"
+
+int get_min(int a, int b){return a<b?a:b;}
+int get_max(int a, int b){return a>b?a:b;}
 
 /*A function for getting the header for an entry in the coarse links file.
   Returns NULL if EOF is found before a newline.*/
@@ -136,30 +139,38 @@ fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
     struct DSVector *oseqs = ds_vector_create();
     struct DSVector *coarse_seq_links =
         get_coarse_sequence_links_at(links, coarse_links_index, id);
+
     for (i = 0; i < coarse_seq_links->size; i++) {
         struct cbp_link_to_compressed *link =
             (struct cbp_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
         if (link->coarse_start <= end && link->coarse_end >= start) {
+/**/
+fprintf(stderr, "%d-%d, %d-%d %c\n", link->original_start, link->original_end,
+  link->coarse_start, link->coarse_end, link->dir == 1 ? '+' : '-');
+/**/
+
             bool dir = link->dir;
 
             uint64_t original_start =
-                fmax(0, (dir ? fmin(start + (link->original_start -
+                get_max(0, (dir ? get_min(start + (link->original_start -
                                              link->coarse_start),
                                     start + (link->original_end -
                                              link->coarse_end)) :
-                               fmin(link->original_start + link->coarse_end-end,
+                               get_min(link->original_start + link->coarse_end-end,
                                     link->original_start - 
                                           (end-link->coarse_end)))
                              - hit_pad_length);
 
             uint64_t original_end =
-                (dir ? fmax(end + (link->original_start -
+                get_min((dir ? get_max(end + (link->original_start -
                                   link->coarse_start),
                            end + (link->original_end -
                                   link->coarse_end)) :
-                       fmax(link->original_end - (start - link->coarse_start),
+                       get_max(link->original_end - (start - link->coarse_start),
                             link->coarse_start + link->coarse_end - start))
-                 + hit_pad_length;
+                 + hit_pad_length, 10000000/*The length of the sequence*/);
+
+            fprintf(stderr, "%lu-%lu\n", original_start, original_end);
         }
     }
 

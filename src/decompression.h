@@ -14,4 +14,7 @@
 struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
                                    struct cbp_coarse *coarsedb);
 
+struct cbp_seq *cbp_decompress_seq_range(struct cbp_compressed_seq *cseq,
+                                         uint64_t start, uint64_t end);
+
 #endif

@@ -32,8 +32,7 @@ cablastp-decompress.o: cablastp-decompress.c database.h DNAalphabet.h fasta.h
 
 
 
-SEARCH_OBJS=align.o \
-							bitpack.o coarse.o compressed.o compression.o database.o decompression.o DNAalphabet.o DNAmatrix.o DNAutils.o edit_scripts.o fasta.o flags.o \
+SEARCH_OBJS=align.o bitpack.o coarse.o compressed.o compression.o database.o decompression.o DNAalphabet.o DNAmatrix.o DNAutils.o edit_scripts.o fasta.o flags.o \
 							read_coarse.o read_compressed.o seeds.o seq.o util.o
 SEARCH_HEADERS=align.o coarse.h compressed.h compression.h \
 							database.h decompression.h DNAalphabet.h fasta.h flags.h read_coarse.o read_compressed.o seeds.h seq.h util.h xml.h
