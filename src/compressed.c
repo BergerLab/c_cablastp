@@ -89,6 +89,13 @@ cbp_compressed_save_binary(struct cbp_compressed *com_db)
         putc('\n', com_db->file_compressed);
         index++;
 
+        struct cbp_link_to_coarse *find_length = seq->links;
+        uint64_t original_length = 0;
+        for (; find_length; find_length = find_length->next)
+            original_length = find_length->original_end + 1;
+
+        output_int_to_file(original_length, 8, com_db->file_compressed);
+
         for (link = seq->links; link != NULL; link = link->next){
             /*Convert the start and end indices for the link to two
               characters.*/
@@ -221,6 +228,13 @@ cbp_compressed_write_binary(struct cbp_compressed *com_db,
     putc('\n', com_db->file_compressed);
 
     free(id_string);
+
+    struct cbp_link_to_coarse *find_length = seq->links;
+    uint64_t original_length = 0;
+    for (; find_length; find_length = find_length->next)
+        original_length = find_length->original_end + 1;
+
+    output_int_to_file(original_length, 8, com_db->file_compressed);
 
     for (link = seq->links; link != NULL; link = link->next){
         /*Convert the start and end indices for the link to two
