@@ -128,19 +128,20 @@ struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end,
                   int32_t hit_pad_length){
-fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
+fprintf(stderr, "==========================================cbp_coarse_expand %d   %d-%d\n===================================================", id, start, end);
     FILE *links = coarsedb->file_links;
     FILE *coarse_links_index = coarsedb->file_links_index;
     FILE *fasta = coarsedb->file_fasta;
     FILE *compressed = comdb->file_compressed;
 
-    int i = 0;
-
     struct DSVector *oseqs = ds_vector_create();
     struct DSVector *coarse_seq_links =
         get_coarse_sequence_links_at(links, coarse_links_index, id);
+    struct fasta_seq *residues = cbp_coarse_read_fasta_seq(coarsedb, id);
+    int fasta_length = strlen(residues->seq);
     int64_t *seq_lengths = cbp_compressed_get_lengths(comdb);
-    
+
+    int i = 0;
     for (i = 0; i < coarse_seq_links->size; i++) {
         struct cbp_link_to_compressed *link =
             (struct cbp_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
@@ -167,16 +168,26 @@ fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
 
             fprintf(stderr, "%lu-%lu\n", original_start, original_end);
 
-            struct cbp_compressed_seq *seq = cbp_compressed_read_seq_at(comdb,link->org_seq_id);
+            struct cbp_compressed_seq *seq =
+                       cbp_compressed_read_seq_at(comdb,link->org_seq_id);
             struct cbp_link_to_coarse *links_to_decompress = seq->links;
-            for (; links_to_decompress; links_to_decompress = links_to_decompress->next)
+            for (; links_to_decompress;
+                   links_to_decompress = links_to_decompress->next)
                 if (links_to_decompress->original_end >= original_start &&
                     links_to_decompress->original_start <= original_end)
                     break;
             struct cbp_link_to_coarse *current = links_to_decompress;
             while(current && current->original_start <= original_end &&
                              current->original_end >= original_start){
-                fprintf(stderr, "    %lu-%lu\n", current->original_start, current->original_end);
+                char *decompressed = read_edit_script(current->diff,
+                                                      residues->seq,
+                                                      fasta_length);
+                int start_index = original_start - link->original_start;
+                int end_index = original_end - link->original_start;
+                char *section = str_slice(decompressed, start_index, end_index);
+                section[end_index-start_index] = '\0';
+                fprintf(stderr, "%s\n", section);
+
                 current = current -> next;
             }
             cbp_compressed_seq_free(seq);
@@ -184,43 +195,6 @@ fprintf(stderr, "cbp_coarse_expand %d   %d-%d\n", id, start, end);
     }
 
     return NULL;
-    /*Seek in the coarse links file to the links for the sequence being
-      expanded*//*
-    int64_t offset = cbp_coarse_find_offset(coarse_links_index, id);
-    if (offset < 0)
-        return NULL;
-    bool fseek_success = fseek(links, offset, SEEK_SET) == 0;
-    if (!fseek_success) { 
-        fprintf(stderr, "Error in seeking to offset %lu\n", offset);
-        return NULL;
-    }
-
-    struct DSHashMap *ids = ds_hashmap_create();
-    struct DSVector *links_vector = get_coarse_sequence_links(links);
-    struct DSVector *oseqs = ds_vector_create();
-
-    int32_t links_count = links_vector->size;
-    int32_t i = 0;
-    for (; i < links_count; i++) {
-        struct cbp_link_to_compressed *current_link =
-            (struct cbp_link_to_compressed *)ds_vector_get(links_vector, i);
-        if ((int16_t)start < current_link->coarse_start ||
-            (int16_t)end > current_link->coarse_end)
-            continue;
-        if (ds_geti(ids, current_link->org_seq_id))
-            continue;
-        struct cbp_seq *oseq = cbp_compressed_read_seq(comdb, coarsedb,
-                                                    current_link->org_seq_id);
-        bool *t = malloc(sizeof(*t));
-        *t = true;
-        if (oseq != NULL)
-            ds_vector_append(oseqs, oseq);
-        ds_puti(ids, current_link->org_seq_id, t);
-    }
-    ds_hashmap_free(ids, false, true);
-    ds_vector_free(links_vector);
-    /*go_to_seq(id);*/
-    /*return oseqs;*/
 }
 
 /*Takes in an index file from a coarse database and the ID number of the

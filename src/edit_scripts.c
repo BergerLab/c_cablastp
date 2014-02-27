@@ -229,7 +229,7 @@ char *read_edit_script(char *edit_script, char *orig, int length){
         str[current++] = orig[orig_pos++];
     str = realloc(str, current+1*sizeof(char));
     str[current] = '\0';
-    if ((edit_script[0] & ((char)0x7f)) == '1'){
+    if ((edit_script[0] & ((char)0x7f)) == '1') {
         char *str_fwd = str;
         str = string_revcomp(s, -1);
         free(str_fwd);
