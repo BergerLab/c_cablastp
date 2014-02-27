@@ -136,9 +136,10 @@ struct cbp_compressed_seq *get_compressed_seq(FILE *f, int id){
  *pointer must be pointing to the start of the header of a sequence entry in the
  *links file.
  */
-struct cbp_compressed_seq *cbp_compressed_read_seq_at(FILE *links,
+struct cbp_compressed_seq *cbp_compressed_read_seq_at(
                                                  struct cbp_compressed *comdb,
                                                  int32_t id){
+    FILE *links = comdb->file_compressed;
     int64_t offset = cbp_compressed_link_offset(comdb, id);
     if (offset < 0)
         return NULL;
@@ -150,6 +151,12 @@ struct cbp_compressed_seq *cbp_compressed_read_seq_at(FILE *links,
     return get_compressed_seq(links, id);
 }
 
+/*Takes in a file pointer to a compressed database's compressed.cbp file and
+ *returns the length of the original sequence that was compressed to produce
+ *the sequence that the file pointer is pointing to.  For this function to work
+ *properly, f must be pointing to the start of a compressed sequence in the
+ *compressed.cbp file.
+ */
 int64_t cbp_compressed_get_seq_length(FILE *f){
     char *h = get_compressed_header(f);
     if (h == NULL) {
@@ -160,6 +167,7 @@ int64_t cbp_compressed_get_seq_length(FILE *f){
     return read_int_from_file(8, f);
 }
 
+/*Gets the lengths in bases for all sequences in the database*/
 int64_t *cbp_compressed_get_lengths(struct cbp_compressed *comdb){
     FILE *links = comdb->file_compressed;
     FILE *index = comdb->file_index;
@@ -181,16 +189,9 @@ int64_t *cbp_compressed_get_lengths(struct cbp_compressed *comdb){
 
     if (num_sequences > 0) {
         int i = 0;
-        lengths = malloc(num_sequences * sizeof(*lengths));
+        lengths = malloc(num_sequences*sizeof(*lengths));
         for (i = 0; i < num_sequences; i++) {
-            int links_offset = 0;
-            fseek_success = fseek(index, i*8, SEEK_SET) == 0;
-            if (!fseek_success) {
-                fprintf(stderr, "error in seeking to offset %d\n", i*8);
-                free(lengths);
-                return NULL;
-            }
-            int64_t offset = read_int_from_file(8, index);
+            int64_t offset = cbp_compressed_link_offset(comdb, i);
 
             fseek_success = fseek(links, offset, SEEK_SET) == 0;
             if (!fseek_success) {
@@ -259,6 +260,9 @@ struct cbp_compressed_seq **read_compressed(FILE *f){
     return compressed_seqs;
 }
 
+/*Gets the offset in the compressed database's compressed.cbp file for the
+ *link whose index is passed into id.
+ */
 int64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id){
     int i;
     int try_off = id * 8;
@@ -269,25 +273,5 @@ int64_t cbp_compressed_link_offset(struct cbp_compressed *comdb, int id){
         fprintf(stderr, "Error in seeking to offset %d", try_off);
         return (int64_t)(-1);
     }
-    for (i = 0; i < 8; i++) {
-        int64_t current_byte = ((int64_t)getc(comdb->file_index)) & mask;
-        offset <<= 8;
-        offset |= current_byte;
-    }
-    return offset;
-}
-
-struct cbp_seq *cbp_compressed_read_seq(struct cbp_compressed *comdb,
-                                        struct cbp_coarse *coarsedb, int id){
-    int64_t offset = cbp_compressed_link_offset(comdb, id);
-    if (offset < 0)
-        return NULL;
-    bool fseek_success = fseek(comdb->file_compressed, offset, SEEK_SET) == 0;
-    if (!fseek_success) {
-        fprintf(stderr, "Error in seeking to offset %ld", offset);
-        return NULL;
-    }
-    struct cbp_compressed_seq *cseq =
-              get_compressed_seq(comdb->file_compressed, id);
-    return cbp_decompress_seq(cseq, coarsedb);
+    return read_int_from_file(8,comdb->file_index);
 }
