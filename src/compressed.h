@@ -9,19 +9,10 @@
 #include "align.h"
 #include "bitpack.h"
 #include "edit_scripts.h"
+#include "link_to_coarse.h"
 #include "seq.h"
 
 #include "stdbool.h"
-
-struct cbp_link_to_coarse {
-    char *diff;
-    uint16_t coarse_seq_id;
-    uint64_t original_start;
-    uint64_t original_end;
-    uint16_t coarse_start;
-    uint16_t coarse_end;
-    struct cbp_link_to_coarse *next;
-};
 
 struct cbp_link_to_coarse *
 cbp_link_to_coarse_init(int32_t coarse_seq_id,
