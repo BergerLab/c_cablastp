@@ -3,8 +3,10 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
+#include "coarse.h"
 #include "DNAutils.h"
 #include "edit_scripts.h"
+#include "link_to_coarse.h"
 
 /* Converts an integer to its octal representation */
 char *to_octal_str(int i) {
@@ -235,6 +237,21 @@ char *read_edit_script(char *edit_script, char *orig, int length){
         free(str_fwd);
     }
     return str;
+}
+
+void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
+                         struct cbp_coarse *coarsedb,
+                         struct cbp_link_to_coarse *link){
+    int i0 = 0, i1 = 0;
+    char *diff = link->diff;
+    char *residues = cbp_coarse_get(coarsedb, link->coarse_seq_id)->seq
+                                                                  ->residues;
+    if (diff[1] == '\0') {
+        for (i1 = link->coarse_start; i1 < link->coarse_end; i0++, i1++)
+            if (0 <= i0 && i0 < dest_len)
+                orig[i0] = residues[i1];
+        return;
+    }
 }
 
 /*Takes in as input a string and returns a copy of the string with the '-'

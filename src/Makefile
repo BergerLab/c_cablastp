@@ -54,7 +54,7 @@ decompression.o: decompression.c decompression.h
 DNAalphabet.o: DNAalphabet.c DNAalphabet.h
 DNAmatrix.o: DNAmatrix.c DNAalphabet.h
 DNAutils.o: DNAutils.c DNAutils.h
-edit_scripts.o: edit_scripts.c edit_scripts.h
+edit_scripts.o: link_to_coarse.h edit_scripts.c edit_scripts.h
 fasta.o: fasta.c fasta.h util.h
 flags.o: flags.c flags.h util.h
 read_coarse.o: read_coarse.c read_coarse.h
