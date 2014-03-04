@@ -8,6 +8,9 @@
 #include "edit_scripts.h"
 #include "link_to_coarse.h"
 
+int minimum(int a, int b){return a<b?a:b;}
+int maximum(int a, int b){return a>b?a:b;}
+
 /* Converts an integer to its octal representation */
 char *to_octal_str(int i) {
     char *buf = malloc(16*sizeof(char));
@@ -176,7 +179,7 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
 /* reads one edit worth of info (or fails if current decoded char is digit)
    moves pos accordingly */
 bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
-    int editLength = 0;
+    int edit_length = 0;
     int i = 0;
     if (isdigit(edit_script[(*pos)]) || edit_script[(*pos)] == '\0')
         return false;
@@ -187,11 +190,11 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
         edit->last_dist *= 8; /* octal encoding */
         edit->last_dist += edit_script[(*pos)++] - '0';
     }
-    while (isupper(edit_script[(*pos)+editLength]) ||
-                   edit_script[(*pos)+editLength] == '-')
-        editLength++;
-    edit->str = malloc((editLength+1)*sizeof(char));
-    edit->str_length = editLength;
+    while (isupper(edit_script[(*pos)+edit_length]) ||
+                   edit_script[(*pos)+edit_length] == '-')
+        edit_length++;
+    edit->str = malloc((edit_length+1)*sizeof(char));
+    edit->str_length = edit_length;
     while (isupper(edit_script[(*pos)]) || edit_script[(*pos)] == '-')
         edit->str[i++] = edit_script[(*pos)++];
     return true;
@@ -242,7 +245,7 @@ char *read_edit_script(char *edit_script, char *orig, int length){
 void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
                          struct cbp_coarse *coarsedb,
                          struct cbp_link_to_coarse *link){
-    int i0 = 0, i1 = 0;
+    int i = 0, i0 = 0, i1 = 0;
     char *diff = link->diff;
     char *residues = cbp_coarse_get(coarsedb, link->coarse_seq_id)->seq
                                                                   ->residues;
@@ -250,7 +253,82 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
         for (i1 = link->coarse_start; i1 < link->coarse_end; i0++, i1++)
             if (0 <= i0 && i0 < dest_len)
                 orig[i0] = residues[i1];
+        orig[i0] = '\0';
+        /*If the link is from a reverse-complement match, convert the original
+          string to its reverse complement.*/
+        if ((diff[0] & ((char)0x7f)) == '1') {
+            char *temp = string_revcomp(orig, -1);
+            free(orig);
+            orig = temp;
+        }
         return;
+    }
+
+    int coarse_pos = link->coarse_start;
+    int last_edit_str_len = 0;
+    struct edit_info *edit = malloc(sizeof(*edit));
+    int script_pos = 1;
+
+    /*We are decompressing a link from a forward match*/ 
+    if ((diff[0] & ((char)0x7f)) == '0') {
+        i0 = link->original_start - dest0_coord;
+        while (next_edit(diff, &script_pos, edit)) {
+            int x = 0;
+            int xmin = -i0;
+            int xmax = dest_len - i0;
+            for (x = maximum(0, xmin);
+                 x < minimum(edit->last_dist-last_edit_str_len, xmax); x++)
+                orig[i0+x] = residues[x+coarse_pos];
+
+            i0 += edit->last_dist - last_edit_str_len;
+            coarse_pos += edit->last_dist - last_edit_str_len;
+            for (i = 0; i < edit->str_length; i++) {
+                if (edit->str[i] != '-') {
+                    if (0 <= i0 && i0 < dest_len)
+                        orig[i0] = edit->str[i];
+                    i0++;
+                }
+            }
+
+            if (edit->is_subdel) coarse_pos += edit->str_length;
+
+            last_edit_str_len = edit->str_length;
+
+            if (i0 >= dest_len) {
+                free(edit);
+                return;
+            }
+        }
+    }
+    else {
+        i0 = link->original_end - dest0_coord;
+        while (next_edit(diff, &script_pos, edit)) {
+            int x = 0;
+            int xmin = i0 - dest_len + 1;
+            int xmax = i0 + 1;
+            for (x = maximum(0, xmin);
+                 x < minimum(edit->last_dist-last_edit_str_len, xmax); x++)
+                orig[i0-x] = base_complement(residues[x+coarse_pos]);
+
+            i0 -= edit->last_dist - last_edit_str_len;
+            coarse_pos += edit->last_dist - last_edit_str_len;
+            for (i = 0; i < edit->str_length; i++) {
+                if (edit->str[i] != '-') {
+                    if (0 <= i0 && i0 < dest_len)
+                        orig[i0] = base_complement(edit->str[i]);
+                    i0--;
+                }
+            }
+
+            if (edit->is_subdel) coarse_pos += edit->str_length;
+
+            last_edit_str_len = edit->str_length;
+
+            if (i0 < 0) {
+                free(edit);
+                return;
+            }
+        }
     }
 }
 
