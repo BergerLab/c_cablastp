@@ -20,9 +20,9 @@ cablastp-compress.o: cablastp-compress.c database.h DNAalphabet.h fasta.h
 
 DECOMPRESS_OBJS=align.o \
 							bitpack.o coarse.o compressed.o compression.o database.o decompression.o DNAalphabet.o DNAmatrix.o DNAutils.o edit_scripts.o fasta.o flags.o \
-							read_coarse.o read_compressed.o seeds.o seq.o util.o
+							seeds.o seq.o util.o
 DECOMPRESS_HEADERS=align.o coarse.h compressed.h compression.h \
-							database.h decompression.h DNAalphabet.h fasta.h flags.h link_to_coarse.h link_to_compressed.h read_coarse.o read_compressed.o seeds.h seq.h util.h
+							database.h decompression.h DNAalphabet.h fasta.h flags.h link_to_coarse.h link_to_compressed.h seeds.h seq.h util.h
 
 decompress: DNAalphabet.h cablastp-decompress
 
@@ -33,9 +33,9 @@ cablastp-decompress.o: cablastp-decompress.c database.h DNAalphabet.h fasta.h
 
 
 SEARCH_OBJS=align.o bitpack.o coarse.o compressed.o compression.o database.o decompression.o DNAalphabet.o DNAmatrix.o DNAutils.o edit_scripts.o fasta.o flags.o \
-							read_coarse.o read_compressed.o seeds.o seq.o util.o
+							seeds.o seq.o util.o
 SEARCH_HEADERS=align.o coarse.h compressed.h compression.h \
-							database.h decompression.h DNAalphabet.h fasta.h flags.h link_to_coarse.h link_to_compressed.h read_coarse.o read_compressed.o seeds.h seq.h util.h xml.h
+							database.h decompression.h DNAalphabet.h fasta.h flags.h link_to_coarse.h link_to_compressed.h seeds.h seq.h util.h xml.h
 
 search: DNAalphabet.h cablastp-search
 
@@ -57,8 +57,6 @@ DNAutils.o: DNAutils.c DNAutils.h
 edit_scripts.o: link_to_coarse.h edit_scripts.c edit_scripts.h
 fasta.o: fasta.c fasta.h util.h
 flags.o: flags.c flags.h util.h
-read_coarse.o: read_coarse.c read_coarse.h
-read_compressed.o: read_compressed.c read_compressed.h
 seeds.o: seeds.c seeds.h
 seq.o: seq.c seq.h
 uitl.o: util.c util.h

@@ -14,7 +14,6 @@
 #include "edit_scripts.h"
 #include "flags.h"
 #include "fasta.h"
-#include "read_compressed.h"
 #include "seq.h"
 
 static char *path_join(char *a, char *b)

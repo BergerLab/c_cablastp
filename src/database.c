@@ -11,7 +11,6 @@
 #include "compressed.h"
 #include "database.h"
 #include "fasta.h"
-#include "read_coarse.h"
 
 static FILE * open_db_file(char *path, char *fopen_mode);
 
