@@ -249,6 +249,8 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
     char *diff = link->diff;
     char *residues = cbp_coarse_get(coarsedb, link->coarse_seq_id)->seq
                                                                   ->residues;
+    bool fwd = (diff[0] & ((char)0x7f)) == '0';
+    
     if (diff[1] == '\0') {
         for (i1 = link->coarse_start; i1 < link->coarse_end; i0++, i1++)
             if (0 <= i0 && i0 < dest_len)
@@ -256,7 +258,7 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
         orig[i0] = '\0';
         /*If the link is from a reverse-complement match, convert the original
           string to its reverse complement.*/
-        if ((diff[0] & ((char)0x7f)) == '1') {
+        if (!fwd) {
             char *temp = string_revcomp(orig, -1);
             free(orig);
             orig = temp;
@@ -270,7 +272,7 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
     int script_pos = 1;
 
     /*We are decompressing a link from a forward match*/ 
-    if ((diff[0] & ((char)0x7f)) == '0') {
+    if (fwd) {
         i0 = link->original_start - dest0_coord;
         while (next_edit(diff, &script_pos, edit)) {
             int x = 0;
@@ -328,6 +330,14 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
                 free(edit);
                 return;
             }
+        }
+    }
+    if ((fwd && i0 < dest_len) || (!fwd && i0 >= 0)) {
+        int dir = fwd ? 1 : -1;
+        for (i1 = coarse_pos; i1 <= link->coarse_end; i1++) {
+            if (0 <= i0 && i0 < dest_len)
+                orig[i0] = fwd ? edit->str[i1]:base_complement(edit->str[i1]);
+            i0 += dir;
         }
     }
 }
