@@ -80,4 +80,15 @@ cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db);
 
 void
 cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db);
+
+
+char *get_coarse_header(FILE *f);
+struct cbp_link_to_compressed *read_coarse_link(FILE *f);
+struct DSVector *get_coarse_sequence_links(FILE *f);
+struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
+                                                           int32_t id);
+int64_t cbp_coarse_find_offset(FILE *index_file, int id);
+struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb,
+                                            int id);
+
 #endif
