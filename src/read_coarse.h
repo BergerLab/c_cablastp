@@ -18,7 +18,6 @@ struct DSVector *get_coarse_sequence_links(FILE *f);
 struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
                                                            int32_t id);
 
-
 struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end,

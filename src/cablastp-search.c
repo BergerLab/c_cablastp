@@ -229,53 +229,6 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations,
         }
     }
     return NULL;
-    /*int32_t i, j, k = 0;
-    xmlDoc *doc = NULL;
-    xmlNode *root = NULL;
-    
-    struct DSHashMap *used = ds_hashmap_create();
-    struct DSVector *oseqs = ds_vector_create();
-
-    doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
-    if (doc == NULL) {
-        fprintf(stderr, "Could not parse CaBLAST_temp_blast_results.xml\n");
-        ds_hashmap_free(used, true, true);
-        ds_vector_free(oseqs);
-        return NULL;
-    }
-    root = xmlDocGetRootElement(doc);
-    struct DSVector *hits = get_blast_hits(root);
-    for (i = 0; i < hits->size; i++) {
-        struct hit *current_hit = (struct hit *)ds_vector_get(hits, i); 
-        struct DSVector *hsps = current_hit->hsps;
-        for (j = 0; j < hsps->size; j++) {
-            struct hsp *current_hsp = (struct hsp *)ds_vector_get(hsps, j);
-            if (current_hsp->evalue > atof(search_flags.coarse_evalue))
-                continue;
-            struct DSVector *seqs = cbp_coarse_expand(db->coarse_db,db->com_db,
-                                                      current_hit->accession,
-                                                      current_hsp->hit_from,
-                                                      current_hsp->hit_to);
-            for (k = 0; k < seqs->size; k++) {
-                struct cbp_seq *s = (struct cbp_seq *)ds_vector_get(seqs, k);
-                if (ds_geti(used,s->id))
-                    cbp_seq_free(s);
-                else {
-                    ds_vector_append(oseqs, (void *)s);
-                    bool *t = malloc(sizeof(*t));
-                    ds_puti(used, s->id, (void *)t);
-                }
-            }
-            ds_vector_free_no_data(seqs);
-        }
-        ds_vector_free(hsps);
-    }
-    ds_vector_free(hits);
-    
-    xmlFreeDoc(doc);
-    xmlCleanupParser();
-    ds_hashmap_free(used, true, true);
-    return oseqs;*/
 }
 
 
@@ -309,42 +262,6 @@ main(int argc, char **argv)
     xmlNode *root = xmlDocGetRootElement(doc);
     struct DSVector *iterations = get_blast_iterations(root);
     expand_blast_hits(iterations, db);
-    /*for (i = 0; i < iterations->size; i++){
-        int j = 0, k = 0;
-        struct DSVector *hits = get_blast_hits((xmlNode *)
-                                               ds_vector_get(iterations, i));
-        for (j = 0; j < hits->size; j++) {
-            struct hit *current_hit = (struct hit *)ds_vector_get(hits, j);
-            struct DSVector *hsps = current_hit->hsps;
-            for (k = 0; k < hsps->size; k++) {
-                struct hsp *h = (struct hsp *)ds_vector_get(hsps, k);
-                int32_t coarse_start = h->hit_from;
-                int32_t coarse_end = h->hit_to;
-                int32_t coarse_seq_id = current_hit->accession;
-                struct DSVector *coarse_seq_links =
-                  get_coarse_sequence_links_at(db->coarse_db->file_links,
-                                               db->coarse_db->file_links_index,
-                                               coarse_seq_id);
-            }
-        }
-    }*/
-
-    /*struct DSVector *expanded_hits = expand_blast_hits(db);
-    write_fine_fasta(expanded_hits);
-
-    blast_fine("CaBLAST_fine.fasta", args, dbsize);
-
-    for (i = 0; i < expanded_hits->size; i++)
-        cbp_seq_free((struct cbp_seq *)ds_vector_get(expanded_hits, i));
-
-    ds_vector_free_no_data(expanded_hits);
-    cbp_database_free(db);
-    opt_config_free(conf);
-    opt_args_free(args);
-    if (!search_flags.no_cleanup) {
-        system("rm CaBLAST_temp_blast_results.xml");
-        system("rm CaBLAST_fine.fasta");
-    }*/
 
     return 0;
 }

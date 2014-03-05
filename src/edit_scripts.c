@@ -247,8 +247,9 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
                          struct cbp_link_to_coarse *link){
     int i = 0, i0 = 0, i1 = 0;
     char *diff = link->diff;
-    char *residues = cbp_coarse_get(coarsedb, link->coarse_seq_id)->seq
-                                                                  ->residues;
+    char *residues = cbp_coarse_read_fasta_seq(coarsedb,
+                                               link->coarse_seq_id)->seq;
+
     bool fwd = (diff[0] & ((char)0x7f)) == '0';
     
     if (diff[1] == '\0') {
