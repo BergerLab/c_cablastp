@@ -140,12 +140,13 @@ fprintf(stderr, "==========================================cbp_coarse_expand %d 
 
             char *orig_str = malloc((original_end-original_start+1) *
                              sizeof(*orig_str));
-            for (j = 0; j < original_end-original_start+1; orig_str[j++]='?');
+            for (j = 0; j < original_end-original_start; orig_str[j++]='?');
+            orig_str[original_end-original_start] = '\0';
  
             struct cbp_link_to_coarse *current = links_to_decompress;
             while (current && current->original_start <= original_end &&
                               current->original_end >= original_start) {
-                pr_read_edit_script(orig_str, original_end-original_start,
+                pr_read_edit_script(orig_str, original_end-original_start+1,
                                     original_start, coarsedb, current);
                 fprintf(stderr, "%s\n", orig_str);
                 current = current -> next;
