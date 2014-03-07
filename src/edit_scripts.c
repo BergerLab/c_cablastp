@@ -6,6 +6,7 @@
 #include "coarse.h"
 #include "DNAutils.h"
 #include "edit_scripts.h"
+#include "fasta.h"
 #include "link_to_coarse.h"
 
 int minimum(int a, int b){return a<b?a:b;}
@@ -245,20 +246,21 @@ char *read_edit_script(char *edit_script, char *orig, int length){
 void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
                          struct cbp_coarse *coarsedb,
                          struct cbp_link_to_coarse *link){
-    /*int i = 0, i0 = 0, i1 = 0;
+    int i = 0, i0 = 0, i1 = 0;
     char *diff = link->diff;
     char *residues = cbp_coarse_read_fasta_seq(coarsedb,
-                                               link->coarse_seq_id)->seq;*//*
+                                               link->coarse_seq_id)->seq;
 
     bool fwd = (diff[0] & ((char)0x7f)) == '0';
     
     if (diff[1] == '\0') {
+        i0 = link->original_start-dest0_coord;
         for (i1 = link->coarse_start; i1 < link->coarse_end; i0++, i1++)
             if (0 <= i0 && i0 < dest_len)
                 orig[i0] = residues[i1];
         orig[i0] = '\0';
         /*If the link is from a reverse-complement match, convert the original
-          string to its reverse complement.*//*
+          string to its reverse complement.*/
         if (!fwd) {
             char *temp = string_revcomp(orig, -1);
             free(orig);
@@ -272,7 +274,7 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
     struct edit_info *edit = malloc(sizeof(*edit));
     int script_pos = 1;
 
-    /*We are decompressing a link from a forward match*//*
+    /*We are decompressing a link from a forward match*/
     if (fwd) {
         i0 = link->original_start - dest0_coord;
         while (next_edit(diff, &script_pos, edit)) {
@@ -340,7 +342,7 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
                 orig[i0] = fwd ? edit->str[i1]:base_complement(edit->str[i1]);
             i0 += dir;
         }
-    }*/
+    }
 }
 
 /*Takes in as input a string and returns a copy of the string with the '-'

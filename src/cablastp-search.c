@@ -210,7 +210,6 @@ char *get_blast_args(struct opt_args *args){
 struct DSVector *expand_blast_hits(struct DSVector *iterations,
                                    struct cbp_database *db){
     int i = 0, j = 0, k = 0;
-
     for (i = 0; i < iterations->size; i++) {
         struct DSVector *hits = get_blast_hits((xmlNode *)
                                                ds_vector_get(iterations, i));
