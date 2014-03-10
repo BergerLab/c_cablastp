@@ -146,6 +146,7 @@ fprintf(stderr, "==========================================cbp_coarse_expand %d 
             struct cbp_link_to_coarse *current = links_to_decompress;
             while (current && current->original_start <= original_end &&
                               current->original_end >= original_start) {
+                fprintf(stderr, "pr_read_edit_script called, original start: %d, original length: %d\n", original_start, original_end-original_start+1);
                 pr_read_edit_script(orig_str, original_end-original_start+1,
                                     original_start, coarsedb, current);
                 fprintf(stderr, "%s\n", orig_str);
