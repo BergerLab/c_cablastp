@@ -393,6 +393,8 @@ attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
     int32_t consec_mismatch = 0;
     i1 += dir1;
     i2 += dir2;
+/*printf("attempt_ext: start1: %d, start2: %d, len1: %d, len2: %d,   i1: %c%d, i2: %c%d, progress: ", start2, start1, len2, len1, (dir2>0?'+':'-'), i2, (dir1>0?'+':'-'), i1);*/
+printf("attempt_ext: i1: %d, i2: %d, progress: ", i1-start1, i2-start2);
     /*Replace this 3 with the flag for max_consec_mismatch*/
     while (consec_mismatch < 3 &&
         i1 >= start1 && i1 < start1+len1 && i2 >= start2 && i2 < start2+len2) {
@@ -403,6 +405,7 @@ attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
         i1 += dir1; i2 += dir2;
         progress++;
     }
+printf("%d\n", progress);
     return progress;
 }
 

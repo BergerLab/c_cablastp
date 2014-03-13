@@ -204,7 +204,13 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
             chunks++;
             continue;
         }
+
         kmer = org_seq->residues + current;
+char *base = kmer;
+for(;base < kmer + 10; base++)
+    printf("%c", *base);
+printf("\n");
+
 	revcomp = kmer_revcomp(kmer);
 
         /*The locations of all seeds in the database that start with the
@@ -235,12 +241,12 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
                         ext_seed))
                 continue;*/
 
-            if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+            if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section,
                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
-                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section,
                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > compress_flags.attempt_ext_len){
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
-                                          org_seq->residues, start_of_section, end_of_section, current, -1);
+                                          org_seq->residues, start_of_section, end_of_section, current,1);
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
                                           org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
                 /*If the match was too short, try the next seed*/                
@@ -360,9 +366,9 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
                         ext_seed))
                 continue;*/
 
-            if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+            if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section,
                             resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
-               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section+1,
+               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section,
                             resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > compress_flags.attempt_ext_len) {
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
                                          org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
@@ -498,6 +504,7 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
             }
             chunks++;
         }
+if(chunks >= 44)break;
     }
 fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     free(matches);
