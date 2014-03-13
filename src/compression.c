@@ -19,8 +19,9 @@ struct extend_match {
 
 struct extend_match
 extend_match(struct cbp_align_nw_memory *mem,
-             char *rseq, int32_t rstart, int32_t rend, int32_t resind,  int32_t dir1,
-             char *oseq, int32_t ostart, int32_t oend, int32_t current, int32_t dir2);
+             char *rseq, int32_t rstart, int32_t rend, int32_t resind,
+             int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
+             int32_t current, int32_t dir2);
 
 static int32_t
 add_without_match(struct cbp_coarse *coarse_db,
@@ -179,12 +180,14 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
         matches[i] = true;
         matches_temp[i] = true;
     }
-    for (current = 0; current <= org_seq->length - seed_size - ext_seed; current++) {
+    for (current = 0; current <= org_seq->length-seed_size - ext_seed;
+                                                             current++) {
         found_match = false;
-       /*If we are at the beginning of the first chunk of the first sequence,
-        *add the first chunk without a match and skip ahead to the start of
-        *the second chunk.
-        */
+
+        /*If we are at the beginning of the first chunk of the first sequence,
+         *add the first chunk without a match and skip ahead to the start of
+         *the second chunk.
+         */
         if (current == 0 && coarse_db->seqs->size == 0) {
             new_coarse_seq_id = add_without_match(coarse_db, org_seq, 0,
                                                   max_chunk_size);
@@ -235,27 +238,39 @@ printf("\n");
 
             if (resind + seed_size + ext_seed > coarse_seq->seq->length)
                 continue;
-            /*if (0 != strncmp(
-                        coarse_seq->seq->residues + seed_size,
-                        org_seq->residues + seed_size,
-                        ext_seed))
-                continue;*/
 
-            if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section,
-                           resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
-                attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section,
-                           resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > compress_flags.attempt_ext_len){
-                mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
-                                          org_seq->residues, start_of_section, end_of_section, current,1);
-                mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
-                                          org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
+            if ((attempt_ext(current, -1, org_seq->residues,
+                            end_of_section - start_of_section,
+                            start_of_section, resind, -1,
+                            coarse_seq->seq->residues,
+                            coarse_seq->seq->length, 0) +
+                  attempt_ext(current+seed_size-1, 1, org_seq->residues,
+                              end_of_section - start_of_section,
+                              start_of_section, resind+seed_size-1, 1,
+                              coarse_seq->seq->residues,
+                              coarse_seq->seq->length, 0)) >
+                  compress_flags.attempt_ext_len){
+                mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0,
+                                         coarse_seq->seq->length, resind, -1,
+                                         org_seq->residues, start_of_section,
+                                         end_of_section, current, 1);
+
+                mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0,
+                                         coarse_seq->seq->length,
+                                         resind + seed_size - 1, 1,
+                                         org_seq->residues, start_of_section,
+                                         end_of_section,
+                                         current + seed_size - 1, 1);
+
                 /*If the match was too short, try the next seed*/                
-                if (mlens_rev.olen+seed_size+mlens_fwd.olen < compress_flags.min_match_len)
+                if (mlens_rev.olen + seed_size + mlens_fwd.olen <
+                      compress_flags.min_match_len)
                     continue;
+
                 found_match = true;
                 changed = false;
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
-                original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
+                original_align_len=mlens_rev.olen + seed_size + mlens_fwd.olen;
 
                 start_coarse_align = resind - mlens_rev.rlen;
                 end_coarse_align = resind + seed_size + mlens_fwd.rlen;
@@ -264,9 +279,11 @@ printf("\n");
 
                 cor_match = malloc(coarse_align_len * sizeof(char));
                 org_match = malloc(original_align_len * sizeof(char));
+
                 /*Copy the matching parts of the coarse and original sequences*/
                 for (i1 = start_coarse_align; i1 < end_coarse_align; i1++)
-                    cor_match[i1-start_coarse_align] = coarse_seq->seq->residues[i1];
+                    cor_match[i1-start_coarse_align] =
+                      coarse_seq->seq->residues[i1];
                 for (i2 = start_original_align; i2 < end_original_align; i2++)
                     org_match[i2-start_original_align] = org_seq->residues[i2];
 
@@ -277,6 +294,7 @@ printf("\n");
                                          matches, NULL);
                 free(cor_match);
                 free(org_match);
+
                 /*If the length of either the coarse or original match
                   was changed from backtracking in the alignment, update
                   the lengths.*/
@@ -351,6 +369,7 @@ printf("\n");
                 start_original_align, end_original_align;
             char *cor_match, *org_match;
             int i1, i2;
+
           /*If we found a match in the seed locations for the k-mer, then there
             is no need to check the locations for the reverse complement.*/
             if (found_match)
@@ -360,29 +379,40 @@ printf("\n");
 
             if (resind + seed_size + ext_seed > coarse_seq->seq->length)
                 continue;
-            /*if (0 != strncmp(
-                        coarse_seq->seq->residues + seed_size,
-                        org_seq->residues + seed_size,
-                        ext_seed))
-                continue;*/
 
-            if (attempt_ext(current, -1, org_seq->residues, end_of_section - start_of_section, start_of_section,
-                            resind+seed_size-1, 1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) +
-               attempt_ext(current+seed_size-1, 1, org_seq->residues, end_of_section - start_of_section, start_of_section,
-                            resind, -1, coarse_seq->seq->residues, coarse_seq->seq->length, 0) > compress_flags.attempt_ext_len) {
-                mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind, -1,
-                                         org_seq->residues, start_of_section, end_of_section, current+seed_size-1, 1);
-                mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0, coarse_seq->seq->length, resind+seed_size-1, 1,
-                                         org_seq->residues, start_of_section, end_of_section, current, -1);
-              /*If the match was too short, try the next seed*/                
-                if (mlens_rev.olen+seed_size+mlens_fwd.olen < compress_flags.min_match_len)
+            if (attempt_ext(current, -1, org_seq->residues,
+                            end_of_section - start_of_section,
+                            start_of_section, resind + seed_size - 1, 1,
+                            coarse_seq->seq->residues,
+                            coarse_seq->seq->length, 0) +
+                  attempt_ext(current+seed_size-1, 1, org_seq->residues, 
+                              end_of_section - start_of_section,
+                              start_of_section, resind, -1,
+                              coarse_seq->seq->residues,
+                              coarse_seq->seq->length, 0) >
+                  compress_flags.attempt_ext_len) {
+                mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0,
+                                         coarse_seq->seq->length, resind, -1,
+                                         org_seq->residues, start_of_section,
+                                         end_of_section,
+                                         current + seed_size - 1, 1);
+
+                mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0,
+                                         coarse_seq->seq->length,
+                                         resind+seed_size-1, 1,
+                                         org_seq->residues, start_of_section,
+                                         end_of_section, current, -1);
+
+                /*If the match was too short, try the next seed*/                
+                if (mlens_rev.olen+seed_size+mlens_fwd.olen <
+                      compress_flags.min_match_len)
                     continue;
 
                 found_match = true;
                 changed = false;
 
                 coarse_align_len = mlens_rev.rlen + seed_size + mlens_fwd.rlen;
-                original_align_len = mlens_rev.olen + seed_size + mlens_fwd.olen;
+                original_align_len=mlens_rev.olen + seed_size + mlens_fwd.olen;
 
                 start_coarse_align = resind - mlens_rev.rlen;
                 end_coarse_align = resind + seed_size + mlens_fwd.rlen;
@@ -394,9 +424,12 @@ printf("\n");
 
               /*Copy the matching parts of the coarse and original sequences*/
                 for (i1 = start_coarse_align; i1 < end_coarse_align; i1++)
-                    cor_match[i1-start_coarse_align] = coarse_seq->seq->residues[i1]; 
+                    cor_match[i1-start_coarse_align] =
+                  coarse_seq->seq->residues[i1]; 
+
                 for (i2 = start_original_align; i2 < end_original_align; i2++)
                     org_match[i2-start_original_align] = org_seq->residues[i2];
+
               /*Get an alignment of the matching sequences*/
                 alignment = cbp_align_nw(mem,
                                          cor_match, coarse_align_len, 0, 1,
@@ -514,8 +547,9 @@ fprintf(stderr, "Compress finished       %d\n", org_seq->id);
 
 struct extend_match
 extend_match(struct cbp_align_nw_memory *mem,
-             char *rseq, int32_t rstart, int32_t rend, int32_t resind, int32_t dir1,
-             char *oseq, int32_t ostart, int32_t oend, int32_t current, int32_t dir2)
+             char *rseq, int32_t rstart, int32_t rend, int32_t resind,
+             int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
+             int32_t current, int32_t dir2)
 {
     struct cbp_alignment alignment;
     struct extend_match mlens;
@@ -567,6 +601,7 @@ extend_match(struct cbp_align_nw_memory *mem,
         mlens.olen += m;
         resind += m * dir1;
         current += m * dir2;
+
         /*End the extension if we found a bad window in ungapped alignment.*/
         if (found_bad_window)
             break;
@@ -582,6 +617,7 @@ extend_match(struct cbp_align_nw_memory *mem,
             break;
 
         matches_count = 0;
+
         /*Check for a bad window manually and end the extension if a bad
           window is found.*/
         for (i = matches_index - 100; i < matches_index; i++)
