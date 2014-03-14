@@ -10,9 +10,10 @@
 #include "flags.h"
 
 struct ungapped_alignment
-cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1, int32_t i1,
-                   char *oseq, int32_t ostart, int32_t oend, int32_t dir2, int32_t i2,
-                   bool *matches, bool *matches_past_clump, int *matches_index)
+cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1,
+                   int32_t i1, char *oseq, int32_t ostart, int32_t oend,
+                   int32_t dir2, int32_t i2, bool *matches,
+                   bool *matches_past_clump, int *matches_index)
 {
     int32_t length, scanned, successive;
     int32_t rlen, olen;
@@ -186,6 +187,25 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
                 dp_from[j1][j2] = 1;
             }
         }
+
+/*////////////////////////////////////////////*/
+if(dp_len1 <= 25 && dp_len2 <= 25){
+fprintf(stderr, "\n");
+    for(j2 = 0; j2 <= dp_len2; j2++){
+        for(j1 = 0; j1 <= dp_len1; j1++)
+            fprintf(stderr,"%4d", dp_score[j1][j2]);
+        fprintf(stderr,"\n");
+    }
+    fprintf(stderr, "\n\n");
+    for(j2 = 0; j2 <= dp_len2; j2++){
+        for(j1 = 0; j1 <= dp_len1; j1++)
+            fprintf(stderr, "    %c", dp_from[j1][j2] == 0 ? '\\' :
+                                         dp_from[j1][j2]==1 ? '<' : '^');
+        fprintf(stderr, "\n");
+    }
+    fprintf(stderr, "stderr\n\n");}
+/*///////////////////////////////////////////*/
+
     tables.dp_score = dp_score;
     tables.dp_from = dp_from;
     return tables;
@@ -258,9 +278,10 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     struct cbp_alignment align;
     bool *current_match;
     int matches_count = 0;
-    struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq, dp_len2, i2, dir2);
+    struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq,
+                                                            dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
-
+fprintf(stderr, "best edge: %d %d\n", best[0], best[1]);
     best = backtrack_to_clump(tables, best);
     int i = 0;
     if (best[0] <= 0) {
@@ -317,28 +338,33 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         num_steps++;
         cur_j1 = prev_j1; cur_j2 = prev_j2;
     }
+fprintf(stderr, "num_steps: %d\n", num_steps);
     for (i = 0; i < num_steps/2; i++) { /* flip order */
         bool temp = matches_to_add[num_steps-i-1];
         matches_to_add[num_steps-1-i] = matches_to_add[i];
         matches_to_add[i] = temp;
     }
 
-    /* note: need to flip order */
-    if (dp_len1 < compress_flags.min_match_len && dp_len2 < compress_flags.min_match_len)
+    /*note: need to flip order*/
+    if (dp_len1 < compress_flags.min_match_len &&
+        dp_len2 < compress_flags.min_match_len)
         for (i = *matches_index - 100; i < *matches_index; i++)
             if (matches[i])
                 matches_count++;
-    /* Make sure we don't have a bad window unless we are running
-       Needleman-Wunsch alignment on a match.  If we have a bad window, then
-       throw out this alignment.  Otherwise, copy the alignment into align.org
-       and align.ref. */
+    /*Make sure we don't have a bad window unless we are running
+      Needleman-Wunsch alignment on a match.  If we have a bad window, then
+      throw out this alignment.  Otherwise, copy the alignment into align.org
+      and align.ref.*/
     if (dp_len1 < compress_flags.min_match_len &&
         dp_len2 < compress_flags.min_match_len &&
-       check_and_update(matches, matches_index, &matches_count,
-                        matches_to_add, num_steps) != num_steps)
+        check_and_update(matches, matches_index, &matches_count,
+                         matches_to_add, num_steps) != num_steps){
+fprintf(stderr, "Found a bad window in Needleman-Wunsch alignment\n");
         align.length = -1;
+    }
     else {
         align.length = num_steps;
+fprintf(stderr, "                      align.length = %d\n", align.length);
         align.org = malloc((align.length+1)*sizeof(char));
         align.ref = malloc((align.length+1)*sizeof(char));
         for (i = 0; i < align.length; i++) {
@@ -393,7 +419,6 @@ attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
     int32_t consec_mismatch = 0;
     i1 += dir1;
     i2 += dir2;
-/*printf("attempt_ext: start1: %d, start2: %d, len1: %d, len2: %d,   i1: %c%d, i2: %c%d, progress: ", start2, start1, len2, len1, (dir2>0?'+':'-'), i2, (dir1>0?'+':'-'), i1);*/
 printf("attempt_ext: i1: %d, i2: %d, progress: ", i1-start1, i2-start2);
     /*Replace this 3 with the flag for max_consec_mismatch*/
     while (consec_mismatch < 3 &&
@@ -409,14 +434,16 @@ printf("%d\n", progress);
     return progress;
 }
 
-/*Takes in as input an array of bools representing data on whether or not previous
- *pairs of bases matched, an index into that array, the current number of matches,
- *an array of bools to add to the array of matches, and the number of bools to add.
- *check_and_update adds bools from the temp array to the matches array until it
- *either has added all of the matches or a bad window was found.  If a bad window
- *was found, check_and_update returns false.  Otherwise, check_and_update returns true.
+/*Takes in as input an array of bools representing data on whether or not
+ *previous pairs of bases matched, an index into that array, the current number
+ *of matches, an array of bools to add to the array of matches, and the number
+ *of bools to add.  check_and_update adds bools from the temp array to the
+ *matches array until it either has added all of the matches or a bad window
+ *was found.  If a bad window was found, check_and_update returns false.
+ *Otherwise, check_and_update returns true.
  */
-int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *temp, int temp_index){
+int check_and_update(bool *matches, int *matches_index, int *num_matches,
+                                             bool *temp, int temp_index){
     int i;
     for (i = 0; i < temp_index; i++) {
         int hundred_bases_ago = *matches_index - 100;
@@ -432,9 +459,8 @@ int check_and_update(bool *matches, int *matches_index, int *num_matches, bool *
     return temp_index;
 }
 
-int min(int a, int b){
-    return a<b?a:b;
-}
+int min(int a, int b){return a<b?a:b;}
+
 int max_dp_len(int i, int dir, int len){
     return dir == 1 ? min(25, len-i) : min(25, i+1);
 }
