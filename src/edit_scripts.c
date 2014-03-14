@@ -146,13 +146,13 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
         else { /* mismatch */
             if (ref[i] == '-') { /* insertion in str relative to ref (i.e., gap in ref) */
                 subdel_open = false;
-	        if (!insert_open) { /* indicate start of insertion */
-	            insert_open = true;
+                if (!insert_open) { /* indicate start of insertion */
+                    insert_open = true;
                     octal = to_octal_str(i - last_edit);
                     edit_script[current++] = 'i';
                     for (j = 0; octal[j] != '\0'; j++)
                         edit_script[current++] = octal[j];
-	            last_edit = i;
+                    last_edit = i;
                 }
                 edit_script[current++] = str[i];
             }
@@ -161,7 +161,7 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
             else {
                 insert_open = false;
                 if (!subdel_open) { /* indicate start of subdel */
-	            subdel_open = true;
+                    subdel_open = true;
                     octal = to_octal_str(i - last_edit);
                     edit_script[current++] = 's';
                     for (j = 0; octal[j] != '\0'; j++)
@@ -228,7 +228,7 @@ char *read_edit_script(char *edit_script, char *orig, int length){
         /* append replacement string in edit script; get rid of dashes */
         for (i = 0; i < edit.str_length; i++)
             if (edit.str[i] != '-')
-	        str[current++] = edit.str[i];
+                str[current++] = edit.str[i];
 
         /* skip subdel along original string */
         if (edit.is_subdel) orig_pos += edit.str_length;

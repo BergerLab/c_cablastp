@@ -209,7 +209,7 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
         }
 
         kmer = org_seq->residues + current;
-	revcomp = kmer_revcomp(kmer);
+        revcomp = kmer_revcomp(kmer);
 
 char *base = kmer;
 for(;base < kmer + 10; base++)
@@ -219,10 +219,13 @@ printf("\n");
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
         seeds = cbp_seeds_lookup(coarse_db->seeds, kmer);
+
         /*The locations of all seeds in the database that start with the
           current k-mer's reverse complement.*/
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
+
         free(revcomp);
+
         for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
             int coarse_align_len, original_align_len,
                 start_coarse_align, end_coarse_align,
@@ -566,7 +569,9 @@ extend_match(struct cbp_align_nw_memory *mem,
              int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
              int32_t current, int32_t dir2)
 {
-fprintf(stderr, "extend_match %d %d\n", current - ostart, resind);
+printf("\n\nextend_match %d %d\n", current - ostart, resind);
+fprintf(stderr, "\n\n--------------------------------------------\n\n"
+                "extend_match %d %d\n", current - ostart, resind);
     struct cbp_alignment alignment;
     struct extend_match mlens;
     int32_t gwsize;

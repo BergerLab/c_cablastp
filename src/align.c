@@ -193,8 +193,8 @@ if(dp_len1 <= 25 && dp_len2 <= 25){
 fprintf(stderr, "\n");
     for(j2 = 0; j2 <= dp_len2; j2++){
         for(j1 = 0; j1 <= dp_len1; j1++)
-            fprintf(stderr,"%4d", dp_score[j1][j2]);
-        fprintf(stderr,"\n");
+            fprintf(stderr, "%4d", dp_score[j1][j2]);
+        fprintf(stderr, "\n");
     }
     fprintf(stderr, "\n\n");
     for(j2 = 0; j2 <= dp_len2; j2++){
@@ -203,7 +203,7 @@ fprintf(stderr, "\n");
                                          dp_from[j1][j2]==1 ? '<' : '^');
         fprintf(stderr, "\n");
     }
-    fprintf(stderr, "stderr\n\n");}
+    fprintf(stderr, "\n\n");}
 /*///////////////////////////////////////////*/
 
     tables.dp_score = dp_score;
@@ -253,9 +253,9 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
         }
         if (dp_from[pos[0]][pos[1]] == 0)
             if (dp_score[pos[0]][pos[1]] > dp_score[prev_j1][prev_j2]) /*match*/
-	        consec_matches++;
-	    else
-	        consec_matches = 0;
+                consec_matches++;
+            else
+                consec_matches = 0;
         else
             consec_matches = 0;
         pos[0] = prev_j1;
@@ -283,6 +283,20 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
 fprintf(stderr, "best edge: %d %d\n", best[0], best[1]);
     best = backtrack_to_clump(tables, best);
+/*****************************************************************************/
+    fprintf(stderr, "dp_len1: %d ", dp_len1);
+    int x;
+    for (x = 0; x < dp_len1; x++)
+      fprintf(stderr, "%c", (dir1 == 1 ? rseq[i1+x*dir1] : base_complement(rseq[i1+x*dir1])));
+    fprintf(stderr, "\n");
+    fprintf(stderr, "\ndp_len2: %d ", dp_len2);
+    for (x = 0; x < dp_len2; x++)
+      fprintf(stderr, "%c", (dir2 == 1 ? oseq[i2+x*dir2] : base_complement(oseq[i2+x*dir2])));
+    fprintf(stderr, "\n");
+/*****************************************************************************/
+
+
+
     int i = 0;
     if (best[0] <= 0) {
         align.ref = "\0";
@@ -313,15 +327,15 @@ fprintf(stderr, "best edge: %d %d\n", best[0], best[1]);
     while (!(cur_j1 == 0 && cur_j2 == 0)) {
         int prev_j1, prev_j2;
         switch (dp_from[cur_j1][cur_j2]) {
-	    char c1, c2;
+            char c1, c2;
         case 0:
             prev_j1 = cur_j1-1; prev_j2 = cur_j2-1; /* match or substitution */
-	    c1 = rseq[i1+dir1*prev_j1]; /* comp if antisense */
-	    c2 = oseq[i2+dir2*prev_j2];
-	    if (dir_prod == -1) c2 = base_complement(c2);
-	    subs1_dp[num_steps] = c1;
-	    subs2_dp[num_steps] = c2;
-	    break;
+            c1 = rseq[i1+dir1*prev_j1]; /* comp if antisense */
+            c2 = oseq[i2+dir2*prev_j2];
+            if (dir_prod == -1) c2 = base_complement(c2);
+            subs1_dp[num_steps] = c1;
+            subs2_dp[num_steps] = c2;
+            break;
         case 2: prev_j1 = cur_j1; prev_j2 = cur_j2-1; /* advance 2; gap in 1 */
             c2 = oseq[i2+dir2*prev_j2];
             if (dir_prod == -1) c2 = base_complement(c2); /* comp if antisense */
@@ -329,7 +343,7 @@ fprintf(stderr, "best edge: %d %d\n", best[0], best[1]);
             subs2_dp[num_steps] = c2;
             break;
         default: prev_j1 = cur_j1-1; prev_j2 = cur_j2; /* advance 1; gap in 2 */
-	    c1 = rseq[i1+dir1*prev_j1];
+            c1 = rseq[i1+dir1*prev_j1];
             subs1_dp[num_steps] = c1;
             subs2_dp[num_steps] = '-';
         }
