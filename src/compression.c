@@ -265,7 +265,7 @@ printf("\n");
                                          end_of_section,
                                          current + seed_size - 1, 1);
 
-/*printf("  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);*/
+printf("  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);
 
                 /*If the match was too short, try the next seed*/                
                 if (mlens_rev.olen + seed_size + mlens_fwd.olen <
@@ -603,6 +603,7 @@ extend_match(struct cbp_align_nw_memory *mem,
         ungapped = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
                                oseq, ostart, oend, dir2, current,
                                matches, matches_past_clump, &matches_index);
+printf("align_ungapped finished: %d\n", ungapped.length);
         m = ungapped.length;
         found_bad_window = ungapped.found_bad_window;
         mlens.rlen += m;
@@ -618,7 +619,7 @@ extend_match(struct cbp_align_nw_memory *mem,
           found a bad window or couldn't find a 4-mer match in the alignment.*/
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
-
+printf("dp_len1: %d, dp_len2: %d\n", dp_len2, dp_len1);
 
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
