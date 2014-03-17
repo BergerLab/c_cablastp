@@ -256,7 +256,7 @@ printf("\n");
                 mlens_rev = extend_match(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length, resind, -1,
                                          org_seq->residues, start_of_section,
-                                         end_of_section, current, 1);
+                                         end_of_section, current, -1);
 
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length,
@@ -265,7 +265,7 @@ printf("\n");
                                          end_of_section,
                                          current + seed_size - 1, 1);
 
-printf("  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);
+/*printf("  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);*/
 
                 /*If the match was too short, try the next seed*/                
                 if (mlens_rev.olen + seed_size + mlens_fwd.olen <
@@ -307,12 +307,10 @@ printf("  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);
                 char *new_org = no_dashes(alignment.org);
                 for (i1 = 0; new_cor[i1] != '\0'; i1++);
                 for (i2 = 0; new_org[i2] != '\0'; i2++);
-fprintf(stderr, "(%d, %d) -> ", mlens_fwd.rlen, mlens_fwd.olen);
                 if (i1 < coarse_align_len)
                     mlens_fwd.rlen -= (coarse_align_len - i1);
                 if (i2 < original_align_len)
                     mlens_fwd.olen -= (original_align_len - i2);
-fprintf(stderr, "(%d, %d)\n", mlens_fwd.rlen, mlens_fwd.olen);
                 free(new_cor);
                 free(new_org);
                 
@@ -439,7 +437,6 @@ printf("  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen);
                 for (i1 = start_coarse_align; i1 < end_coarse_align; i1++)
                     cor_match[i1-start_coarse_align] =
                       coarse_seq->seq->residues[i1]; 
-
                 for (i2 = start_original_align; i2 < end_original_align; i2++)
                     org_match[i2-start_original_align] = org_seq->residues[i2];
 
@@ -569,12 +566,12 @@ extend_match(struct cbp_align_nw_memory *mem,
              int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
              int32_t current, int32_t dir2)
 {
-printf("\n\nextend_match %d %d\n", current - ostart, resind);
+printf("\n\nextend_match %d %d, coarse: %c, original: %c\n", current - ostart, resind, (dir1>0?'+':'-'),(dir2>0?'+':'-'));
+fprintf(stderr, "\n\nextend_match %d %d, coarse: %c, original: %c\n", current - ostart, resind, (dir1>0?'+':'-'),(dir2>0?'+':'-'));
 fprintf(stderr, "\n\n--------------------------------------------\n\n"
                 "extend_match %d %d\n", current - ostart, resind);
     struct cbp_alignment alignment;
     struct extend_match mlens;
-    int32_t gwsize;
     int32_t rlen, olen;
     struct ungapped_alignment ungapped;
     int32_t m;
@@ -600,7 +597,6 @@ fprintf(stderr, "\n\n--------------------------------------------\n\n"
     resind += dir1;
     current += dir2;
 
-    gwsize = compress_flags.gapped_window_size;
     rlen = rend - rstart;
     olen = oend - ostart;
 
@@ -617,6 +613,8 @@ fprintf(stderr, "\n\n--------------------------------------------\n\n"
                                oseq, ostart, oend, dir2, current,
                                matches, matches_past_clump, &matches_index);
         m = ungapped.length;
+printf("Ungapped extension length: %d\n", m);
+fprintf(stderr, "Ungapped extension length: %d\n", m);
         found_bad_window = ungapped.found_bad_window;
         mlens.rlen += m;
         mlens.olen += m;
@@ -679,8 +677,6 @@ add_without_match(struct cbp_coarse *coarse_db,
 {
     struct cbp_coarse_seq *coarse_seq;
     coarse_seq = cbp_coarse_add(coarse_db, org_seq->residues, ostart, oend);
-if(ostart > 0)
-  fprintf(stderr, "%s\n", coarse_seq->seq->residues);
     cbp_coarse_seq_addlink(
         coarse_seq,
         cbp_link_to_compressed_init(org_seq->id, 0, oend - ostart - 1,
