@@ -321,8 +321,6 @@ printf("\n");
                                                     start_of_section,
                                                     current - mlens_rev.olen +
                                                       compress_flags.overlap);
-fprintf(stderr, "%d\n", current - mlens_rev.olen + compress_flags.overlap - start_of_section);
-fprintf(stderr, "%d\n", mlens_rev.olen);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                             new_coarse_seq_id, start_of_section,
@@ -456,12 +454,10 @@ printf("  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen);
                 char *new_org = no_dashes(alignment.org);
                 for (i1 = 0; new_cor[i1] != '\0'; i1++);
                 for (i2 = 0; new_org[i2] != '\0'; i2++);
-fprintf(stderr, "(%d, %d) -> ", mlens_fwd.rlen, mlens_fwd.olen);
                 if (i1 < coarse_align_len)
                     mlens_fwd.rlen -= (coarse_align_len - i1);
                 if (i2 < original_align_len)
                     mlens_fwd.olen -= (original_align_len - i2);
-fprintf(stderr, "(%d, %d)\n", mlens_fwd.rlen, mlens_fwd.olen);
                 free(new_cor);
                 free(new_org);
 
@@ -472,7 +468,6 @@ fprintf(stderr, "(%d, %d)\n", mlens_fwd.rlen, mlens_fwd.olen);
                                                     start_of_section,
                                                     current - mlens_fwd.olen +
                                                       compress_flags.overlap);
-fprintf(stderr, "%d\n", current - mlens_fwd.olen + compress_flags.overlap - start_of_section);
 
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
@@ -566,10 +561,6 @@ extend_match(struct cbp_align_nw_memory *mem,
              int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
              int32_t current, int32_t dir2)
 {
-printf("\n\nextend_match %d %d, coarse: %c, original: %c\n", current - ostart, resind, (dir1>0?'+':'-'),(dir2>0?'+':'-'));
-fprintf(stderr, "\n\nextend_match %d %d, coarse: %c, original: %c\n", current - ostart, resind, (dir1>0?'+':'-'),(dir2>0?'+':'-'));
-fprintf(stderr, "\n\n--------------------------------------------\n\n"
-                "extend_match %d %d\n", current - ostart, resind);
     struct cbp_alignment alignment;
     struct extend_match mlens;
     int32_t rlen, olen;
@@ -613,8 +604,6 @@ fprintf(stderr, "\n\n--------------------------------------------\n\n"
                                oseq, ostart, oend, dir2, current,
                                matches, matches_past_clump, &matches_index);
         m = ungapped.length;
-printf("Ungapped extension length: %d\n", m);
-fprintf(stderr, "Ungapped extension length: %d\n", m);
         found_bad_window = ungapped.found_bad_window;
         mlens.rlen += m;
         mlens.olen += m;
@@ -622,25 +611,20 @@ fprintf(stderr, "Ungapped extension length: %d\n", m);
         current += m * dir2;
 
         /*End the extension if we found a bad window in ungapped alignment.*/
-        if (found_bad_window) {
-            fprintf(stderr, "Found bad window in align_ungapped\n");
+        if (found_bad_window)
             break;
-        }
 
         /*Carry out Needleman-Wunsch alignment and end the extension if we
           found a bad window or couldn't find a 4-mer match in the alignment.*/
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
 
-fprintf(stderr, "dp_len1: %d, dp_len2: %d\n", dp_len1, dp_len2);
 
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
-        if (alignment.length == -1) {
-            fprintf(stderr, "alignment.length = -1\n");
+        if (alignment.length == -1)
             break;
-        }
 
         matches_count = 0;
 
@@ -649,10 +633,8 @@ fprintf(stderr, "dp_len1: %d, dp_len2: %d\n", dp_len1, dp_len2);
         for (i = matches_index - 100; i < matches_index; i++)
             if (matches[i])
                 matches_count++;
-        if (matches_count < compress_flags.window_ident_thresh) {
-            fprintf(stderr, "Found bad window in Needleman-Wunsch alignment, matches_count = %d\n", matches_count);
+        if (matches_count < compress_flags.window_ident_thresh)
             break;
-        }
 
         r_align_len = cbp_align_length_nogaps(alignment.ref);
         o_align_len = cbp_align_length_nogaps(alignment.org);

@@ -187,25 +187,6 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
                 dp_from[j1][j2] = 1;
             }
         }
-
-/*/////////////////////////////////////////////
-if(dp_len1 <= 25 && dp_len2 <= 25){
-fprintf(stderr, "\n");
-    for(j2 = 0; j2 <= dp_len2; j2++){
-        for(j1 = 0; j1 <= dp_len1; j1++)
-            fprintf(stderr, "%4d", dp_score[j1][j2]);
-        fprintf(stderr, "\n");
-    }
-    fprintf(stderr, "\n\n");
-    for(j2 = 0; j2 <= dp_len2; j2++){
-        for(j1 = 0; j1 <= dp_len1; j1++)
-            fprintf(stderr, "    %c", dp_from[j1][j2] == 0 ? '\\' :
-                                         dp_from[j1][j2]==1 ? '<' : '^');
-        fprintf(stderr, "\n");
-    }
-    fprintf(stderr, "\n\n");}
-////////////////////////////////////////////*/
-
     tables.dp_score = dp_score;
     tables.dp_from = dp_from;
     return tables;
@@ -275,48 +256,13 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
              char *oseq, int dp_len2, int i2, int dir2,
              bool *matches, int *matches_index)
 {
-fprintf(stderr, "cbp_align_nw: dir1 = %d, dir2 = %d\n", dir1, dir2);
     struct cbp_alignment align;
     bool *current_match;
     int matches_count = 0;
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq,
                                                             dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
-fprintf(stderr, "best edge: %d %d\n", best[0], best[1]);
     best = backtrack_to_clump(tables, best);
-/*****************************************************************************/
-    fprintf(stderr, "dp_len1: %d ", dp_len1);
-    int x;
-/*    for (x = 0; x < dp_len1; x++)
-      fprintf(stderr, "%c", (dir1 == 1 ? rseq[i1+x*dir1] : base_complement(rseq[i1+x*dir1])));
-    fprintf(stderr, "\n");
-    fprintf(stderr, "\ndp_len2: %d ", dp_len2);
-    for (x = 0; x < dp_len2; x++)
-      fprintf(stderr, "%c", (dir2 == 1 ? oseq[i2+x*dir2] : base_complement(oseq[i2+x*dir2])));
-    fprintf(stderr, "\n");*/
-    if (dp_len1 <= 25 && dp_len2 <= 25) {
-        for (x = -dp_len1; x < dp_len1; x++)
-            fprintf(stderr, "%c", (dir1 == 1 ? rseq[i1+x*dir1] : base_complement(rseq[i1+x*dir1])));
-        fprintf(stderr, "\n");
-        fprintf(stderr, "\ndp_len2: %d ", dp_len2);
-        for (x = -dp_len2; x < dp_len2; x++)
-            fprintf(stderr, "%c", (dir2 == 1 ? oseq[i2+x*dir2] : base_complement(oseq[i2+x*dir2])));
-        fprintf(stderr, "\n");
-    }
-fprintf(stderr, "\nForward: \n");
-    fprintf(stderr, "  dp_len1: %d ", dp_len1);
-    if (dp_len1 <= 25 && dp_len2 <= 25) {
-        for (x = -dp_len1; x < dp_len1; x++)
-            fprintf(stderr, "%c", rseq[i1+x]);
-        fprintf(stderr, "\n");
-        fprintf(stderr, "\n  dp_len2: %d ", dp_len2);
-        for (x = -dp_len2; x < dp_len2; x++)
-            fprintf(stderr, "%c", oseq[i2+x]);
-        fprintf(stderr, "\n");
-    }
-/*****************************************************************************/
-
-
 
     int i = 0;
     if (best[0] <= 0) {
@@ -373,7 +319,6 @@ fprintf(stderr, "\nForward: \n");
         num_steps++;
         cur_j1 = prev_j1; cur_j2 = prev_j2;
     }
-fprintf(stderr, "num_steps: %d\n", num_steps);
     for (i = 0; i < num_steps/2; i++) { /* flip order */
         bool temp = matches_to_add[num_steps-i-1];
         matches_to_add[num_steps-1-i] = matches_to_add[i];
@@ -394,12 +339,10 @@ fprintf(stderr, "num_steps: %d\n", num_steps);
         dp_len2 < compress_flags.min_match_len &&
         check_and_update(matches, matches_index, &matches_count,
                          matches_to_add, num_steps) != num_steps) {
-fprintf(stderr, "Found a bad window in Needleman-Wunsch alignment\n");
         align.length = -1;
     }
     else {
         align.length = num_steps;
-fprintf(stderr, "                      align.length = %d\n", align.length);
         align.org = malloc((align.length+1)*sizeof(char));
         align.ref = malloc((align.length+1)*sizeof(char));
         for (i = 0; i < align.length; i++) {
