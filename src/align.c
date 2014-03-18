@@ -244,8 +244,8 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
     }
     /*Couldn't find a 4-mer clump*/
     if (consec_matches < consec_match_clump_size) {
-        pos[0] = -1;
-        pos[1] = -1;
+        pos[0] = 0;
+        pos[1] = 0;
     }
     return pos;
 }
@@ -262,7 +262,9 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq,
                                                             dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
+printf("best edge: %d %d\n", best[0], best[1]);
     best = backtrack_to_clump(tables, best);
+printf("backtracked to: %d %d\n", best[0], best[1]);
 
     int i = 0;
     if (best[0] <= 0) {
@@ -281,7 +283,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     }
     int cur_j1 = best[0];
     int cur_j2 = best[1];
-    int dir_prod = dir1*dir2;
+    int dir_prod = dir1 * dir2;
     int **dp_score = tables.dp_score;
     int **dp_from = tables.dp_from;
     bool *matches_to_add = malloc((cur_j1 + cur_j2)*sizeof(bool));
@@ -296,20 +298,20 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         switch (dp_from[cur_j1][cur_j2]) {
             char c1, c2;
         case 0:
-            prev_j1 = cur_j1-1; prev_j2 = cur_j2-1; /* match or substitution */
-            c1 = rseq[i1+dir1*prev_j1]; /* comp if antisense */
+            prev_j1 = cur_j1-1; prev_j2 = cur_j2-1; /*match or substitution*/
+            c1 = rseq[i1+dir1*prev_j1]; /*comp if antisense*/
             c2 = oseq[i2+dir2*prev_j2];
             if (dir_prod == -1) c2 = base_complement(c2);
             subs1_dp[num_steps] = c1;
             subs2_dp[num_steps] = c2;
             break;
-        case 2: prev_j1 = cur_j1; prev_j2 = cur_j2-1; /* advance 2; gap in 1 */
+        case 2: prev_j1 = cur_j1; prev_j2 = cur_j2-1; /*advance 2; gap in 1*/
             c2 = oseq[i2+dir2*prev_j2];
-            if (dir_prod == -1) c2 = base_complement(c2); /* comp if antisense */
+            if (dir_prod == -1) c2 = base_complement(c2); /*comp if antisense*/
             subs1_dp[num_steps] = '-';
             subs2_dp[num_steps] = c2;
             break;
-        default: prev_j1 = cur_j1-1; prev_j2 = cur_j2; /* advance 1; gap in 2 */
+        default: prev_j1 = cur_j1-1; prev_j2 = cur_j2; /*advance 1; gap in 2*/
             c1 = rseq[i1+dir1*prev_j1];
             subs1_dp[num_steps] = c1;
             subs2_dp[num_steps] = '-';
@@ -331,6 +333,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         for (i = *matches_index - 100; i < *matches_index; i++)
             if (matches[i])
                 matches_count++;
+
     /*Make sure we don't have a bad window unless we are running
       Needleman-Wunsch alignment on a match.  If we have a bad window, then
       throw out this alignment.  Otherwise, copy the alignment into align.org
@@ -338,9 +341,8 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     if (dp_len1 < compress_flags.min_match_len &&
         dp_len2 < compress_flags.min_match_len &&
         check_and_update(matches, matches_index, &matches_count,
-                         matches_to_add, num_steps) != num_steps) {
+                         matches_to_add, num_steps) != num_steps)
         align.length = -1;
-    }
     else {
         align.length = num_steps;
         align.org = malloc((align.length+1)*sizeof(char));

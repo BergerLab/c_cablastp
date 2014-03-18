@@ -265,7 +265,7 @@ printf("\n");
                                          end_of_section,
                                          current + seed_size - 1, 1);
 
-printf("  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);
+printf("->  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);
 
                 /*If the match was too short, try the next seed*/                
                 if (mlens_rev.olen + seed_size + mlens_fwd.olen <
@@ -410,7 +410,7 @@ printf("  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);
                                          org_seq->residues, start_of_section,
                                          end_of_section, current, -1);
 
-printf("  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen);
+printf("<-  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen);
 
                 /*If the match was too short, try the next seed*/                
                 if (mlens_rev.olen+seed_size+mlens_fwd.olen <
@@ -547,7 +547,7 @@ printf("  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen);
             }
             chunks++;
         }
-if(chunks >= 57)break;
+if(chunks >= 50)break;
     }
 fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     free(matches);
@@ -624,6 +624,7 @@ printf("dp_len1: %d, dp_len2: %d\n", dp_len2, dp_len1);
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
+
         if (alignment.length == -1)
             break;
 
@@ -639,7 +640,7 @@ printf("dp_len1: %d, dp_len2: %d\n", dp_len2, dp_len1);
 
         r_align_len = cbp_align_length_nogaps(alignment.ref);
         o_align_len = cbp_align_length_nogaps(alignment.org);
-
+printf("r_align_len: %d, o_align_len: %d\n", r_align_len, o_align_len);
         /*Update the lengths of the alignments and the indices of the
           sequences.*/
         mlens.rlen += r_align_len;
