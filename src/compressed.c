@@ -383,7 +383,7 @@ cbp_link_to_coarse_init_nodiff(int32_t coarse_seq_id,
     link = malloc(sizeof(*link));
     assert(link);
 
-    link->diff = malloc(2*sizeof(char));
+    link->diff = malloc(2*sizeof(*(link->diff)));
     link->diff[0] = dir ? '0' : '1';
     link->diff[1] = '\0';
     link->coarse_seq_id = coarse_seq_id;

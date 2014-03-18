@@ -152,11 +152,11 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
     struct cbp_nw_tables tables;
     int i, j1, j2;
     int dir_prod = dir1*dir2;
-    int **dp_score = malloc((dp_len1+1)*sizeof(int *));
-    int **dp_from = malloc((dp_len1+1)*sizeof(int *));
+    int **dp_score = malloc((dp_len1+1)*sizeof(*dp_score));
+    int **dp_from = malloc((dp_len1+1)*sizeof(*dp_from));
     for (i = 0; i < dp_len1+1; i++) {
-        dp_score[i] = malloc((dp_len2+1)*sizeof(int));
-        dp_from[i] = malloc((dp_len2+1)*sizeof(int));
+        dp_score[i] = malloc((dp_len2+1)*sizeof(**dp_score));
+        dp_from[i] = malloc((dp_len2+1)*sizeof(**dp_from));
     }
     for (i = 0; i <= dp_len2; i++) {
         dp_score[0][i] = -3*i;
@@ -198,7 +198,7 @@ make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
 int *best_edge(int **dp_score, int dp_len1, int dp_len2){
     int j1, j2;
     int max_dp_score = -1000;
-    int *best = malloc(2*sizeof(int));
+    int *best = malloc(2*sizeof(*best));
     best[0] = -1;
     best[1] = -1;
     for (j2 = 0; j2 <= dp_len2; j2++){
@@ -290,9 +290,9 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     int dir_prod = dir1 * dir2;
     int **dp_score = tables.dp_score;
     int **dp_from = tables.dp_from;
-    bool *matches_to_add = malloc((cur_j1 + cur_j2)*sizeof(bool));
-    char *subs1_dp = malloc((cur_j1 + cur_j2)*sizeof(char));
-    char *subs2_dp = malloc((cur_j1 + cur_j2)*sizeof(char));
+    bool *matches_to_add = malloc((cur_j1 + cur_j2)*sizeof(*matches_to_add));
+    char *subs1_dp = malloc((cur_j1 + cur_j2)*sizeof(*subs1_dp));
+    char *subs2_dp = malloc((cur_j1 + cur_j2)*sizeof(*subs2_dp));
     int num_steps = 0;
     align.ref = "\0";
     align.org = "\0";
@@ -349,8 +349,8 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
         align.length = -1;
     else {
         align.length = num_steps;
-        align.org = malloc((align.length+1)*sizeof(char));
-        align.ref = malloc((align.length+1)*sizeof(char));
+        align.org = malloc((align.length+1)*sizeof(*(align.org)));
+        align.ref = malloc((align.length+1)*sizeof(*(align.ref)));
         for (i = 0; i < align.length; i++) {
             /*Don't update the matches array if we are running Needleman-Wunsch
               alignment on a match.*/

@@ -285,8 +285,8 @@ printf("\n");*/
                 start_original_align = current - mlens_rev.olen;
                 end_original_align = current + seed_size + mlens_fwd.olen;
 
-                cor_match = malloc(coarse_align_len * sizeof(char));
-                org_match = malloc(original_align_len * sizeof(char));
+                cor_match = malloc(coarse_align_len * sizeof(*cor_match));
+                org_match = malloc(original_align_len * sizeof(*org_match));
 
                 /*Copy the matching parts of the coarse and original sequences*/
                 for (i1 = start_coarse_align; i1 < end_coarse_align; i1++)
@@ -435,8 +435,8 @@ printf("\n");*/
                 start_original_align = current - mlens_fwd.olen;
                 end_original_align = current + seed_size + mlens_rev.olen;
                 
-                cor_match = malloc(coarse_align_len * sizeof(char));
-                org_match = malloc(original_align_len * sizeof(char));
+                cor_match = malloc(coarse_align_len * sizeof(*cor_match));
+                org_match = malloc(original_align_len * sizeof(*org_match));
 
                 /*Copy the matching parts of the coarse and original sequences*/
                 for (i1 = start_coarse_align; i1 < end_coarse_align; i1++)
@@ -586,8 +586,9 @@ extend_match(struct cbp_align_nw_memory *mem,
     max_section_size = 2 * compress_flags.max_chunk_size;
 
     /*Initialize the matches and matches_past_clump arrays.*/
-    matches = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
-    matches_past_clump = malloc(2*compress_flags.max_chunk_size*sizeof(bool));
+    matches = malloc(2*compress_flags.max_chunk_size*sizeof(*matches));
+    matches_past_clump = malloc(2 * compress_flags.max_chunk_size
+                                  * sizeof(*matches_past_clump));
     matches_index = compress_flags.gapped_window_size;
     for (i = 0; i < max_section_size; i++) {
         matches[i] = true;
