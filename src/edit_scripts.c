@@ -14,7 +14,7 @@ int maximum(int a, int b){return a>b?a:b;}
 
 /* Converts an integer to its octal representation */
 char *to_octal_str(int i) {
-    char *buf = malloc(16*sizeof(char));
+    char *buf = malloc(16*sizeof(*buf));
     sprintf(buf, "%o", i);
     return buf;
 }
@@ -98,9 +98,10 @@ char *edit_script_to_half_bytes(char *edit_script){
 /* Converts an edit script in half-byte format to ASCII */
 char *half_bytes_to_ASCII(char *half_bytes, int length){
     int i = 0;
-    char *edit_script = malloc((length+1)*sizeof(char));
+    char *edit_script = malloc((length+1)*sizeof(*edit_script));
     for (i = 0; i < length; i++) {
-        if (i % 2 == 0) { /* Copy the left half-byte of the current byte */
+        /* Copy the left half-byte of the current byte */
+        if (i % 2 == 0) {
             char left = half_bytes[i/2] & (((char)15) << 4);
             left >>= 4;
             left &= (char)15;
@@ -133,7 +134,7 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
     direction |= ((char)0x80);
     bool insert_open = false, subdel_open = false;
     int last_edit = 0;
-    char *edit_script = malloc(3*length*sizeof(char));
+    char *edit_script = malloc(3*length*sizeof(*edit_script));
     int current = 1;
     int i, j;
     char *octal;
@@ -144,9 +145,11 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
             subdel_open = false;
         }
         else { /* mismatch */
-            if (ref[i] == '-') { /* insertion in str relative to ref (i.e., gap in ref) */
+            /* insertion in str relative to ref (i.e., gap in ref) */
+            if (ref[i] == '-') {
                 subdel_open = false;
-                if (!insert_open) { /* indicate start of insertion */
+                /* indicate start of insertion */
+                if (!insert_open) { 
                     insert_open = true;
                     octal = to_octal_str(i - last_edit);
                     edit_script[current++] = 'i';
@@ -156,11 +159,12 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
                 }
                 edit_script[current++] = str[i];
             }
-           /* substitution or deletion in str (represented in script by '-') relative
-              to ref */
+            /*substitution or deletion in str (represented in script by '-')
+              relative to ref*/
             else {
                 insert_open = false;
-                if (!subdel_open) { /* indicate start of subdel */
+                /* indicate start of subdel */
+                if (!subdel_open) { 
                     subdel_open = true;
                     octal = to_octal_str(i - last_edit);
                     edit_script[current++] = 's';
@@ -172,7 +176,7 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
             }
         }
     }
-    edit_script = realloc(edit_script, (current+1)*sizeof(char));
+    edit_script = realloc(edit_script, (current+1)*sizeof(*edit_script));
     edit_script[current] = '\0';
     return edit_script;
 }
@@ -196,7 +200,7 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
     while (isupper(edit_script[(*pos)+edit_length]) ||
                    edit_script[(*pos)+edit_length] == '-')
         edit_length++;
-    edit->str = malloc((edit_length+1)*sizeof(char));
+    edit->str = malloc((edit_length+1)*sizeof(*edit_script));
     edit->str_length = edit_length;
     while (isupper(edit_script[(*pos)]) || edit_script[(*pos)] == '-'){
         fprintf(stderr, "%c", edit_script[(*pos)]);
@@ -209,7 +213,7 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
   the length of the sequence and applies the edit script to the sequence to
   produce a new sequence.*/
 char *read_edit_script(char *edit_script, char *orig, int length){
-    char *str = malloc((2*length+1)*sizeof(char));
+    char *str = malloc((2*length+1)*sizeof(*str));
     int i;
     struct edit_info edit;
     int orig_pos = 0, last_edit_str_len = 0; /* length of last edit str */
@@ -367,7 +371,7 @@ char *no_dashes(char *sequence){
     for (length = 0; sequence[length] != '\0'; length++)
         if (sequence[length] != '-')
             bases++;
-    char *n = malloc((bases+1)*sizeof(char));
+    char *n = malloc((bases+1)*sizeof(*n));
     n[bases] = '\0';
     for (i = 0; i < length; i++)
         if (sequence[i] != '-')
