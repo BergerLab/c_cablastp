@@ -174,12 +174,14 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
     end_of_section = start_of_section + max_section_size;
     chunks = 0;
 
+    /*Initialize the matches and matches_temp arrays*/
     matches = malloc(max_section_size*sizeof(*matches));
     matches_temp = malloc(max_section_size*sizeof(*matches_temp));
     for (i = 0; i < max_section_size; i++) {
         matches[i] = true;
         matches_temp[i] = true;
     }
+
     for (current = 0; current <= org_seq->length-seed_size - ext_seed;
                                                              current++) {
         found_match = false;
@@ -208,6 +210,7 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
             continue;
         }
 
+        /*Get the k-mer and allocate a copy of its reverse complement*/
         kmer = org_seq->residues + current;
         revcomp = kmer_revcomp(kmer);
 
@@ -335,9 +338,9 @@ printf("\n");*/
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
                                             current - mlens_rev.olen,
-                                            current+seed_size+mlens_fwd.olen,
+                                            current+seed_size+mlens_fwd.olen-1,
                                             resind - mlens_rev.rlen,
-                                            resind+seed_size+mlens_fwd.rlen,
+                                            resind+seed_size+mlens_fwd.rlen-1,
                                             alignment, true));
 
                 /*Add a link to the compressed sequence in the coarse
@@ -346,9 +349,9 @@ printf("\n");*/
                                        cbp_link_to_compressed_init(
                                        org_seq->id,
                                        resind - mlens_rev.rlen,
-                                       resind + seed_size + mlens_fwd.rlen,
+                                       resind + seed_size + mlens_fwd.rlen-1,
                                        current - mlens_rev.olen,
-                                       current + seed_size + mlens_fwd.olen,
+                                       current + seed_size + mlens_fwd.olen-1,
                                        true));
                 /*Update the current position in the sequence*/
                 if (current + mlens_fwd.olen <
@@ -485,9 +488,9 @@ printf("\n");*/
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
                                             current - mlens_fwd.olen,
-                                            current + seed_size + mlens_rev.olen,
+                                            current + seed_size + mlens_rev.olen-1,
                                             resind - mlens_rev.rlen,
-                                            resind + seed_size + mlens_fwd.rlen,
+                                            resind + seed_size + mlens_fwd.rlen-1,
                                             alignment, false));
 
                 /*Add a link to the compressed sequence in the coarse
@@ -496,9 +499,9 @@ printf("\n");*/
                                        cbp_link_to_compressed_init(
                                        org_seq->id,
                                        resind - mlens_rev.rlen,
-                                       resind + seed_size + mlens_fwd.rlen,
+                                       resind + seed_size + mlens_fwd.rlen-1,
                                        current - mlens_fwd.olen,
-                                       current + seed_size + mlens_rev.olen,
+                                       current + seed_size + mlens_rev.olen-1,
                                        false));
 
                 /*Update the current position in the sequence*/
@@ -655,16 +658,25 @@ extend_match(struct cbp_align_nw_memory *mem,
     return mlens;
 }
 
+/*Creates a new coarse sequence for a section of the original DNA sequence that
+ *does not have a match, such as if the maximum chunk length was traversed in
+ *the sequence without finding a match or if there is any DNA in the sequence
+ *before the latest match that isn't part of the match.
+ *
+ *In addition to creating a new coarse sequence, add_without_match also adda a
+ *a link to the sequence being compressed to the new coarse sequence.
+ */
 static int32_t
 add_without_match(struct cbp_coarse *coarse_db,
                   struct cbp_seq *org_seq, int32_t ostart, int32_t oend)
 {
-    struct cbp_coarse_seq *coarse_seq;
-    coarse_seq = cbp_coarse_add(coarse_db, org_seq->residues, ostart, oend);
+    struct cbp_coarse_seq *coarse_seq =
+        cbp_coarse_add(coarse_db, org_seq->residues, ostart, oend);
     cbp_coarse_seq_addlink(
         coarse_seq,
         cbp_link_to_compressed_init(org_seq->id, 0, oend - ostart - 1,
                                     ostart, oend - 1, true));
+    struct cbp_link_to_compressed *link = coarse_seq->links;
     return coarse_seq->id;
 }
 
