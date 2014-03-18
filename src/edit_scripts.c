@@ -130,7 +130,6 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
  * script that can convert the reference string to the original string.
  */
 char *make_edit_script(char *str, char *ref, bool dir, int length){
-printf("%s\n%s\n", str, ref);
     /*direction has its first bit set to 1 to indicate that the edit script
       was made from a match*/
     char direction = (dir ? '0' : '1');
@@ -181,18 +180,6 @@ printf("%s\n%s\n", str, ref);
     }
     edit_script = realloc(edit_script, (current+1)*sizeof(*edit_script));
     edit_script[current] = '\0';
-    printf("%c%s\n\n", (dir?'+':'-'), edit_script+1);
-if(length < 500) {
-    fprintf(stderr, "%s\n  |\n  |\n  V\n", no_dashes(ref));
-char *decoded = read_edit_script(edit_script, no_dashes(ref), strlen(no_dashes(ref)));
-if(!dir){
-    char *temp = string_revcomp(decoded, -1);
-    free(decoded);
-    decoded = temp;
-}
-    fprintf(stderr, "%s\n\n", decoded);
-    fprintf(stderr, "%s\n", no_dashes(str));
-}
     return edit_script;
 }
 
