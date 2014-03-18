@@ -184,9 +184,7 @@ static int32_t residue_value(char residue)
   in the seeds table*/
 static int32_t hash_kmer(struct cbp_seeds *seeds, char *kmer)
 {
-    int32_t i, key;
-
-    key = 0;
+    int32_t i = 0, key = 0;
     for (i = 0; i < seeds->seed_size; i++)
         key += residue_value(kmer[i]) * seeds->powers[i];
     return key;
@@ -195,7 +193,7 @@ static int32_t hash_kmer(struct cbp_seeds *seeds, char *kmer)
 /*Convert an integer to the k-mer that it represents.  Currently only works for
   size k = 10*/
 char *unhash_kmer(struct cbp_seeds *seeds, int hash){
-    char *kmer = malloc(11*sizeof(char));
+    char *kmer = malloc(11*sizeof(*kmer));
     int i;
     char nucleotides[4] = {'A','C','G','T'};
     kmer[10] = '\0';

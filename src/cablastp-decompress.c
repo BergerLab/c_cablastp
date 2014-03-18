@@ -35,11 +35,8 @@ main(int argc, char **argv)
     struct opt_args *args;
     struct fasta_seq_gen *fsg;
     struct fasta_seq *seq;
-    struct cbp_seq *org_seq;
     int i, org_seq_id;
-    char *dir;
-    struct timeval start, current;
-    long double elapsed;
+    struct timeval start;
     conf = load_compress_args();
     args = opt_config_parse(conf, argc, argv);
     if (args->nargs < 2) {
@@ -56,7 +53,8 @@ main(int argc, char **argv)
     char *compressed_filename = path_join(args->args[0], CABLASTP_COMPRESSED);
     FILE *compressed_file = fopen(compressed_filename, "r");
     struct cbp_compressed_seq **compressed = read_compressed(compressed_file);
-    struct fasta_seq **coarse_sequences = malloc(10000*sizeof(*coarse_sequences));
+    struct fasta_seq **coarse_sequences = malloc(10000 *
+                                                 sizeof(*coarse_sequences));
     uint64_t num_coarse_sequences = 0;
     uint64_t last_end;
     int overlap;
@@ -66,21 +64,25 @@ main(int argc, char **argv)
     while (NULL != (seq = fasta_generator_next(fsg)))
         coarse_sequences[num_coarse_sequences++] = seq;
     for (i = 0; compressed[i] != NULL; i++) {
-        last_end = 0;
         int current_chunk = 0;
+        last_end = 0;
         printf("%s", compressed[i]->name);
         for (link = (compressed[i])->links; link != NULL; link = link->next) {
+            int length;
+
             /*overlap represents the length of the overlap of the parts of the
               decompressed sequence that has been printed and the parts of the
               decompressed sequence currently being decompressed.*/
             overlap = last_end - link->original_start;
-
+/*fprintf(stderr, "%d %d-%d, %ld-%ld, last_end = %ld\n", link->coarse_seq_id,
+                                       link->coarse_start, link->coarse_end,
+                                       link->original_start, link->original_end,
+                                       last_end);*/
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
-                                   link->coarse_start, link->coarse_end);
-
-            int length;
+                                   link->coarse_start, link->coarse_end + 1);
+/*fprintf(stderr, "%d\n", chunk->length);*/
             for (length = 0; chunk->residues[length] != '\0'; length++);
 
             char *decompressed = read_edit_script(link->diff, chunk->residues,
@@ -89,17 +91,22 @@ main(int argc, char **argv)
             /*Print all characters of the decompressed chunk past the index
               "overlap" unless overlap is greater than the length of the
               decompressed chunk.*/
+
             decompressed += overlap;
             if (overlap < link->original_end - link->original_start)
                 printf("%s", decompressed);
             decompressed -= overlap;
             free(decompressed);
 
-            current_chunk++;
             if (link->original_end > last_end)
-                last_end = link->original_end;
+                last_end = link->original_end + 1;
 
             cbp_seq_free(chunk);
+
+            current_chunk++;
+
+/*            if(current_chunk==44)
+                break;*/
         }
         putc('\n', stdout);
     }

@@ -43,7 +43,7 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
         /*overlap represents the length of the overlap of the parts of the
           decompressed sequence that has been printed and the parts of the
           decompressed sequence currently being decompressed.*/
-        overlap = last_end - link->original_start;
+        overlap = last_end - link->original_start + 1;
         dec_chunk = read_edit_script(link->diff, coarse_sub, length);
 
         /*Print all characters of the decompressed chunk past the index

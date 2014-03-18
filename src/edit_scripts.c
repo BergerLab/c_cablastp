@@ -1,7 +1,9 @@
+#include <assert.h>
 #include <ctype.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include "coarse.h"
 #include "DNAutils.h"
@@ -128,6 +130,7 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
  * script that can convert the reference string to the original string.
  */
 char *make_edit_script(char *str, char *ref, bool dir, int length){
+printf("%s\n%s\n", str, ref);
     /*direction has its first bit set to 1 to indicate that the edit script
       was made from a match*/
     char direction = (dir ? '0' : '1');
@@ -178,6 +181,18 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
     }
     edit_script = realloc(edit_script, (current+1)*sizeof(*edit_script));
     edit_script[current] = '\0';
+    printf("%c%s\n\n", (dir?'+':'-'), edit_script+1);
+if(length < 500) {
+    fprintf(stderr, "%s\n  |\n  |\n  V\n", no_dashes(ref));
+char *decoded = read_edit_script(edit_script, no_dashes(ref), strlen(no_dashes(ref)));
+if(!dir){
+    char *temp = string_revcomp(decoded, -1);
+    free(decoded);
+    decoded = temp;
+}
+    fprintf(stderr, "%s\n\n", decoded);
+    fprintf(stderr, "%s\n", no_dashes(str));
+}
     return edit_script;
 }
 
@@ -188,12 +203,12 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
     int i = 0;
     if (isdigit(edit_script[(*pos)]) || edit_script[(*pos)] == '\0')
         return false;
-    fprintf(stderr, "%c", edit_script[(*pos)]);
+    /*fprintf(stderr, "%c", edit_script[(*pos)]);*/
     edit->is_subdel = edit_script[(*pos)++] == 's';
     edit->last_dist = 0;
     edit->str = "";
     while (isdigit(edit_script[(*pos)])) {
-        fprintf(stderr, "%c", edit_script[(*pos)]);
+        /*fprintf(stderr, "%c", edit_script[(*pos)]);*/
         edit->last_dist *= 8; /* octal encoding */
         edit->last_dist += edit_script[(*pos)++] - '0';
     }
@@ -202,10 +217,8 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
         edit_length++;
     edit->str = malloc((edit_length+1)*sizeof(*edit_script));
     edit->str_length = edit_length;
-    while (isupper(edit_script[(*pos)]) || edit_script[(*pos)] == '-'){
-        fprintf(stderr, "%c", edit_script[(*pos)]);
+    while (isupper(edit_script[(*pos)]) || edit_script[(*pos)] == '-')
         edit->str[i++] = edit_script[(*pos)++];
-    }
     return true;
 }
 
@@ -241,7 +254,7 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     }
     while (orig_pos < length)
         str[current++] = orig[orig_pos++];
-    str = realloc(str, current+1*sizeof(char));
+    str = realloc(str, current+1*sizeof(*str));
     str[current] = '\0';
     if ((edit_script[0] & ((char)0x7f)) == '1') {
         char *str_fwd = str;
