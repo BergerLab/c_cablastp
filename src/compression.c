@@ -211,10 +211,10 @@ fprintf(stderr, "Starting compression      %d\n", org_seq->id);
         kmer = org_seq->residues + current;
         revcomp = kmer_revcomp(kmer);
 
-char *base = kmer;
+/*char *base = kmer;
 for(;base < kmer + 10; base++)
     printf("%c", *base);
-printf("\n");
+printf("\n");*/
 
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
@@ -265,7 +265,7 @@ printf("\n");
                                          end_of_section,
                                          current + seed_size - 1, 1);
 
-printf("->  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);
+/*printf("->  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);*/
 
                 /*If the match was too short, try the next seed*/                
                 if (mlens_rev.olen + seed_size + mlens_fwd.olen <
@@ -410,7 +410,7 @@ printf("->  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen
                                          org_seq->residues, start_of_section,
                                          end_of_section, current, -1);
 
-printf("<-  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen);
+/*printf("<-  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen);*/
 
                 /*If the match was too short, try the next seed*/                
                 if (mlens_rev.olen+seed_size+mlens_fwd.olen <
@@ -547,7 +547,7 @@ printf("<-  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen
             }
             chunks++;
         }
-if(chunks >= 150)break;
+/*if(chunks >= 200)break;*/
     }
 fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     free(matches);
@@ -603,7 +603,7 @@ extend_match(struct cbp_align_nw_memory *mem,
         ungapped = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
                                oseq, ostart, oend, dir2, current,
                                matches, matches_past_clump, &matches_index);
-printf("align_ungapped finished: %d\n", ungapped.length);
+/*printf("align_ungapped finished: %d\n", ungapped.length);*/
         m = ungapped.length;
         found_bad_window = ungapped.found_bad_window;
         mlens.rlen += m;
@@ -619,7 +619,7 @@ printf("align_ungapped finished: %d\n", ungapped.length);
           found a bad window or couldn't find a 4-mer match in the alignment.*/
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
-printf("dp_len1: %d, dp_len2: %d\n", dp_len2, dp_len1);
+/*printf("dp_len1: %d, dp_len2: %d\n", dp_len2, dp_len1);*/
 
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
@@ -640,7 +640,7 @@ printf("dp_len1: %d, dp_len2: %d\n", dp_len2, dp_len1);
 
         r_align_len = cbp_align_length_nogaps(alignment.ref);
         o_align_len = cbp_align_length_nogaps(alignment.org);
-printf("r_align_len: %d, o_align_len: %d\n", r_align_len, o_align_len);
+/*printf("r_align_len: %d, o_align_len: %d\n", r_align_len, o_align_len);*/
         /*Update the lengths of the alignments and the indices of the
           sequences.*/
         mlens.rlen += r_align_len;

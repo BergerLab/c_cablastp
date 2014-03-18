@@ -262,13 +262,13 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq,
                                                             dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
-if(dp_len1 <= 25 && dp_len2 <= 25)
-    printf("best edge: %d %d\n", best[0], best[1]);
+/*if(dp_len1 <= 25 && dp_len2 <= 25)
+    printf("best edge: %d %d\n", best[0], best[1]);*/
 
     best = backtrack_to_clump(tables, best);
 
-if(dp_len1 <= 25 && dp_len2 <= 25)
-    printf("backtracked to: %d %d\n", best[0], best[1]);
+/*if(dp_len1 <= 25 && dp_len2 <= 25)
+    printf("backtracked to: %d %d\n", best[0], best[1]);*/
 
     int i = 0;
     if (best[0] <= 0) {
@@ -403,7 +403,7 @@ attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
     int32_t consec_mismatch = 0;
     i1 += dir1;
     i2 += dir2;
-printf("attempt_ext: i1: %d, i2: %d, progress: ", i1-start1, i2-start2);
+/*printf("attempt_ext: i1: %d, i2: %d, progress: ", i1-start1, i2-start2);*/
     /*Replace this 3 with the flag for max_consec_mismatch*/
     while (consec_mismatch < 3 &&
         i1 >= start1 && i1 < start1+len1 && i2 >= start2 && i2 < start2+len2) {
@@ -414,7 +414,7 @@ printf("attempt_ext: i1: %d, i2: %d, progress: ", i1-start1, i2-start2);
         i1 += dir1; i2 += dir2;
         progress++;
     }
-printf("%d\n", progress);
+/*printf("%d\n", progress);*/
     return progress;
 }
 
