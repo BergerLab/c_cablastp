@@ -326,10 +326,14 @@ printf("\n");*/
                                                       compress_flags.overlap);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
-                            new_coarse_seq_id, start_of_section,
-                            current - mlens_rev.olen - 1, 0,
-                            current - mlens_rev.olen - start_of_section - 1, 
-                                                                  true));
+                            new_coarse_seq_id,
+                            start_of_section,
+                            current - mlens_rev.olen
+                                    + compress_flags.overlap - 1,
+                            0, current - mlens_rev.olen
+                                       + compress_flags.overlap
+                                       - start_of_section - 1,
+                            true));
                     chunks++;
                 }
 
@@ -474,12 +478,14 @@ printf("\n");*/
 
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
-                                               new_coarse_seq_id,
-                                               start_of_section,
-                                               current - mlens_fwd.olen - 1, 0,
-                                               current - mlens_fwd.olen -
-                                                 start_of_section - 1,
-                                               true));
+                            new_coarse_seq_id,
+                            start_of_section,
+                            current - mlens_fwd.olen
+                                    + compress_flags.overlap - 1,
+                            0, current - mlens_fwd.olen
+                                       + compress_flags.overlap
+                                       - start_of_section - 1,
+                        true));
                     chunks++;
                 }
 
