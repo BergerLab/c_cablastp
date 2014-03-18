@@ -547,7 +547,7 @@ printf("<-  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen
             }
             chunks++;
         }
-if(chunks >= 50)break;
+if(chunks >= 150)break;
     }
 fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     free(matches);

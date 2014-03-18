@@ -262,9 +262,13 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq,
                                                             dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
-printf("best edge: %d %d\n", best[0], best[1]);
+if(dp_len1 <= 25 && dp_len2 <= 25)
+    printf("best edge: %d %d\n", best[0], best[1]);
+
     best = backtrack_to_clump(tables, best);
-printf("backtracked to: %d %d\n", best[0], best[1]);
+
+if(dp_len1 <= 25 && dp_len2 <= 25)
+    printf("backtracked to: %d %d\n", best[0], best[1]);
 
     int i = 0;
     if (best[0] <= 0) {
