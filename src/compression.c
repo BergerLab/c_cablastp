@@ -158,7 +158,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     char *kmer, *revcomp;
     int32_t seed_size, ext_seed, resind, mext, new_coarse_seq_id, min_progress;
     int32_t last_match, current;
-    int32_t id;
     int32_t i;
     int chunks;
 
@@ -169,7 +168,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     int32_t end_of_chunk;
     int32_t end_of_section;
 
-    bool has_end, changed, found_match;
+    bool changed, found_match;
     bool *matches, *matches_temp;
 
     cseq = cbp_compressed_seq_init(org_seq->id, org_seq->name);
@@ -248,7 +247,7 @@ printf("\n");*/
             int coarse_align_len, original_align_len,
                 start_coarse_align, end_coarse_align,
                 start_original_align, end_original_align;
-            char *cor_match, *org_match;
+            char *cor_match, *org_match, *new_cor, *new_org;
             int i1, i2;
 
             if (found_match)
@@ -321,8 +320,8 @@ printf("\n");*/
                 /*If the length of either the coarse or original match
                   was changed from backtracking in the alignment, update
                   the lengths.*/
-                char *new_cor = no_dashes(alignment.ref);
-                char *new_org = no_dashes(alignment.org);
+                new_cor = no_dashes(alignment.ref);
+                new_org = no_dashes(alignment.org);
                 for (i1 = 0; new_cor[i1] != '\0'; i1++);
                 for (i2 = 0; new_org[i2] != '\0'; i2++);
                 if (i1 < coarse_align_len)
@@ -393,7 +392,7 @@ printf("\n");*/
             int coarse_align_len, original_align_len,
                 start_coarse_align, end_coarse_align,
                 start_original_align, end_original_align;
-            char *cor_match, *org_match;
+            char *cor_match, *org_match, *new_cor, *new_org;
             int i1, i2;
 
             /*If we found a match in the seed locations for the k-mer, then
@@ -472,8 +471,8 @@ printf("\n");*/
                 /*If the length of either the coarse or original match
                   was changed from backtracking in the alignment, update
                   the lengths.*/
-                char *new_cor = no_dashes(alignment.ref);
-                char *new_org = no_dashes(alignment.org);
+                new_cor = no_dashes(alignment.ref);
+                new_org = no_dashes(alignment.org);
                 for (i1 = 0; new_cor[i1] != '\0'; i1++);
                 for (i2 = 0; new_org[i2] != '\0'; i2++);
                 if (i1 < coarse_align_len)
@@ -598,6 +597,8 @@ pr_extend_match(struct cbp_align_nw_memory *mem,
     int max_section_size;
     int i;
     bool found_bad_window;
+    struct DSVector *rseq_segments = ds_vector_create();
+    struct DSVector *oseq_segments = ds_vector_create();
 
     max_section_size = 2 * compress_flags.max_chunk_size;
 
@@ -624,6 +625,7 @@ pr_extend_match(struct cbp_align_nw_memory *mem,
 
     while (true) {
         int dp_len1, dp_len2, i, r_align_len, o_align_len;
+        char *r_segment, *o_segment;
         if (mseqs.rlen == rlen || mseqs.olen == olen)
             break;
 
@@ -632,10 +634,25 @@ pr_extend_match(struct cbp_align_nw_memory *mem,
         ungapped = cbp_align_ungapped(rseq, rstart, rend, dir1, resind,
                                oseq, ostart, oend, dir2, current,
                                matches, matches_past_clump, &matches_index);
+
         m = ungapped.length;
         found_bad_window = ungapped.found_bad_window;
+
         mseqs.rlen += m;
         mseqs.olen += m;
+
+        r_segment = malloc(m*sizeof(*r_segment));
+        o_segment = malloc(m*sizeof(*o_segment));
+        for (i = 0; i < m; i++) {
+            r_segment[i] = dir1 ? rseq[resind+i] :
+                                  base_complement(rseq[resind-i]);
+            o_segment[i] = dir2 ? oseq[current+i] :
+                                  base_complement(oseq[current-i]);
+        }
+
+        ds_vector_append(rseq_segments, (void *)r_segment);
+        ds_vector_append(oseq_segments, (void *)o_segment);
+
         resind += m * dir1;
         current += m * dir2;
 
@@ -665,6 +682,9 @@ pr_extend_match(struct cbp_align_nw_memory *mem,
         if (matches_count < compress_flags.window_ident_thresh)
             break;
 
+        ds_vector_append(rseq_segments, (void *)alignment.ref);
+        ds_vector_append(oseq_segments, (void *)alignment.org);
+
         r_align_len = cbp_align_length_nogaps(alignment.ref);
         o_align_len = cbp_align_length_nogaps(alignment.org);
 
@@ -674,9 +694,8 @@ pr_extend_match(struct cbp_align_nw_memory *mem,
         mseqs.olen += o_align_len;
         resind += r_align_len * dir1;
         current += o_align_len * dir2;
-        free(alignment.org);
-        free(alignment.ref);
     }
+
     free(matches);
     free(matches_past_clump);
     return mseqs;
@@ -796,13 +815,14 @@ static int32_t
 add_without_match(struct cbp_coarse *coarse_db,
                   struct cbp_seq *org_seq, int32_t ostart, int32_t oend)
 {
+    struct cbp_link_to_compressed *link = NULL;
     struct cbp_coarse_seq *coarse_seq =
         cbp_coarse_add(coarse_db, org_seq->residues, ostart, oend);
     cbp_coarse_seq_addlink(
         coarse_seq,
         cbp_link_to_compressed_init(org_seq->id, 0, oend - ostart - 1,
                                     ostart, oend - 1, true));
-    struct cbp_link_to_compressed *link = coarse_seq->links;
+    link = coarse_seq->links;
     return coarse_seq->id;
 }
 
