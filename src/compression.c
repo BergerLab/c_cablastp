@@ -19,7 +19,7 @@ struct extend_match {
     int32_t olen;
 };
 
-struct pr_extend_match {
+struct extend_match_with_res {
     char *rseq;
     char *oseq;
     int32_t rlen;
@@ -32,8 +32,8 @@ extend_match(struct cbp_align_nw_memory *mem,
              int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
              int32_t current, int32_t dir2);
 
-struct pr_extend_match
-pr_extend_match(struct cbp_align_nw_memory *mem,
+struct extend_match_with_res
+extend_match_with_res(struct cbp_align_nw_memory *mem,
                 char *rseq, int32_t rstart, int32_t rend, int32_t resind,
                 int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
                 int32_t current, int32_t dir2);
@@ -274,6 +274,11 @@ printf("\n");*/
                                          coarse_seq->seq->length, resind, -1,
                                          org_seq->residues, start_of_section,
                                          end_of_section, current, -1);
+                            extend_match_with_res(mem, coarse_seq->seq->residues, 0,
+                                         coarse_seq->seq->length, resind, -1,
+                                         org_seq->residues, start_of_section,
+                                         end_of_section, current, -1);
+
 
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length,
@@ -281,6 +286,14 @@ printf("\n");*/
                                          org_seq->residues, start_of_section,
                                          end_of_section,
                                          current + seed_size - 1, 1);
+
+                            extend_match_with_res(mem, coarse_seq->seq->residues, 0,
+                                         coarse_seq->seq->length,
+                                         resind + seed_size - 1, 1,
+                                         org_seq->residues, start_of_section,
+                                         end_of_section,
+                                         current + seed_size - 1, 1);
+
 
 /*printf("->  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);*/
 
@@ -425,7 +438,20 @@ printf("\n");*/
                                          end_of_section,
                                          current + seed_size - 1, 1);
 
+                            extend_match_with_res(mem, coarse_seq->seq->residues, 0,
+                                         coarse_seq->seq->length, resind, -1,
+                                         org_seq->residues, start_of_section,
+                                         end_of_section,
+                                         current + seed_size - 1, 1);
+
+
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0,
+                                         coarse_seq->seq->length,
+                                         resind+seed_size-1, 1,
+                                         org_seq->residues, start_of_section,
+                                         end_of_section, current, -1);
+
+                            extend_match_with_res(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length,
                                          resind+seed_size-1, 1,
                                          org_seq->residues, start_of_section,
@@ -571,7 +597,7 @@ printf("\n");*/
             }
             chunks++;
         }
-/*if(chunks >= 200)break;*/
+if(chunks >= 4)break;
     }
     fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     free(matches);
@@ -579,14 +605,15 @@ printf("\n");*/
     return cseq;
 }
 
-struct pr_extend_match
-pr_extend_match(struct cbp_align_nw_memory *mem,
+struct extend_match_with_res
+extend_match_with_res(struct cbp_align_nw_memory *mem,
                 char *rseq, int32_t rstart, int32_t rend, int32_t resind,
                 int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
                 int32_t current, int32_t dir2)
 {
+fprintf(stderr, "%d %d-%d %c, %d %d-%d %c\n", resind, rstart, rend, (dir1>0?'+':'-'), current, ostart, oend, (dir2>0?'+':'-'));
     struct cbp_alignment alignment;
-    struct pr_extend_match mseqs;
+    struct extend_match_with_res mseqs;
     int32_t rlen, olen;
     struct ungapped_alignment ungapped;
     int32_t m;
@@ -595,7 +622,8 @@ pr_extend_match(struct cbp_align_nw_memory *mem,
     int matches_count;
     int matches_index;
     int max_section_size;
-    int i;
+    int i, j;
+    int rseq_len = 0, oseq_len = 0;
     bool found_bad_window;
     struct DSVector *rseq_segments = ds_vector_create();
     struct DSVector *oseq_segments = ds_vector_create();
@@ -622,7 +650,7 @@ pr_extend_match(struct cbp_align_nw_memory *mem,
     mseqs.olen = 0;
     mseqs.rseq = "";
     mseqs.oseq = "";
-
+fprintf(stderr, "!!!");
     while (true) {
         int dp_len1, dp_len2, i, r_align_len, o_align_len;
         char *r_segment, *o_segment;
@@ -641,14 +669,16 @@ pr_extend_match(struct cbp_align_nw_memory *mem,
         mseqs.rlen += m;
         mseqs.olen += m;
 
-        r_segment = malloc(m*sizeof(*r_segment));
-        o_segment = malloc(m*sizeof(*o_segment));
+        r_segment = malloc((m+1)*sizeof(*r_segment));
+        o_segment = malloc((m+1)*sizeof(*o_segment));
         for (i = 0; i < m; i++) {
             r_segment[i] = dir1 ? rseq[resind+i] :
                                   base_complement(rseq[resind-i]);
             o_segment[i] = dir2 ? oseq[current+i] :
                                   base_complement(oseq[current-i]);
         }
+        r_segment[m] = '\0';
+        o_segment[m] = '\0';
 
         ds_vector_append(rseq_segments, (void *)r_segment);
         ds_vector_append(oseq_segments, (void *)o_segment);
@@ -695,6 +725,19 @@ pr_extend_match(struct cbp_align_nw_memory *mem,
         resind += r_align_len * dir1;
         current += o_align_len * dir2;
     }
+
+    mseqs.rseq = malloc((mseqs.rlen+1)*sizeof(*(mseqs.rseq)));
+    mseqs.oseq = malloc((mseqs.olen+1)*sizeof(*(mseqs.oseq)));
+    for (i = 0; i < rseq_segments->size; i++) {
+        char *r_segment = (char *)ds_vector_get(rseq_segments, i);
+        char *o_segment = (char *)ds_vector_get(oseq_segments, i);
+        for (j = 0; r_segment[j] != '\0'; j++)
+            mseqs.rseq[rseq_len++] = r_segment[j];
+        for (j = 0; o_segment[j] != '\0'; j++)
+            mseqs.oseq[oseq_len++] = o_segment[j];
+    }
+    mseqs.rseq[mseqs.rlen] = '\0';
+    mseqs.oseq[mseqs.olen] = '\0';
 
     free(matches);
     free(matches_past_clump);

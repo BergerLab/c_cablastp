@@ -17,9 +17,7 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1,
 {
     int32_t length, scanned, successive;
     int32_t rlen, olen;
-    int32_t id;
-    int32_t i, rs, os;
-    int32_t consec_matches;
+    int32_t i;
     int32_t matches_since_last_consec;
     int consec_match_clump_size;
     int32_t dir_prod;
@@ -257,8 +255,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
              bool *matches, int *matches_index)
 {
     struct cbp_alignment align;
-    bool *current_match;
-    int matches_count = 0;
+    int matches_count = 0, i = 0;
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1,
                                                  oseq, dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
@@ -270,7 +267,6 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
 /*if(dp_len1 <= 25 && dp_len2 <= 25)
     printf("backtracked to: %d %d\n", best[0], best[1]);*/
 
-    int i = 0;
     if (best[0] <= 0) {
         align.ref = "\0";
         align.org = "\0";

@@ -131,14 +131,15 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
 char *make_edit_script(char *str, char *ref, bool dir, int length){
     /*direction has its first bit set to 1 to indicate that the edit script
       was made from a match*/
-    char direction = (dir ? '0' : '1');
-    direction |= ((char)0x80);
     bool insert_open = false, subdel_open = false;
     int last_edit = 0;
     char *edit_script = malloc(3*length*sizeof(*edit_script));
     int current = 1;
     int i, j;
     char *octal;
+    char direction = (dir ? '0' : '1');
+    direction |= ((char)0x80);
+
     edit_script[0] = direction;
     for (i = 0; i < length; i++) {
         if (str[i] == ref[i]) {
@@ -364,13 +365,13 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
 char *no_dashes(char *sequence){
     int length;
     int bases = 0;
-    int i, j;
-    j = 0;
+    int i = 0, j = 0;
+    char *n;
     /*Get the length of the final string*/
     for (length = 0; sequence[length] != '\0'; length++)
         if (sequence[length] != '-')
             bases++;
-    char *n = malloc((bases+1)*sizeof(*n));
+    n = malloc((bases+1)*sizeof(*n));
     n[bases] = '\0';
     for (i = 0; i < length; i++)
         if (sequence[i] != '-')
