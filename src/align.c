@@ -254,6 +254,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
              char *oseq, int dp_len2, int i2, int dir2,
              bool *matches, int *matches_index)
 {
+fprintf(stderr, "    cbp_align_nw, dp_len1 = %d, i1 = %d, dir1 = %d, dp_len2 = %d, i1 = %d, dir2 = %d\n", dp_len1, i1, dir1, dp_len2, i2, dir2);
     struct cbp_alignment align;
     int matches_count = 0, i = 0;
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1,
@@ -411,7 +412,7 @@ attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
         i1 += dir1; i2 += dir2;
         progress++;
     }
-/*printf("%d\n", progress);*/
+/*fprintf(stderr, "attempt_ext, progress = %d\n", progress);*/
     return progress;
 }
 

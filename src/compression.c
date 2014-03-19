@@ -601,7 +601,7 @@ fprintf(stderr, "Got mlens_fwd\n");
             }
             chunks++;
         }
-/*if(chunks >= 4)break;*/
+/*if(chunks >= 45)break;*/
     }
     fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     free(matches);
@@ -705,7 +705,7 @@ fprintf(stderr, "Added align_ungapped to rseq_segments and oseq_segments\n");
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
 
-fprintf(stderr, "Starting Needleman-Wunsch alignment\n");
+fprintf(stderr, "Starting Needleman-Wunsch alignment, dp_len1 = %d, dp_len2 = %d\n", dp_len1, dp_len2);
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
@@ -736,8 +736,8 @@ fprintf(stderr, "Added Needleman-Wunsch alignment to rseq_segments\n");
           sequences.*/
         mseqs.rlen += r_align_len;
         mseqs.olen += o_align_len;
-        resind += r_align_len * dir1;
-        current += o_align_len * dir2;
+        resind += cbp_align_length_nogaps(alignment.ref) * dir1;
+        current += cbp_align_length_nogaps(alignment.org) * dir2;
 fprintf(stderr, "end iteration of main loop\n");
     }
 
