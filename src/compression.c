@@ -475,7 +475,6 @@ printf("\n");*/
                                                     start_of_section,
                                                     current - mlens_fwd.olen +
                                                       compress_flags.overlap);
-
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                             new_coarse_seq_id,
@@ -494,9 +493,11 @@ printf("\n");*/
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
                                             current - mlens_fwd.olen,
-                                            current + seed_size + mlens_rev.olen-1,
+                                            current + seed_size +
+                                                      mlens_rev.olen - 1,
                                             resind - mlens_rev.rlen,
-                                            resind + seed_size + mlens_fwd.rlen-1,
+                                            resind + seed_size +
+                                                     mlens_fwd.rlen - 1,
                                             alignment, false));
 
                 /*Add a link to the compressed sequence in the coarse
@@ -507,7 +508,7 @@ printf("\n");*/
                                        resind - mlens_rev.rlen,
                                        resind + seed_size + mlens_fwd.rlen-1,
                                        current - mlens_fwd.olen,
-                                       current + seed_size + mlens_rev.olen-1,
+                                       current + seed_size + mlens_rev.olen - 1,
                                        false));
 
                 /*Update the current position in the sequence*/

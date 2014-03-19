@@ -259,8 +259,8 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
     struct cbp_alignment align;
     bool *current_match;
     int matches_count = 0;
-    struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1, oseq,
-                                                            dp_len2, i2, dir2);
+    struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1,
+                                                 oseq, dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
 /*if(dp_len1 <= 25 && dp_len2 <= 25)
     printf("best edge: %d %d\n", best[0], best[1]);*/
@@ -406,7 +406,8 @@ attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,
 /*printf("attempt_ext: i1: %d, i2: %d, progress: ", i1-start1, i2-start2);*/
     /*Replace this 3 with the flag for max_consec_mismatch*/
     while (consec_mismatch < 3 &&
-        i1 >= start1 && i1 < start1+len1 && i2 >= start2 && i2 < start2+len2) {
+           i1 >= start1 && i1 < start1+len1 &&
+           i2 >= start2 && i2 < start2+len2) {
         if (!bases_match(s1[i1], s2[i2], dir_prod))
             consec_mismatch++;
         else

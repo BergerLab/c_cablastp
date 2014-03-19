@@ -54,25 +54,35 @@ load_compress_args()
         "The maximum number of entries for a k-mer in the seeds table.");
     opt_flag_int(conf,
         &compress_flags.max_chunk_size, "max-chunk-size", 10000,
-        "The maximum number of bases that are checked before adding a chunk without a match.");
+        "The maximum number of bases that are checked before adding a "
+        "chunk without a match.");
     opt_flag_int(conf,
         &compress_flags.min_progress, "min-progress", 50,
-        "The minimum progress that needs to be made in each direction of attempt_ext to consider a seed as a potential match.");
+        "The minimum progress that needs to be made in each direction of "
+        "attempt_ext to consider a seed as a potential match.");
     opt_flag_int(conf,
         &compress_flags.consec_match_clump_size, "consec-match-clump-size", 4,
-        "The number of consecutive matches needed to check for a bad window in align_ungapped.");
+        "The number of consecutive matches needed to check for a bad window in "
+        "align_ungapped.");
     opt_flag_int(conf,
         &compress_flags.window_ident_thresh, "window-ident-thresh", 85,
-        "The minimum number of matches that must be in the array of matches for the current window not to be considered a bad window.");
+        "The minimum number of matches that must be in the array of matches "
+        "for the current window not to be considered a bad window.");
     opt_flag_int(conf,
-        &compress_flags.btwn_match_min_dist_check, "btwn-match-min-dist-check", 10,
-        "The number of bases scanned since the last clump of matches in align_ungapped that results in checking for 50%% identity since the last clump.");
+        &compress_flags.btwn_match_min_dist_check, 
+        "btwn-match-min-dist-check", 10,
+        "The number of bases scanned since the last clump of matches in "
+        "align_ungapped that results in checking for 50%% identity since the "
+        "last clump.");
     opt_flag_double(conf,
-        &compress_flags.btwn_match_ident_thresh, "btwn-match-ident_thresh", ((double)0.5),
-        "The identity threshold for continuing align_ungapped if it has been more than 10 bases since the last clump of matches.");
+        &compress_flags.btwn_match_ident_thresh,
+        "btwn-match-ident_thresh", ((double)0.5),
+        "The identity threshold for continuing align_ungapped if it has been "
+        "more than 10 bases since the last clump of matches.");
     opt_flag_int(conf,
         &compress_flags.attempt_ext_len, "attempt-ext-len", 50,
-        "The minimum total length of an extension after running attempt_ext in both directions needed to call extend_match.");
+        "The minimum total length of an extension after running attempt_ext in "
+        "both directions needed to call extend_match.");
 
     return conf;
 }
@@ -93,10 +103,13 @@ load_search_args()
         "'ext-seed-size' forms the total seed size.");
     opt_flag_string(conf,
         &search_flags.coarse_evalue, "coarse-evalue", "1e-20",
-        "The e-value used during coarse search.  To set the e-value for fine search, add it as an argument in --blast-args, which is the list of arguments to pass into BLAST during fine search.");
+        "The e-value used during coarse search.  To set the e-value for fine "
+        "search, add it as an argument in --blast-args, which is the list of "
+        "arguments to pass into BLAST during fine search.");
     opt_flag_bool(conf,
         &search_flags.no_cleanup, "no-cleanup",
-        "Set to true to keep the coarse search results XML file and fine database FASTA file.");
+        "Set to true to keep the coarse search results XML file and fine "
+        "database FASTA file.");
 
     return conf;
 }

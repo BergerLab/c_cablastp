@@ -180,8 +180,10 @@ cbp_compressed_save_plain(struct cbp_compressed *com_db)
         fprintf(com_db->file_compressed, "> %ld; %s\n", seq->id, seq->name);
         for (link = seq->links; link != NULL; link = link->next)
             fprintf(com_db->file_compressed,
-                "reference sequence id: %d, reference range: (%d, %d), original sequence range: (%ld %ld)\n%s\n",
-                link->coarse_seq_id, link->coarse_start, link->coarse_end, link->original_start, link->original_end,
+                "reference sequence id: %d, reference range: (%d, %d), "
+                  "original sequence range: (%ld %ld)\n%s\n",
+                link->coarse_seq_id, link->coarse_start, link->coarse_end,
+                link->original_start, link->original_end,
                 link->diff);
     }
 }
@@ -364,7 +366,6 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id,
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
     link->next = NULL;
-
     link->diff = make_edit_script(alignment.org, alignment.ref, dir,
                                                    alignment.length);
     assert(link->diff);

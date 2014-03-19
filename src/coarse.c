@@ -199,7 +199,8 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
         fprintf(coarse_db->file_links, "> %d\n", i);
         for (link = seq->links; link != NULL; link = link->next)
             fprintf(coarse_db->file_links_index,
-                "original sequence id: %d, reference range: (%d, %d), direction: %c\n",
+                "original sequence id: %d, reference range: (%d, %d), "
+                  "direction: %c\n",
                 link->org_seq_id, link->coarse_start, link->coarse_end,
                 (link->dir?'0':'1'));
     }
@@ -218,11 +219,11 @@ cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db)
         kmer = unhash_kmer(coarse_db->seeds, i);
         struct cbp_seed_loc *loc = cbp_seeds_lookup(coarse_db->seeds, kmer);
         if (loc) {
-            output_int_to_file(i,4,coarse_db->file_seeds);    
+            output_int_to_file(i, 4, coarse_db->file_seeds);    
             struct cbp_seed_loc *loc_first = loc;
             while (loc) {
-                output_int_to_file(loc->coarse_seq_id, 4, coarse_db->file_seeds);
-                output_int_to_file(loc->residue_index, 2, coarse_db->file_seeds);
+                output_int_to_file(loc->coarse_seq_id,4,coarse_db->file_seeds);
+                output_int_to_file(loc->residue_index,2,coarse_db->file_seeds);
                 loc = loc->next;
                 if (loc) putc((char)0, coarse_db->file_seeds);
             }
@@ -257,7 +258,8 @@ cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db)
         struct cbp_seed_loc *loc_first = loc;
         while (loc) {
             if (loc->coarse_seq_id < 500)
-                fprintf(coarse_db->file_seeds,"(%d, %d) > ", loc->coarse_seq_id, loc->residue_index);
+                fprintf(coarse_db->file_seeds,"(%d, %d) > ",
+                        loc->coarse_seq_id, loc->residue_index);
             loc = loc->next;
         }
         cbp_seed_loc_free(loc_first);
@@ -491,7 +493,8 @@ int64_t cbp_coarse_find_offset(FILE *index_file, int id){
  *the coarse FASTA file to read in and gets a struct fasta_seq for that
  *sequence.
  */
-struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb, int id){
+struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb,
+                                                               int id){
     int64_t offset = cbp_coarse_find_offset(coarsedb->file_fasta_index, id);
     if (offset < 0)
         return NULL;
