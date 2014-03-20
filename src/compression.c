@@ -299,11 +299,11 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
                     alignment.org[index++] = kmer[i];
                 for (i = 0; mseqs_fwd.oseq[i] != '\0'; i++)
                     alignment.org[index++] = mseqs_fwd.oseq[i];
-                alignment.ref[index] = '\0';
+                alignment.org[index] = '\0';
                 alignment.length = mseqs_rev.olen + seed_size + mseqs_fwd.olen;
 
- 
-printf("%s\n%s %s %s\n\n", alignment.ref, mseqs_rev.oseq, kmer, mseqs_fwd.rseq);
+fprintf(stderr, "%s\n", kmer); 
+fprintf(stderr, "%s %s %s\n%s %s %s\n\n", mseqs_rev.oseq, kmer, mseqs_fwd.oseq, mseqs_rev.rseq, kmer, mseqs_fwd.rseq);
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
                 if (current - mseqs_rev.olen - start_of_section > 0) {
@@ -699,8 +699,24 @@ extend_match_with_res(struct cbp_align_nw_memory *mem,
         for (j = 0; o_segment[j] != '\0'; j++)
             mseqs.oseq[oseq_len++] = o_segment[j];
     }
+
     mseqs.rseq[mseqs.rlen] = '\0';
     mseqs.oseq[mseqs.olen] = '\0';
+    if (dir1 < 0) {
+        char *temp = malloc((mseqs.rlen+1)*sizeof(*temp));
+        for (i = 0; i < mseqs.rlen; i++)
+            temp[i] = mseqs.rseq[mseqs.rlen-i-1];
+        temp[mseqs.rlen] = '\0';
+        free(mseqs.rseq);
+        mseqs.rseq = temp;
+
+        temp = malloc((mseqs.olen+1)*sizeof(*temp));
+        for (i = 0; i < mseqs.olen; i++)
+            temp[i] = mseqs.oseq[mseqs.olen-i-1];
+        temp[mseqs.olen] = '\0';
+        free(mseqs.oseq);
+        mseqs.oseq = temp;
+    }
     ds_vector_free(rseq_segments);
     ds_vector_free(oseq_segments);
     free(matches);

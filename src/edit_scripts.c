@@ -129,7 +129,7 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
  * script that can convert the reference string to the original string.
  */
 char *make_edit_script(char *str, char *ref, bool dir, int length){
-fprintf(stderr, "%s\n%s\n\n", str, ref);
+/*fprintf(stderr, "%s\n%s\n\n", str, ref);*/
     /*direction has its first bit set to 1 to indicate that the edit script
       was made from a match*/
     bool insert_open = false, subdel_open = false;
@@ -148,7 +148,7 @@ fprintf(stderr, "%s\n%s\n\n", str, ref);
             subdel_open = false;
         }
         else { /* mismatch */
-fprintf(stderr, "   mismatch @ %d\n", i);
+/*fprintf(stderr, "   mismatch @ %d\n", i);*/
             /* insertion in str relative to ref (i.e., gap in ref) */
             if (ref[i] == '-') {
                 subdel_open = false;
