@@ -30,6 +30,7 @@ char *get_kmer(char *DNA_string){
     char *kmer = malloc(seed_size*sizeof(*kmer));
     for (i = 0; i < seed_size; i++)
         kmer[i] = DNA_string[i];
+    kmer[seed_size] = '\0';
     return kmer;
 }
 
@@ -38,6 +39,7 @@ char *kmer_revcomp(char *kmer){
     char *revcomp = malloc(seed_size*sizeof(*revcomp));
     for (i = 0; i < seed_size; i++)
         revcomp[i] = base_complement(kmer[seed_size-i-1]);
+    revcomp[seed_size] = '\0';
     return revcomp;
 }
 
