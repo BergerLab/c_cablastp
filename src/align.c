@@ -254,19 +254,13 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
              char *oseq, int dp_len2, int i2, int dir2,
              bool *matches, int *matches_index)
 {
-fprintf(stderr, "    cbp_align_nw, dp_len1 = %d, i1 = %d, dir1 = %d, dp_len2 = %d, i1 = %d, dir2 = %d\n", dp_len1, i1, dir1, dp_len2, i2, dir2);
     struct cbp_alignment align;
     int matches_count = 0, i = 0;
     struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1,
                                                  oseq, dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
-/*if(dp_len1 <= 25 && dp_len2 <= 25)
-    printf("best edge: %d %d\n", best[0], best[1]);*/
 
     best = backtrack_to_clump(tables, best);
-
-/*if(dp_len1 <= 25 && dp_len2 <= 25)
-    printf("backtracked to: %d %d\n", best[0], best[1]);*/
 
     if (best[0] <= 0) {
         align.ref = "\0";

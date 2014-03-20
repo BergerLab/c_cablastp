@@ -151,6 +151,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
 {
     fprintf(stderr, "Starting compression      %d\n", org_seq->id);
     struct extend_match mlens_fwd, mlens_rev;
+    struct extend_match_with_res mseqs_fwd, mseqs_rev;
     struct cbp_coarse_seq *coarse_seq;
     struct cbp_compressed_seq *cseq;
     struct cbp_seed_loc *seeds, *seeds_r, *seedLoc;
@@ -274,11 +275,10 @@ printf("\n");*/
                                          coarse_seq->seq->length, resind, -1,
                                          org_seq->residues, start_of_section,
                                          end_of_section, current, -1);
-                            extend_match_with_res(mem, coarse_seq->seq->residues, 0,
+                mseqs_rev = extend_match_with_res(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length, resind, -1,
                                          org_seq->residues, start_of_section,
                                          end_of_section, current, -1);
-fprintf(stderr, "Got mlens_rev\n");
 
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length,
@@ -287,16 +287,12 @@ fprintf(stderr, "Got mlens_rev\n");
                                          end_of_section,
                                          current + seed_size - 1, 1);
 
-                            extend_match_with_res(mem, coarse_seq->seq->residues, 0,
+                mseqs_fwd = extend_match_with_res(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length,
                                          resind + seed_size - 1, 1,
                                          org_seq->residues, start_of_section,
                                          end_of_section,
                                          current + seed_size - 1, 1);
-fprintf(stderr, "Got mlens_fwd\n");
-
-
-/*printf("->  extend_match: %d %d %d\n", mlens_rev.olen, seed_size, mlens_fwd.olen);*/
 
                 /*If the match was too short, try the next seed*/                
                 if (mlens_rev.olen + seed_size + mlens_fwd.olen <
@@ -385,6 +381,7 @@ fprintf(stderr, "Got mlens_fwd\n");
                                        current - mlens_rev.olen,
                                        current + seed_size + mlens_fwd.olen-1,
                                        true));
+
                 /*Update the current position in the sequence*/
                 if (current + mlens_fwd.olen <
                       org_seq->length - seed_size - ext_seed - 1)
@@ -439,12 +436,11 @@ fprintf(stderr, "Got mlens_fwd\n");
                                          end_of_section,
                                          current + seed_size - 1, 1);
 
-                            extend_match_with_res(mem, coarse_seq->seq->residues, 0,
+                mseqs_rev = extend_match_with_res(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length, resind, -1,
                                          org_seq->residues, start_of_section,
                                          end_of_section,
                                          current + seed_size - 1, 1);
-fprintf(stderr, "Got mlens_rev\n");
 
 
                 mlens_fwd = extend_match(mem, coarse_seq->seq->residues, 0,
@@ -452,14 +448,12 @@ fprintf(stderr, "Got mlens_rev\n");
                                          resind+seed_size-1, 1,
                                          org_seq->residues, start_of_section,
                                          end_of_section, current, -1);
-fprintf(stderr, "Got mlens_fwd in extend_match\n");
 
-                            extend_match_with_res(mem, coarse_seq->seq->residues, 0,
+                mseqs_fwd = extend_match_with_res(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length,
                                          resind+seed_size-1, 1,
                                          org_seq->residues, start_of_section,
                                          end_of_section, current, -1);
-fprintf(stderr, "Got mlens_fwd\n");
 
 /*printf("<-  extend_match: %d %d %d\n", mlens_fwd.olen, seed_size, mlens_rev.olen);*/
 
@@ -655,7 +649,6 @@ fprintf(stderr, "extend_match_with_res %d %d-%d %c, %d %d-%d %c\n", resind, rsta
     mseqs.rseq = "";
     mseqs.oseq = "";
     while (true) {
-fprintf(stderr, "start iteration of main loop\n");
         int dp_len1, dp_len2, i, r_align_len, o_align_len;
         char *r_segment, *o_segment;
         if (mseqs.rlen == rlen || mseqs.olen == olen)
@@ -668,7 +661,6 @@ fprintf(stderr, "start iteration of main loop\n");
                                matches, matches_past_clump, &matches_index);
 
         m = ungapped.length;
-fprintf(stderr, "                Ungapped extension length = %d\n", m);
         found_bad_window = ungapped.found_bad_window;
 
         mseqs.rlen += m;
@@ -677,7 +669,6 @@ fprintf(stderr, "                Ungapped extension length = %d\n", m);
         if (m > 0) {
             r_segment = malloc((m+1)*sizeof(*r_segment));
             o_segment = malloc((m+1)*sizeof(*o_segment));
-fprintf(stderr, "allocated r_segment and o_segment\n");
             for (i = 0; i < m; i++) {
                 r_segment[i] = dir1 ? rseq[resind+i] :
                                       base_complement(rseq[resind-i]);
@@ -686,11 +677,9 @@ fprintf(stderr, "allocated r_segment and o_segment\n");
         }
             r_segment[m] = '\0';
             o_segment[m] = '\0';
-fprintf(stderr, "Copied align_ungapped\n");
 
             ds_vector_append(rseq_segments, (void *)r_segment);
             ds_vector_append(oseq_segments, (void *)o_segment);
-fprintf(stderr, "Added align_ungapped to rseq_segments and oseq_segments\n");
         }
 
         resind += m * dir1;
@@ -705,11 +694,9 @@ fprintf(stderr, "Added align_ungapped to rseq_segments and oseq_segments\n");
         dp_len1 = max_dp_len(resind-rstart, dir1, rend-rstart);
         dp_len2 = max_dp_len(current-ostart, dir2, oend-ostart);
 
-fprintf(stderr, "Starting Needleman-Wunsch alignment, dp_len1 = %d, dp_len2 = %d\n", dp_len1, dp_len2);
         alignment = cbp_align_nw(mem, rseq, dp_len1, resind, dir1,
                                       oseq, dp_len2, current, dir2,
                                  matches, &matches_index);
-fprintf(stderr, "                Ending Needleman-Wunsch alignment, alignment.length = %d\n", alignment.length);
 
         if (alignment.length == -1)
             break;
@@ -723,11 +710,9 @@ fprintf(stderr, "                Ending Needleman-Wunsch alignment, alignment.le
                 matches_count++;
         if (matches_count < compress_flags.window_ident_thresh)
             break;
-fprintf(stderr, "No bad windows found in Needleman-Wunsch alignment\n");
 
         ds_vector_append(rseq_segments, (void *)alignment.ref);
         ds_vector_append(oseq_segments, (void *)alignment.org);
-fprintf(stderr, "Added Needleman-Wunsch alignment to rseq_segments\n");
 
         r_align_len = strlen(alignment.ref);
         o_align_len = strlen(alignment.org);
@@ -738,33 +723,24 @@ fprintf(stderr, "Added Needleman-Wunsch alignment to rseq_segments\n");
         mseqs.olen += o_align_len;
         resind += cbp_align_length_nogaps(alignment.ref) * dir1;
         current += cbp_align_length_nogaps(alignment.org) * dir2;
-fprintf(stderr, "end iteration of main loop\n");
     }
 
     mseqs.rseq = malloc((mseqs.rlen+1)*sizeof(*(mseqs.rseq)));
     mseqs.oseq = malloc((mseqs.olen+1)*sizeof(*(mseqs.oseq)));
-fprintf(stderr, "Allocated mseqs.rseq and mseqs.oseq\n\n");
-fprintf(stderr, "rseq_segments->size = %d, oseq_segments->size = %d\n\n", rseq_segments->size, oseq_segments->size);
     for (i = 0; i < rseq_segments->size; i++) {
-fprintf(stderr, "Starting copying a segment\n");
         char *r_segment = (char *)ds_vector_get(rseq_segments, i);
         char *o_segment = (char *)ds_vector_get(oseq_segments, i);
         for (j = 0; r_segment[j] != '\0'; j++)
             mseqs.rseq[rseq_len++] = r_segment[j];
         for (j = 0; o_segment[j] != '\0'; j++)
             mseqs.oseq[oseq_len++] = o_segment[j];
-fprintf(stderr, "Finished copying a segment\n");
     }
-fprintf(stderr, "%d == %d, %d == %d\n", mseqs.rlen, rseq_len, mseqs.olen, oseq_len);
     mseqs.rseq[mseqs.rlen] = '\0';
     mseqs.oseq[mseqs.olen] = '\0';
-fprintf(stderr, "Null-terminated mseqs.rseq and mseqs.oseq\n");
     ds_vector_free(rseq_segments);
     ds_vector_free(oseq_segments);
-fprintf(stderr, "Freed rseq_segments and oseq_segments\n");
     free(matches);
     free(matches_past_clump);
-fprintf(stderr, "Freed matches and matches_past_clump\n\n\n");
     return mseqs;
 }
 
