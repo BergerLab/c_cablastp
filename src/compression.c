@@ -150,7 +150,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
              struct cbp_align_nw_memory *mem)
 {
     fprintf(stderr, "Starting compression      %d\n", org_seq->id);
-    struct extend_match mlens_fwd, mlens_rev;
     struct extend_match_with_res mseqs_fwd, mseqs_rev;
     struct cbp_coarse_seq *coarse_seq;
     struct cbp_compressed_seq *cseq;
@@ -165,12 +164,10 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     int32_t max_chunk_size, max_section_size;
     int32_t overlap;
 
-    int32_t start_of_section;
-    int32_t end_of_chunk;
-    int32_t end_of_section;
+    int32_t start_of_section, end_of_chunk, end_of_section;
 
-    bool changed, found_match;
     bool *matches, *matches_temp;
+    bool found_match;
 
     cseq = cbp_compressed_seq_init(org_seq->id, org_seq->name);
     seed_size = coarse_db->seeds->seed_size;
@@ -238,11 +235,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
 
         for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
-            int coarse_align_len, original_align_len,
-                start_coarse_align, end_coarse_align,
-                start_original_align, end_original_align,
-                i1, i2;
-
             if (found_match)
                 break;
 
@@ -377,12 +369,6 @@ fprintf(stderr, "%s %s %s\n%s %s %s\n\n", mseqs_rev.oseq, kmer, mseqs_fwd.oseq, 
             }
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
-            int coarse_align_len, original_align_len,
-                start_coarse_align, end_coarse_align,
-                start_original_align, end_original_align;
-            char *cor_match, *org_match, *new_cor, *new_org;
-            int i1, i2;
-
             /*If we found a match in the seed locations for the k-mer, then
              *there is no need to check the locations for the reverse
              *complement.
