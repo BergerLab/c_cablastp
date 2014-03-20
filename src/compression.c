@@ -226,13 +226,8 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
         }
 
         /*Get the k-mer and allocate a copy of its reverse complement*/
-        kmer = org_seq->residues + current;
+        kmer = get_kmer(org_seq->residues);
         revcomp = kmer_revcomp(kmer);
-
-/*char *base = kmer;
-for(;base < kmer + 10; base++)
-    printf("%c", *base);
-printf("\n");*/
 
         /*The locations of all seeds in the database that start with the
           current k-mer.*/
@@ -242,14 +237,11 @@ printf("\n");*/
           current k-mer's reverse complement.*/
         seeds_r = cbp_seeds_lookup(coarse_db->seeds, revcomp);
 
-        free(revcomp);
-
         for (seedLoc = seeds; seedLoc != NULL; seedLoc = seedLoc->next) {
             int coarse_align_len, original_align_len,
                 start_coarse_align, end_coarse_align,
-                start_original_align, end_original_align;
-            char *cor_match, *org_match, *new_cor, *new_org;
-            int i1, i2;
+                start_original_align, end_original_align,
+                i1, i2;
 
             if (found_match)
                 break;
@@ -286,7 +278,6 @@ printf("\n");*/
                                          org_seq->residues, start_of_section,
                                          end_of_section,
                                          current + seed_size - 1, 1);
-
                 mseqs_fwd = extend_match_with_res(mem, coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length,
                                          resind + seed_size - 1, 1,
@@ -309,37 +300,15 @@ printf("\n");*/
                 start_original_align = current - mlens_rev.olen;
                 end_original_align = current + seed_size + mlens_fwd.olen;
 
-                cor_match = malloc(coarse_align_len * sizeof(*cor_match));
-                org_match = malloc(original_align_len * sizeof(*org_match));
+                alignment.ref = malloc((strlen(mseqs_rev.rseq)+seed_size+strlen(mseqs_fwd.rseq)+1)*sizeof(*(alignment.ref)));
+                strcat(alignment.ref, mseqs_rev.rseq);
+                strcat(alignment.ref, kmer);
+                strcat(alignment.ref, mseqs_fwd.rseq);
 
-                /*Copy the matching parts of the coarse and original sequences*/
-                for (i1 = start_coarse_align; i1 < end_coarse_align; i1++)
-                    cor_match[i1-start_coarse_align] =
-                      coarse_seq->seq->residues[i1];
-                for (i2 = start_original_align; i2 < end_original_align; i2++)
-                    org_match[i2-start_original_align] = org_seq->residues[i2];
-
-                /*Get an alignment of the matching sequences*/
-                alignment = cbp_align_nw(mem,
-                                         cor_match, coarse_align_len, 0, 1,
-                                         org_match, original_align_len, 0, 1,
-                                         matches, NULL);
-                free(cor_match);
-                free(org_match);
-
-                /*If the length of either the coarse or original match
-                  was changed from backtracking in the alignment, update
-                  the lengths.*/
-                new_cor = no_dashes(alignment.ref);
-                new_org = no_dashes(alignment.org);
-                for (i1 = 0; new_cor[i1] != '\0'; i1++);
-                for (i2 = 0; new_org[i2] != '\0'; i2++);
-                if (i1 < coarse_align_len)
-                    mlens_fwd.rlen -= (coarse_align_len - i1);
-                if (i2 < original_align_len)
-                    mlens_fwd.olen -= (original_align_len - i2);
-                free(new_cor);
-                free(new_org);
+                alignment.org = malloc((strlen(mseqs_rev.rseq)+seed_size+strlen(mseqs_fwd.rseq)+1)*sizeof(*(alignment.ref)));
+                strcat(alignment.org, mseqs_rev.oseq);
+                strcat(alignment.org, kmer);
+                strcat(alignment.org, mseqs_fwd.oseq);
                 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
@@ -397,6 +366,8 @@ printf("\n");*/
                                      org_seq->length-ext_seed);
 
                 chunks++;
+                free(alignment.ref);
+                free(alignment.org);
             }
         }
         for (seedLoc = seeds_r; seedLoc != NULL; seedLoc = seedLoc->next) {
@@ -563,6 +534,8 @@ printf("\n");*/
                                      org_seq->length-ext_seed);
 
                 chunks++;
+                free(alignment.ref);
+                free(alignment.org);
             }
         }
         cbp_seed_loc_free(seeds);
@@ -609,7 +582,7 @@ extend_match_with_res(struct cbp_align_nw_memory *mem,
                 int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
                 int32_t current, int32_t dir2)
 {
-fprintf(stderr, "extend_match_with_res %d %d-%d %c, %d %d-%d %c\n", resind, rstart, rend, (dir1>0?'+':'-'), current, ostart, oend, (dir2>0?'+':'-'));
+/*fprintf(stderr, "extend_match_with_res %d %d-%d %c, %d %d-%d %c\n", resind, rstart, rend, (dir1>0?'+':'-'), current, ostart, oend, (dir2>0?'+':'-'));*/
     struct cbp_alignment alignment;
     struct extend_match_with_res mseqs;
     int32_t rlen, olen;
@@ -751,7 +724,7 @@ extend_match(struct cbp_align_nw_memory *mem,
              int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
              int32_t current, int32_t dir2)
 {
-fprintf(stderr, "extend_match %d %d-%d %c, %d %d-%d %c\n", resind, rstart, rend, (dir1>0?'+':'-'), current, ostart, oend, (dir2>0?'+':'-'));
+/*fprintf(stderr, "extend_match %d %d-%d %c, %d %d-%d %c\n", resind, rstart, rend, (dir1>0?'+':'-'), current, ostart, oend, (dir2>0?'+':'-'));*/
     struct cbp_alignment alignment;
     struct extend_match mlens;
     int32_t rlen, olen;

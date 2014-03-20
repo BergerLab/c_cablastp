@@ -25,10 +25,17 @@ int bases_match(char a, char b, int dir_prod){
         return a == base_complement(b) && a != 'N' ? 1 : 0;
 }
 
+char *get_kmer(char *DNA_string){
+    int seed_size = 10, i = 0; /*compress_flags.seed_size;*/
+    char *kmer = malloc(seed_size*sizeof(*kmer));
+    for (i = 0; i < seed_size; i++)
+        kmer[i] = DNA_string[i];
+    return kmer;
+}
+
 char *kmer_revcomp(char *kmer){
-    int seed_size = 10; /*compress_flags.seed_size;*/
-    char *revcomp = malloc(seed_size * sizeof(*revcomp));
-    int i;
+    int seed_size = 10, i = 0; /*compress_flags.seed_size;*/
+    char *revcomp = malloc(seed_size*sizeof(*revcomp));
     for (i = 0; i < seed_size; i++)
         revcomp[i] = base_complement(kmer[seed_size-i-1]);
     return revcomp;
