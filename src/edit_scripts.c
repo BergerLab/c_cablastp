@@ -129,7 +129,6 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
  * script that can convert the reference string to the original string.
  */
 char *make_edit_script(char *str, char *ref, bool dir, int length){
-fprintf(stderr, "!!!%s!!!\n\n!!!%s!!!\n\n\n\n", ref, str);
     /*direction has its first bit set to 1 to indicate that the edit script
       was made from a match*/
     bool insert_open = false, subdel_open = false;
@@ -143,13 +142,11 @@ fprintf(stderr, "!!!%s!!!\n\n!!!%s!!!\n\n\n\n", ref, str);
 
     edit_script[0] = direction;
     for (i = 0; i < length; i++) {
-fprintf(stderr, "%c %c", str[i], ref[i]);
         if (str[i] == ref[i]) {
             insert_open = false;
             subdel_open = false;
         }
         else { /* mismatch */
-fprintf(stderr, "   mismatch @ %d\n", i);
             /* insertion in str relative to ref (i.e., gap in ref) */
             if (ref[i] == '-') {
                 subdel_open = false;
@@ -193,12 +190,10 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
     int i = 0;
     if (isdigit(edit_script[(*pos)]) || edit_script[(*pos)] == '\0')
         return false;
-    /*fprintf(stderr, "%c", edit_script[(*pos)]);*/
     edit->is_subdel = edit_script[(*pos)++] == 's';
     edit->last_dist = 0;
     edit->str = "";
     while (isdigit(edit_script[(*pos)])) {
-        /*fprintf(stderr, "%c", edit_script[(*pos)]);*/
         edit->last_dist *= 8; /* octal encoding */
         edit->last_dist += edit_script[(*pos)++] - '0';
     }
@@ -216,9 +211,6 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
   the length of the sequence and applies the edit script to the sequence to
   produce a new sequence.*/
 char *read_edit_script(char *edit_script, char *orig, int length){
-/*if(edit_script[1]!='\0')fprintf(stderr, "%s\n", orig);*/
-fprintf(stderr, "%s\n", edit_script);
-
     char *str = malloc((2*length+1)*sizeof(*str));
     int i;
     struct edit_info edit;
@@ -280,7 +272,6 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
             free(orig);
             orig = temp;
         }
-        fprintf(stderr, "%c\n", fwd ? '+' : '-');
         return;
     }
 
@@ -291,7 +282,6 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
 
     /*We are decompressing a link from a forward match*/
     if (fwd) {
-        fprintf(stderr, "+");
         i0 = link->original_start - dest0_coord;
         while (next_edit(diff, &script_pos, edit)) {
             int x = 0;
@@ -317,14 +307,11 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
 
             if (i0 >= dest_len) {
                 free(edit);
-                fprintf(stderr, "\n");
                 return;
             }
         }
-        fprintf(stderr, "\n");
     }
     else {
-        fprintf(stderr, "-");
         i0 = link->original_end - dest0_coord;
         while (next_edit(diff, &script_pos, edit)) {
             int x = 0;
@@ -350,11 +337,9 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
 
             if (i0 < 0) {
                 free(edit);
-                fprintf(stderr, "\n");
                 return;
             }
         }
-        fprintf(stderr, "\n");
     }
     if ((fwd && i0 < dest_len) || (!fwd && i0 >= 0)) {
         int dir = fwd ? 1 : -1;

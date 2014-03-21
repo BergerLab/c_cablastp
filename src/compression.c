@@ -278,7 +278,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
                 /*If the match was too short, try the next seed*/                
                 if (rev_olen+seed_size+fwd_olen < compress_flags.min_match_len)
                     continue;
-fprintf(stderr, "FORWARD MATCH\n");
+
                 found_match = true;
 
                 /*Concatenate the extensions and the k-mer for the coarse
@@ -313,7 +313,6 @@ fprintf(stderr, "FORWARD MATCH\n");
 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
-fprintf(stderr, "%d %d %d\n", current, rev_olen, start_of_section);
                 if (current - rev_olen - start_of_section > 0) {
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section,
@@ -419,7 +418,7 @@ fprintf(stderr, "%d %d %d\n", current, rev_olen, start_of_section);
                 /*If the match was too short, try the next seed*/                
                 if (rev_olen+seed_size+fwd_olen < compress_flags.min_match_len)
                     continue;
-fprintf(stderr, "REVERSE MATCH! %d\n", chunks);
+
                 found_match = true;
 
                 /*Concatenate the extensions and the k-mer's reverse complement
@@ -436,7 +435,6 @@ fprintf(stderr, "REVERSE MATCH! %d\n", chunks);
                     alignment.ref[index++] = mseqs_fwd.rseq[i];
                 alignment.ref[index] = '\0';
 
-/*fprintf(stderr, "%s %s %s\n%s %s %s\n", mseqs_rev.rseq, kmer, mseqs_fwd.rseq, mseqs_rev.oseq, kmer, mseqs_fwd.oseq);*/
                 /*Concatenate the extensions and the k-mer's reverse complement
                   for the original sequence*/
                 index = 0;
@@ -453,11 +451,9 @@ fprintf(stderr, "REVERSE MATCH! %d\n", chunks);
 
                 alignment.length = mseqs_rev.olen + seed_size + mseqs_fwd.olen;
 
-/*fprintf(stderr, "%s\n%s\n", alignment.ref, alignment.org);*/
 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
-fprintf(stderr, "%d %d %d\n", current, fwd_olen, start_of_section);
                 if (current - fwd_olen - start_of_section > 0) {
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section,
@@ -483,7 +479,6 @@ fprintf(stderr, "%d %d %d\n", current, fwd_olen, start_of_section);
                                             resind - rev_rlen,
                                             resind + seed_size + fwd_rlen - 1,
                                             alignment, false));
-fprintf(stderr, "\n\n\n%s\n%s\n\n\n", alignment.ref, alignment.org);
 
                 /*Add a link to the compressed sequence in the coarse
                   sequence.*/
@@ -557,7 +552,6 @@ extend_match_with_res(struct cbp_align_nw_memory *mem,
                 int32_t dir1, char *oseq, int32_t ostart, int32_t oend,
                 int32_t current, int32_t dir2)
 {
-fprintf(stderr, "extend_match_with_res %d %d-%d %c, %d %d-%d %c\n", resind, rstart, rend, (dir1>0?'+':'-'), current, ostart, oend, (dir2>0?'+':'-'));
     struct cbp_alignment alignment;
     struct extend_match_with_res mseqs;
     int32_t rlen, olen;

@@ -74,15 +74,10 @@ main(int argc, char **argv)
               decompressed sequence that has been printed and the parts of the
               decompressed sequence currently being decompressed.*/
             overlap = last_end - link->original_start;
-/*fprintf(stderr, "%d %d-%d, %ld-%ld, last_end = %ld\n", link->coarse_seq_id,
-                                       link->coarse_start, link->coarse_end,
-                                       link->original_start, link->original_end,
-                                       last_end);*/
             struct cbp_seq *chunk =
                 cbp_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
                                    link->coarse_start, link->coarse_end + 1);
-/*fprintf(stderr, "%d\n", chunk->length);*/
             for (length = 0; chunk->residues[length] != '\0'; length++);
 
             char *decompressed = read_edit_script(link->diff, chunk->residues,
@@ -104,9 +99,6 @@ main(int argc, char **argv)
             cbp_seq_free(chunk);
 
             current_chunk++;
-
-            /*if(current_chunk==195)
-                break;*/
         }
         putc('\n', stdout);
     }
