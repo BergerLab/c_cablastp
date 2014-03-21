@@ -306,8 +306,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
 
                 alignment.length = mseqs_rev.olen + seed_size + mseqs_fwd.olen;
 
-fprintf(stderr, "%s %s %s\n%s %s %s\n\n", mseqs_rev.oseq, kmer, mseqs_fwd.oseq, mseqs_rev.rseq, kmer, mseqs_fwd.rseq);
-
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
                 if (current - mseqs_rev.olen - start_of_section > 0) {
@@ -411,7 +409,7 @@ fprintf(stderr, "%s %s %s\n%s %s %s\n\n", mseqs_rev.oseq, kmer, mseqs_fwd.oseq, 
                 if (mseqs_rev.olen +seed_size + mseqs_fwd.olen <
                       compress_flags.min_match_len)
                     continue;
-
+fprintf(stderr, "MATCH!\n");
                 found_match = true;
 
                 /*Concatenate the extensions and the k-mer's reverse complement
@@ -420,29 +418,31 @@ fprintf(stderr, "%s %s %s\n%s %s %s\n\n", mseqs_rev.oseq, kmer, mseqs_fwd.oseq, 
                 alignment.ref = malloc((strlen(mseqs_rev.rseq) + seed_size +
                                         strlen(mseqs_fwd.rseq) + 1) *
                                         sizeof(*(alignment.ref)));
-                for (i = 0; mseqs_fwd.rseq[i] != '\0'; i++)
-                    alignment.ref[index++] = mseqs_fwd.rseq[i];
-                for (i = 0; i < seed_size; i++)
-                    alignment.ref[index++] = revcomp[i];
                 for (i = 0; mseqs_rev.rseq[i] != '\0'; i++)
                     alignment.ref[index++] = mseqs_rev.rseq[i];
+                for (i = 0; i < seed_size; i++)
+                    alignment.ref[index++] = kmer[i];
+                for (i = 0; mseqs_fwd.rseq[i] != '\0'; i++)
+                    alignment.ref[index++] = mseqs_fwd.rseq[i];
                 alignment.ref[index] = '\0';
-
+fprintf(stderr, "%s %s %s\n%s %s %s\n", mseqs_rev.rseq, kmer, mseqs_fwd.rseq, mseqs_rev.oseq, kmer, mseqs_fwd.oseq);
                 /*Concatenate the extensions and the k-mer's reverse complement
                   for the original sequence*/
                 index = 0;
                 alignment.org = malloc((strlen(mseqs_rev.oseq) + seed_size +
                                         strlen(mseqs_fwd.oseq) + 1) *
                                         sizeof(*(alignment.org)));
-                for (i = 0; mseqs_fwd.oseq[i] != '\0'; i++)
-                    alignment.org[index++] = mseqs_fwd.oseq[i];
-                for (i = 0; i < seed_size; i++)
-                    alignment.org[index++] = revcomp[i];
                 for (i = 0; mseqs_rev.oseq[i] != '\0'; i++)
                     alignment.org[index++] = mseqs_rev.oseq[i];
+                for (i = 0; i < seed_size; i++)
+                    alignment.org[index++] = kmer[i];
+                for (i = 0; mseqs_fwd.oseq[i] != '\0'; i++)
+                    alignment.org[index++] = mseqs_fwd.oseq[i];
                 alignment.org[index] = '\0';
 
-                alignment.length = mseqs_fwd.olen + seed_size + mseqs_rev.olen;
+                alignment.length = mseqs_rev.olen + seed_size + mseqs_fwd.olen;
+
+/*fprintf(stderr, "%s\n%s\n", alignment.ref, alignment.org);*/
 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
@@ -535,6 +535,7 @@ fprintf(stderr, "%s %s %s\n%s %s %s\n\n", mseqs_rev.oseq, kmer, mseqs_fwd.oseq, 
             }
             chunks++;
         }
+/*if(chunks >= 43)break;*/
     }
     fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     free(matches);
