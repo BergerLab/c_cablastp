@@ -105,8 +105,8 @@ main(int argc, char **argv)
 
             current_chunk++;
 
-/*            if(current_chunk==44)
-                break;*/
+            if(current_chunk==44)
+                break;
         }
         putc('\n', stdout);
     }

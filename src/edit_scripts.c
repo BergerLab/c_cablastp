@@ -129,7 +129,7 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
  * script that can convert the reference string to the original string.
  */
 char *make_edit_script(char *str, char *ref, bool dir, int length){
-/*fprintf(stderr, "%s\n%s\n\n", str, ref);*/
+fprintf(stderr, "%s\n\n", no_dashes(ref));
     /*direction has its first bit set to 1 to indicate that the edit script
       was made from a match*/
     bool insert_open = false, subdel_open = false;
@@ -215,6 +215,7 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
   the length of the sequence and applies the edit script to the sequence to
   produce a new sequence.*/
 char *read_edit_script(char *edit_script, char *orig, int length){
+if(edit_script[1]!='\0')fprintf(stderr, "%s\n", orig);
     char *str = malloc((2*length+1)*sizeof(*str));
     int i;
     struct edit_info edit;

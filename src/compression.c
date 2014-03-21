@@ -158,6 +158,7 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
     char *kmer, *revcomp;
     int32_t seed_size, ext_seed, resind, mext, new_coarse_seq_id, min_progress;
     int32_t last_match, current;
+    int32_t fwd_rlen, rev_rlen, fwd_olen, rev_olen;
     int32_t i;
     int chunks;
 
@@ -405,9 +406,13 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
                                          org_seq->residues, start_of_section,
                                          end_of_section, current, -1);
 
+                fwd_rlen = cbp_align_length_nogaps(mseqs_fwd.rseq);
+                rev_rlen = cbp_align_length_nogaps(mseqs_rev.rseq);
+                fwd_olen = cbp_align_length_nogaps(mseqs_fwd.oseq);
+                rev_olen = cbp_align_length_nogaps(mseqs_rev.oseq);
+
                 /*If the match was too short, try the next seed*/                
-                if (mseqs_rev.olen +seed_size + mseqs_fwd.olen <
-                      compress_flags.min_match_len)
+                if (rev_olen+seed_size+fwd_olen < compress_flags.min_match_len)
                     continue;
 fprintf(stderr, "MATCH!\n");
                 found_match = true;
@@ -425,7 +430,8 @@ fprintf(stderr, "MATCH!\n");
                 for (i = 0; mseqs_fwd.rseq[i] != '\0'; i++)
                     alignment.ref[index++] = mseqs_fwd.rseq[i];
                 alignment.ref[index] = '\0';
-fprintf(stderr, "%s %s %s\n%s %s %s\n", mseqs_rev.rseq, kmer, mseqs_fwd.rseq, mseqs_rev.oseq, kmer, mseqs_fwd.oseq);
+
+/*fprintf(stderr, "%s %s %s\n%s %s %s\n", mseqs_rev.rseq, kmer, mseqs_fwd.rseq, mseqs_rev.oseq, kmer, mseqs_fwd.oseq);*/
                 /*Concatenate the extensions and the k-mer's reverse complement
                   for the original sequence*/
                 index = 0;
@@ -440,24 +446,24 @@ fprintf(stderr, "%s %s %s\n%s %s %s\n", mseqs_rev.rseq, kmer, mseqs_fwd.rseq, ms
                     alignment.org[index++] = mseqs_fwd.oseq[i];
                 alignment.org[index] = '\0';
 
-                alignment.length = mseqs_rev.olen + seed_size + mseqs_fwd.olen;
+                alignment.length = rev_olen + seed_size + fwd_olen;
 
 /*fprintf(stderr, "%s\n%s\n", alignment.ref, alignment.org);*/
 
                 /*Make a new chunk for the parts of the chunk before the
                   match.*/
-                if (current - mseqs_fwd.olen - start_of_section > 0) {
+                if (current - rev_olen - start_of_section > 0) {
                     new_coarse_seq_id = add_without_match(coarse_db, org_seq,
                                                     start_of_section,
-                                                    current - mseqs_fwd.olen +
+                                                    current - fwd_olen +
                                                       compress_flags.overlap);
                     cbp_compressed_seq_addlink(cseq,
                         cbp_link_to_coarse_init_nodiff(
                             new_coarse_seq_id,
                             start_of_section,
-                            current - mseqs_fwd.olen
+                            current - fwd_olen
                                     + compress_flags.overlap - 1,
-                            0, current - mseqs_fwd.olen
+                            0, current - fwd_olen
                                        + compress_flags.overlap
                                        - start_of_section - 1,
                         true));
@@ -468,12 +474,12 @@ fprintf(stderr, "%s %s %s\n%s %s %s\n", mseqs_rev.rseq, kmer, mseqs_fwd.rseq, ms
                   sequence.*/
                 cbp_compressed_seq_addlink(cseq,
                     cbp_link_to_coarse_init(coarse_seq->id,
-                                            current - mseqs_fwd.olen,
+                                            current - fwd_olen,
                                             current + seed_size +
-                                                      mseqs_rev.olen - 1,
-                                            resind - mseqs_rev.rlen,
+                                                      rev_olen - 1,
+                                            resind - rev_rlen,
                                             resind + seed_size +
-                                                     mseqs_fwd.rlen - 1,
+                                                     fwd_rlen - 1,
                                             alignment, false));
 
                 /*Add a link to the compressed sequence in the coarse
@@ -481,19 +487,18 @@ fprintf(stderr, "%s %s %s\n%s %s %s\n", mseqs_rev.rseq, kmer, mseqs_fwd.rseq, ms
                 cbp_coarse_seq_addlink(coarse_seq,
                                        cbp_link_to_compressed_init(
                                        org_seq->id,
-                                       resind - mseqs_rev.rlen,
-                                       resind + seed_size + mseqs_fwd.rlen-1,
-                                       current - mseqs_fwd.olen,
-                                       current + seed_size + mseqs_rev.olen - 1,
+                                       resind - rev_rlen,
+                                       resind + seed_size + fwd_rlen - 1,
+                                       current - fwd_olen,
+                                       current + seed_size + rev_olen - 1,
                                        false));
 
                 /*Update the current position in the sequence*/
-                if (current + mseqs_rev.olen <
-                      org_seq->length - seed_size - ext_seed - 1)
-                    start_of_section = current + mseqs_rev.olen -
+                if (current + rev_olen < org_seq->length-seed_size-ext_seed-1)
+                    start_of_section = current + rev_olen -
                                        compress_flags.overlap + seed_size;
                 else
-                    start_of_section = current + mseqs_rev.olen + seed_size;
+                    start_of_section = current + rev_olen + seed_size;
                 current = start_of_section - 1;
                 end_of_chunk = min(start_of_section + max_chunk_size,
                                    org_seq->length-ext_seed);
