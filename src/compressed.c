@@ -366,9 +366,10 @@ cbp_link_to_coarse_init(int32_t coarse_seq_id,
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
     link->next = NULL;
+/*printf("%d %s %d   ", link->original_start, (dir ? "->" : "<-"), link->original_end);*/
     link->diff = make_edit_script(alignment.org, alignment.ref, dir,
                                                    alignment.length);
-printf("%c%s\n", (dir ? '+' : '-'), link->diff+1);
+/*printf("%c%s\n", (dir ? '+' : '-'), link->diff+1);*/
     assert(link->diff);
 
     return link;

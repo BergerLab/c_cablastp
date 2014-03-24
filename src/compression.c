@@ -274,9 +274,9 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
                 rev_rlen = cbp_align_length_nogaps(mseqs_rev.rseq);
                 fwd_olen = cbp_align_length_nogaps(mseqs_fwd.oseq);
                 rev_olen = cbp_align_length_nogaps(mseqs_rev.oseq);
-
+printf("extend_match: %d\n", rev_olen+seed_size+fwd_olen-1);
                 /*If the match was too short, try the next seed*/                
-                if (rev_olen+seed_size+fwd_olen < compress_flags.min_match_len)
+                if (rev_olen+seed_size+fwd_olen-1 < compress_flags.min_match_len)
                     continue;
 
                 found_match = true;
@@ -415,8 +415,9 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
                 fwd_olen = cbp_align_length_nogaps(mseqs_fwd.oseq);
                 rev_olen = cbp_align_length_nogaps(mseqs_rev.oseq);
 
+printf("extend_match: %d\n", rev_olen+seed_size+fwd_olen-1);
                 /*If the match was too short, try the next seed*/                
-                if (rev_olen+seed_size+fwd_olen < compress_flags.min_match_len)
+                if (rev_olen+seed_size+fwd_olen-1 < compress_flags.min_match_len)
                     continue;
 
                 found_match = true;

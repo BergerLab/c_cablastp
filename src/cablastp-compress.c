@@ -91,7 +91,7 @@ main(int argc, char **argv)
     sprintf(makeblastdb, "makeblastdb -dbtype nucl -in %s -out %s",
                                  coarse_filename, coarse_filename);
 
-    system(makeblastdb);
+    /*system(makeblastdb);*/
 
     free(makeblastdb);
     cbp_database_free(db);
