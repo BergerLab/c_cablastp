@@ -274,7 +274,6 @@ cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
                 rev_rlen = cbp_align_length_nogaps(mseqs_rev.rseq);
                 fwd_olen = cbp_align_length_nogaps(mseqs_fwd.oseq);
                 rev_olen = cbp_align_length_nogaps(mseqs_rev.oseq);
-printf("extend_match: %d\n", rev_olen+seed_size+fwd_olen-1);
                 /*If the match was too short, try the next seed*/                
                 if (rev_olen+seed_size+fwd_olen-1 < compress_flags.min_match_len)
                     continue;
@@ -415,7 +414,6 @@ printf("extend_match: %d\n", rev_olen+seed_size+fwd_olen-1);
                 fwd_olen = cbp_align_length_nogaps(mseqs_fwd.oseq);
                 rev_olen = cbp_align_length_nogaps(mseqs_rev.oseq);
 
-printf("extend_match: %d\n", rev_olen+seed_size+fwd_olen-1);
                 /*If the match was too short, try the next seed*/                
                 if (rev_olen+seed_size+fwd_olen-1 < compress_flags.min_match_len)
                     continue;
@@ -539,7 +537,6 @@ printf("extend_match: %d\n", rev_olen+seed_size+fwd_olen-1);
             }
             chunks++;
         }
-/*if(chunks >= 194)break;*/
     }
     fprintf(stderr, "Compress finished       %d\n", org_seq->id);
     free(matches);

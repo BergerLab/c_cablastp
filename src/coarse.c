@@ -333,7 +333,6 @@ cbp_link_to_compressed_init(int32_t org_seq_id, int16_t coarse_start,
                             int16_t coarse_end, uint64_t original_start,
                             uint64_t original_end, bool dir)
 {
-/*fprintf(stderr, "%c %ld-%ld, %ld-%ld\n", (dir ? '+' : '-'), original_start, original_end, coarse_start, coarse_end);*/
     struct cbp_link_to_compressed *link;
 
     link = malloc(sizeof(*link));

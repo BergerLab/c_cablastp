@@ -180,7 +180,6 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
     }
     edit_script = realloc(edit_script, (current+1)*sizeof(*edit_script));
     edit_script[current] = '\0';
-printf("%c%s\n", (dir ? '+' : '-'), edit_script+1);
     return edit_script;
 }
 

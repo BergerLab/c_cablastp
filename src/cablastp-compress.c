@@ -80,7 +80,7 @@ main(int argc, char **argv)
 
     cbp_compress_join_workers(workers);
     cbp_coarse_save_binary(db->coarse_db);
-    cbp_coarse_save_seeds_plain(db->coarse_db);
+    cbp_coarse_save_seeds_binary(db->coarse_db);
     cbp_compressed_save_binary(db->com_db);
 
     char *coarse_filename = path_join(args->args[0], "coarse.fasta");
@@ -91,7 +91,7 @@ main(int argc, char **argv)
     sprintf(makeblastdb, "makeblastdb -dbtype nucl -in %s -out %s",
                                  coarse_filename, coarse_filename);
 
-    /*system(makeblastdb);*/
+    system(makeblastdb);
 
     free(makeblastdb);
     cbp_database_free(db);
