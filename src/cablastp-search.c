@@ -45,9 +45,8 @@ void blast_coarse(struct opt_args *args, uint64_t dbsize){
     int command_length = strlen(blastn_command) + strlen(input_path) +
                                                   strlen(args->args[1]) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
-    sprintf(blastn,
-           "blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn "
-           "-evalue %s > CaBLAST_temp_blast_results.xml",
+    sprintf(blastn,"blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn"
+                   " -evalue %s > CaBLAST_temp_blast_results.xml",
            input_path, args->args[1], dbsize, search_flags.coarse_evalue);
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
@@ -221,6 +220,7 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations,
                 int16_t coarse_start = h->hit_from;
                 int16_t coarse_end = h->hit_to;
                 int32_t coarse_seq_id = current_hit->accession;
+fprintf(stderr, "%d %d-%d\n", coarse_seq_id, coarse_start, coarse_end);
                 cbp_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
                                   coarse_start, coarse_end, 50);
             }
@@ -239,6 +239,7 @@ main(int argc, char **argv)
     struct opt_args *args;
     conf = load_search_args();
     args = opt_config_parse(conf, argc, argv);
+
     if (args->nargs < 2) {
         fprintf(stderr, 
             "Usage: %s [flags] database-dir fasta-file "
@@ -247,8 +248,8 @@ main(int argc, char **argv)
         opt_config_print_usage(conf);
         exit(1);
     }
-    db = cbp_database_read(args->args[0], search_flags.map_seed_size);
 
+    db = cbp_database_read(args->args[0], search_flags.map_seed_size);
     uint64_t dbsize = read_int_from_file(8, db->coarse_db->file_params);
     blast_coarse(args, dbsize);
 
