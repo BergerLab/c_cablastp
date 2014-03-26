@@ -115,20 +115,30 @@ fprintf(stderr, "start1: %d, stop1: %d\n", start, end);
                                                  link->coarse_start, link->coarse_end);
             bool dir = link->dir;
             uint64_t original_start =
-                get_max(0, (dir ? get_min(start + (link->original_start -
-                                                   link->coarse_start),
-                                          start + (link->original_end -
-                                                   link->coarse_end)) :
-                        get_min(link->original_start + link->coarse_end-end,
-                                link->original_end - (end-link->coarse_end)))
+                get_max(0, (dir ?
+                            get_min(start + (link->original_start - link->coarse_start),
+                                    start + (link->original_end - link->coarse_end)) :
+                            get_min(link->original_start + link->coarse_end - end,
+                                    link->original_end - (end-link->coarse_start)))
                              - hit_pad_length);
+
+/*fprintf(stderr, 
+"                max(0, (%s ?\n"
+"                         min(%d + (%d - %d),\n"
+"                             %d + (%d -\n %d)) :\n"
+"                    min(%d + %d - %d,\n"
+"                        %d - (%d - %d)))\n"
+"                    - 50)\n\n",
+(dir?"TRUE":"FALSE"), start, link->original_start, link->coarse_start, start, link->original_end, link->coarse_end, link->original_start, link->coarse_end, end, link->original_end, end, link->coarse_start
+);*/
+
             uint64_t original_end =
                 get_min((dir ? get_max(end + (link->original_start -
                                               link->coarse_start),
                                        end + (link->original_end -
                                               link->coarse_end)) :
                      get_max(link->original_end - (start - link->coarse_start),
-                             link->coarse_start + link->coarse_end - start))
+                             link->original_start + link->coarse_end - start))
                  + hit_pad_length, seq_lengths[link->org_seq_id] - 1);
 
             fprintf(stderr, "                             start: %lu, end: %lu\n", original_start, original_end);
