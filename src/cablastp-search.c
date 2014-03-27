@@ -269,6 +269,6 @@ main(int argc, char **argv)
     xmlNode *root = xmlDocGetRootElement(doc);
     struct DSVector *iterations = get_blast_iterations(root);
     expand_blast_hits(iterations, db);
-
+    cbp_database_free(db);
     return 0;
 }

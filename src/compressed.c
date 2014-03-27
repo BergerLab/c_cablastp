@@ -492,6 +492,7 @@ struct cbp_link_to_coarse *read_compressed_link(FILE *f){
         half_bytes[i] = (char)c;
     }
     diff = half_bytes_to_ASCII(half_bytes, script_length);
+    free(half_bytes);
     link->diff = diff;
     link->next = NULL;
     return link;
