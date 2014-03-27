@@ -258,7 +258,8 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
                                                link->coarse_seq_id)->seq;
 
     bool fwd = (diff[0] & ((char)0x7f)) == '0';
-    
+
+    /*The link represents an exact match so there are no edits to make*/
     if (diff[1] == '\0') {
         i0 = link->original_start-dest0_coord;
         for (i1 = link->coarse_start; i1 < link->coarse_end; i0++, i1++)
@@ -293,14 +294,12 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
 
             i0 += edit->last_dist - last_edit_str_len;
             coarse_pos += edit->last_dist - last_edit_str_len;
-            for (i = 0; i < edit->str_length; i++) {
+            for (i = 0; i < edit->str_length; i++)
                 if (edit->str[i] != '-') {
                     if (0 <= i0 && i0 < dest_len)
                         orig[i0] = edit->str[i];
                     i0++;
                 }
-            }
-
             if (edit->is_subdel) coarse_pos += edit->str_length;
 
             last_edit_str_len = edit->str_length;
@@ -345,7 +344,7 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
         int dir = fwd ? 1 : -1;
         for (i1 = coarse_pos; i1 <= link->coarse_end; i1++) {
             if (0 <= i0 && i0 < dest_len)
-                orig[i0] = fwd ? edit->str[i1]:base_complement(edit->str[i1]);
+                orig[i0] = fwd ? residues[i1]:base_complement(residues[i1]);
             i0 += dir;
         }
     }

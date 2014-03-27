@@ -105,14 +105,11 @@ fprintf(stderr, "=============cbp_coarse_expand %d   %d-%d=================\n", 
     int64_t *seq_lengths = cbp_compressed_get_lengths(comdb);
 
     int i = 0, j = 0;
-fprintf(stderr, "start1: %d, stop1: %d\n", start, end);
     for (i = 0; i < coarse_seq_links->size; i++) {
         struct cbp_link_to_compressed *link =
             (struct cbp_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
 
         if (link->coarse_start <= end && link->coarse_end >= start) {
-          fprintf(stderr,  "    %d-%d, %d-%d\n", link->original_start, link->original_end,
-                                                 link->coarse_start, link->coarse_end);
             bool dir = link->dir;
             uint64_t original_start =
                 get_max(0, (dir ?
@@ -125,7 +122,7 @@ fprintf(stderr, "start1: %d, stop1: %d\n", start, end);
 /*fprintf(stderr, 
 "                max(0, (%s ?\n"
 "                         min(%d + (%d - %d),\n"
-"                             %d + (%d -\n %d)) :\n"
+"                             %d + (%d - %d)) :\n"
 "                    min(%d + %d - %d,\n"
 "                        %d - (%d - %d)))\n"
 "                    - 50)\n\n",
@@ -141,7 +138,14 @@ fprintf(stderr, "start1: %d, stop1: %d\n", start, end);
                              link->original_start + link->coarse_end - start))
                  + hit_pad_length, seq_lengths[link->org_seq_id] - 1);
 
-            fprintf(stderr, "                             start: %lu, end: %lu\n", original_start, original_end);
+/*fprintf(stderr,
+"min((%s ?\n"
+"          max(%d + (%d - %d),\n"
+"              %d + (%d - %d)) :\n"
+"          max(%d - (%d - %d),\n"
+"              %d + %d - %d))\n"
+" + 50, %d-1)\n",
+(dir?"TRUE":"FALSE"), end, link->original_start, link->coarse_start, end, link->original_end, link->coarse_end, link->original_end, start, link->coarse_start, link->original_start, link->coarse_end, start, seq_lengths[link->org_seq_id]);*/
 
             struct cbp_compressed_seq *seq =
                        cbp_compressed_read_seq_at(comdb,link->org_seq_id);
@@ -160,7 +164,6 @@ fprintf(stderr, "start1: %d, stop1: %d\n", start, end);
             struct cbp_link_to_coarse *current = links_to_decompress;
             while (current && current->original_start <= original_end &&
                               current->original_end >= original_start) {
-                /*fprintf(stderr, "pr_read_edit_script called, original start: %d, original length: %d\n", original_start, original_end-original_start+1);*/
                 pr_read_edit_script(orig_str, original_end-original_start+1,
                                     original_start, coarsedb, current);
                 fprintf(stderr, "%s\n", orig_str);
