@@ -93,6 +93,7 @@ void traverse_blast_xml_r(xmlNode *r, void (*f)(xmlNode *, void *), void *acc){
   with its data.*/
 struct hsp *populate_blast_hsp(xmlNode *node){
     struct hsp *h = malloc(sizeof(*h));
+    bool hit_frame_fwd = true;
     h->xml_name = "Hsp";
     for (; node; node = node->next){
         if (!strcmp((char *)node->name, "Hsp_num"))
@@ -107,6 +108,13 @@ struct hsp *populate_blast_hsp(xmlNode *node){
             h->hit_from = atoi((char *)node->children->content);
         if (!strcmp((char *)node->name, "Hsp_hit-to"))
             h->hit_to = atoi((char *)node->children->content);
+        if (!strcmp((char *)node->name, "Hsp_hit-frame"))
+            hit_frame_fwd = atoi((char *)node->children->content) == 1;
+    }
+    if (!hit_frame_fwd) {
+        int hit_to = h->hit_from;
+        h->hit_from = h->hit_to;
+        h->hit_to = hit_to;
     }
     return h;
 }
@@ -220,6 +228,7 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations,
                 int16_t coarse_start = h->hit_from-1;
                 int16_t coarse_end = h->hit_to-1;
                 int32_t coarse_seq_id = current_hit->accession;
+fprintf(stderr, "    %d %d\n", h->hit_from, h->hit_to);
                 cbp_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
                                   coarse_start, coarse_end, 50);
             }

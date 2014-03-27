@@ -90,6 +90,8 @@ struct DSVector *
 cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                   int32_t id, int32_t start, int32_t end,
                   int32_t hit_pad_length){
+fprintf(stderr, "%d %d\n", start, end);
+printf("%d %d\n", start, end);
 /*fprintf(stderr, "=============cbp_coarse_expand %d   %d-%d=================\n", id, start, end);*/
     FILE *links = coarsedb->file_links;
     FILE *coarse_links_index = coarsedb->file_links_index;
