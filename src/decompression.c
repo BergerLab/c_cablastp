@@ -110,6 +110,8 @@ fprintf(stderr, "=============cbp_coarse_expand %d   %d-%d=================\n", 
             (struct cbp_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
 
         if (link->coarse_start <= end && link->coarse_end >= start) {
+          fprintf(stderr,  "    %d-%d, %d-%d\n", link->original_start, link->original_end,
+                                                 link->coarse_start, link->coarse_end);
             bool dir = link->dir;
             uint64_t original_start =
                 get_max(0, (dir ?
@@ -156,19 +158,19 @@ fprintf(stderr, "=============cbp_coarse_expand %d   %d-%d=================\n", 
                     links_to_decompress->original_start <= original_end)
                     break;
 
-            char *orig_str = malloc((original_end-original_start+1) *
+            char *orig_str = malloc((original_end-original_start+2) *
                              sizeof(*orig_str));
             for (j = 0; j < original_end-original_start; orig_str[j++]='?');
-            orig_str[original_end-original_start] = '\0';
  
             struct cbp_link_to_coarse *current = links_to_decompress;
             while (current && current->original_start <= original_end &&
                               current->original_end >= original_start) {
                 pr_read_edit_script(orig_str, original_end-original_start+1,
                                     original_start, coarsedb, current);
-                fprintf(stderr, "%s\n", orig_str);
                 current = current -> next;
             }
+            orig_str[original_end-original_start+1] = '\0';
+            fprintf(stderr, "%s\n\n", orig_str);
             cbp_compressed_seq_free(seq);
         }
     }

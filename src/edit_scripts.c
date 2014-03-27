@@ -258,7 +258,6 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
                                                link->coarse_seq_id)->seq;
 
     bool fwd = (diff[0] & ((char)0x7f)) == '0';
-
     /*The link represents an exact match so there are no edits to make*/
     if (diff[1] == '\0') {
         i0 = link->original_start-dest0_coord;
