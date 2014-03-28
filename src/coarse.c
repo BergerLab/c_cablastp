@@ -494,8 +494,8 @@ int64_t cbp_coarse_find_offset(FILE *index_file, int id){
  */
 struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb,
                                                                int id){
-fprintf(stderr, "%d\n", id);
     int64_t offset = cbp_coarse_find_offset(coarsedb->file_fasta_index, id);
+fprintf(stderr, "offset = %ld\n", offset);
     if (offset < 0)
         return NULL;
     bool fseek_success = fseek(coarsedb->file_fasta, offset, SEEK_SET) == 0;
