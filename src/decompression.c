@@ -152,5 +152,6 @@ printf("%s\n", orig_str);
         }
     }
 
+    fasta_free_seq(residues);
     return NULL;
 }

@@ -353,7 +353,6 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
             i0 += dir;
         }
     }
-    free(edit->str);
     free(edit);
     fasta_free_seq(sequence);
 }

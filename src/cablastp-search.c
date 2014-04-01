@@ -272,5 +272,6 @@ main(int argc, char **argv)
     struct DSVector *iterations = get_blast_iterations(root);
     expand_blast_hits(iterations, db);
     cbp_database_free(db);
+    xmlFreeDoc(doc);
     return 0;
 }
