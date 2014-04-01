@@ -53,4 +53,6 @@ file, producing as output coarse FASTA files, links tables, and seeds tables tha
 in Po-Ru Loh's C++ version of the code, and the order of sequences does not affect whether or not compression
 and decompression work correctly.
 
-Currently working on implementing search.
+Currently working on implementing search.  Expansion of coarse BLAST hits produces almost identical output to
+Po-Ru's version for the first 5000 query of a large query set but segfaults approximately 6000 queries into
+the data set.

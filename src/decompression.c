@@ -147,7 +147,7 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                 current = current -> next;
             }
             orig_str[original_end-original_start+1] = '\0';
-            /*cbp_compressed_seq_free(seq);*/
+            cbp_compressed_seq_free(seq);
 printf("%s\n", orig_str);
         }
     }

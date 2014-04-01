@@ -192,6 +192,7 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
         return false;
     edit->is_subdel = edit_script[(*pos)++] == 's';
     edit->last_dist = 0;
+    edit->str_length = 0;
     edit->str = "";
     while (isdigit(edit_script[(*pos)])) {
         edit->last_dist *= 8; /* octal encoding */
@@ -254,8 +255,10 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
                          struct cbp_link_to_coarse *link){
     int i = 0, i0 = 0, i1 = 0;
     char *diff = link->diff;
-    char *residues = cbp_coarse_read_fasta_seq(coarsedb,
-                                               link->coarse_seq_id)->seq;
+
+    struct fasta_seq *sequence = cbp_coarse_read_fasta_seq(coarsedb,
+                                          link->coarse_seq_id);
+    char *residues = sequence->seq;
 
     bool fwd = (diff[0] & ((char)0x7f)) == '0';
     /*The link represents an exact match so there are no edits to make*/
@@ -271,7 +274,7 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
             }
         /*If the link is from a reverse-complement match, convert the original
           string to its reverse complement.*/
-        free(residues);
+        fasta_free_seq(sequence);
         return;
     }
 
@@ -305,7 +308,7 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
 
             if (i0 >= dest_len) {
                 free(edit);
-                free(residues);
+                fasta_free_seq(sequence);
                 return;
             }
         }
@@ -335,8 +338,9 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
             last_edit_str_len = edit->str_length;
 
             if (i0 < 0) {
+                free(edit->str);
                 free(edit);
-                free(residues);
+                fasta_free_seq(sequence);
                 return;
             }
         }
@@ -349,7 +353,9 @@ void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
             i0 += dir;
         }
     }
-    free(residues);
+    free(edit->str);
+    free(edit);
+    fasta_free_seq(sequence);
 }
 
 /*Takes in as input a string and returns a copy of the string with the '-'
