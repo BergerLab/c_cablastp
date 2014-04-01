@@ -112,10 +112,14 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
             bool dir = link->dir;
             uint64_t original_start =
                 get_max(0, (dir ?
-                            get_min(hit_from + (link->original_start - link->coarse_start),
-                                    hit_from + (link->original_end - link->coarse_end)) :
-                            get_min(link->original_start + link->coarse_end - hit_to,
-                                    link->original_end - (hit_to-link->coarse_start)))
+                            get_min(hit_from + (link->original_start -
+                                                link->coarse_start),
+                                    hit_from + (link->original_end -
+                                                link->coarse_end)) :
+                            get_min(link->original_start +
+                                    link->coarse_end - hit_to,
+                                    link->original_end -
+                                    (hit_to-link->coarse_start)))
                              - hit_pad_length);
 
             uint64_t original_end =
@@ -123,27 +127,21 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                                               link->coarse_start),
                                        hit_to + (link->original_end -
                                               link->coarse_end)) :
-                     get_max(link->original_end - (hit_from - link->coarse_start),
-                             link->original_start + link->coarse_end - hit_from))
-                 + hit_pad_length, seq_lengths[link->org_seq_id] - 1);
+                               get_max(link->original_end -
+                                       (hit_from-link->coarse_start),
+                                       link->original_start +
+                                       link->coarse_end-hit_from))
+                        + hit_pad_length, seq_lengths[link->org_seq_id] - 1);
 
             struct cbp_compressed_seq *seq =
                        cbp_compressed_read_seq_at(comdb,link->org_seq_id);
-            struct cbp_link_to_coarse *links_to_decompress = seq->links;
-            for (; links_to_decompress;
-                   links_to_decompress = links_to_decompress->next)
-                if (links_to_decompress->original_end >= original_start &&
-                    links_to_decompress->original_start <= original_end)
-                    break;
 
             char *orig_str = malloc((original_end-original_start+2) *
                              sizeof(*orig_str));
-
             for (j = 0; j < original_end-original_start+1; orig_str[j++]='?');
  
-            struct cbp_link_to_coarse *current = links_to_decompress;
-            while (current && current->coarse_seq_id == id) {
-printf("!\n");
+            struct cbp_link_to_coarse *current = seq->links;
+            while (current) {
                 pr_read_edit_script(orig_str, original_end-original_start+1,
                                     original_start, coarsedb, current);
                 current = current -> next;
