@@ -263,18 +263,19 @@ fprintf(stderr, "Finished getting residues\n");
     bool fwd = (diff[0] & ((char)0x7f)) == '0';
     /*The link represents an exact match so there are no edits to make*/
     if (diff[1] == '\0') {
+fprintf(stderr, "Exact match\n");
         i0 = link->original_start-dest0_coord;
+        int starting_i0 = -1;
+        int last_i0 = -1;
         for (i1 = link->coarse_start; i1 < link->coarse_end; i0++, i1++)
-            if (0 <= i0 && i0 < dest_len)
+            if (0 <= i0 && i0 < dest_len) {
+                starting_i0 = (starting_i0 == -1 ? i0 : starting_i0);
+                last_i0 = i0;
                 orig[i0] = residues[i1];
-        orig[i0] = '\0';
+            }
+fprintf(stderr, "Finished copying exact match\n");
         /*If the link is from a reverse-complement match, convert the original
           string to its reverse complement.*/
-        if (!fwd) {
-            char *temp = string_revcomp(orig, -1);
-            free(orig);
-            orig = temp;
-        }
         free(residues);
 fprintf(stderr, "pr_read_edit_script has been completed\n");
         return;
