@@ -218,18 +218,19 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations,
                                    struct cbp_database *db){
     int i = 0, j = 0, k = 0;
     for (i = 0; i < iterations->size; i++) {
+fprintf(stderr, "iteration: %d/%d\n", i, iterations->size);
         struct DSVector *hits = get_blast_hits((xmlNode *)
                                                ds_vector_get(iterations, i));
         for (j = 0; j < hits->size; j++) {
+fprintf(stderr, "    hit: %d/%d\n", j, hits->size);
             struct hit *current_hit = (struct hit *)ds_vector_get(hits, j);
             struct DSVector *hsps = current_hit->hsps;
             for (k = 0; k < hsps->size; k++) {
+fprintf(stderr, "        Hsp: %d/%d\n", i, k, hsps->size);
                 struct hsp *h = (struct hsp *)ds_vector_get(hsps, k);
                 int16_t coarse_start = h->hit_from-1;
                 int16_t coarse_end = h->hit_to-1;
                 int32_t coarse_seq_id = current_hit->accession;
-/*printf("                                                        %d %d\n", h->hit_from, h->hit_to);
-fprintf(stderr, "                                                        %d %d\n", h->hit_from, h->hit_to);*/
                 cbp_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
                                   coarse_start, coarse_end, 50);
             }

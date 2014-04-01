@@ -544,7 +544,6 @@ struct cbp_compressed_seq *get_compressed_seq(FILE *f, int id){
 struct cbp_compressed_seq *cbp_compressed_read_seq_at(
                                                  struct cbp_compressed *comdb,
                                                  int32_t id){
-fprintf(stderr, "cbp_compressed_seq, id = %d\n", id);
     FILE *links = comdb->file_compressed;
     int64_t offset = cbp_compressed_link_offset(comdb, id);
     if (offset < 0)

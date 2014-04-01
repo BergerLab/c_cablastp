@@ -252,18 +252,14 @@ char *read_edit_script(char *edit_script, char *orig, int length){
 void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
                          struct cbp_coarse *coarsedb,
                          struct cbp_link_to_coarse *link){
-fprintf(stderr, "pr_read_edit_script has been called\n");
     int i = 0, i0 = 0, i1 = 0;
     char *diff = link->diff;
-fprintf(stderr, "Getting residues\n");
     char *residues = cbp_coarse_read_fasta_seq(coarsedb,
                                                link->coarse_seq_id)->seq;
-fprintf(stderr, "Finished getting residues\n");
 
     bool fwd = (diff[0] & ((char)0x7f)) == '0';
     /*The link represents an exact match so there are no edits to make*/
-    if (diff[1] == '\0') {
-fprintf(stderr, "Exact match\n");
+    if (diff[1] == '\0' && fwd) {
         i0 = link->original_start-dest0_coord;
         int starting_i0 = -1;
         int last_i0 = -1;
@@ -273,11 +269,9 @@ fprintf(stderr, "Exact match\n");
                 last_i0 = i0;
                 orig[i0] = residues[i1];
             }
-fprintf(stderr, "Finished copying exact match\n");
         /*If the link is from a reverse-complement match, convert the original
           string to its reverse complement.*/
         free(residues);
-fprintf(stderr, "pr_read_edit_script has been completed\n");
         return;
     }
 
@@ -311,7 +305,6 @@ fprintf(stderr, "pr_read_edit_script has been completed\n");
 
             if (i0 >= dest_len) {
                 free(edit);
-fprintf(stderr, "pr_read_edit_script has been completed\n");
                 free(residues);
                 return;
             }
@@ -343,7 +336,6 @@ fprintf(stderr, "pr_read_edit_script has been completed\n");
 
             if (i0 < 0) {
                 free(edit);
-fprintf(stderr, "pr_read_edit_script has been completed\n");
                 free(residues);
                 return;
             }
@@ -358,7 +350,6 @@ fprintf(stderr, "pr_read_edit_script has been completed\n");
         }
     }
     free(residues);
-fprintf(stderr, "pr_read_edit_script has been completed\n");
 }
 
 /*Takes in as input a string and returns a copy of the string with the '-'
