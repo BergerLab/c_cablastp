@@ -214,36 +214,48 @@ char *get_blast_args(struct opt_args *args){
     return blast_args;
 }
 
+/*Takes in as input a vector of iterations from coarse BLAST and for each
+ *iteration, runs cbp_coarse_expand for each Hsp of each hit, returning a
+ *vector of every original sequence section re-created from the calls to
+ *cbp_coarse_expand.
+ */
 struct DSVector *expand_blast_hits(struct DSVector *iterations,
                                    struct cbp_database *db){
+    struct DSVector *expanded_hits = ds_vector_create();
     int i = 0, j = 0, k = 0;
     for (i = 0; i < iterations->size; i++) {
-fprintf(stderr, "iteration: %d/%d\n", i, iterations->size);
+        fprintf(stderr, "iteration: %d/%d\n", i+1, iterations->size);
         struct DSVector *hits = get_blast_hits((xmlNode *)
                                                ds_vector_get(iterations, i));
         for (j = 0; j < hits->size; j++) {
-fprintf(stderr, "    hit: %d/%d\n", j, hits->size);
+            fprintf(stderr, "        hit: %d/%d\n", j+1, hits->size);
             struct hit *current_hit = (struct hit *)ds_vector_get(hits, j);
             struct DSVector *hsps = current_hit->hsps;
             for (k = 0; k < hsps->size; k++) {
-fprintf(stderr, "        Hsp: %d/%d\n", i, k, hsps->size);
+                fprintf(stderr, "                Hsp: %d/%d\n",
+                                               k+1, hsps->size);
                 struct hsp *h = (struct hsp *)ds_vector_get(hsps, k);
                 int16_t coarse_start = h->hit_from-1;
                 int16_t coarse_end = h->hit_to-1;
                 int32_t coarse_seq_id = current_hit->accession;
-                cbp_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
-                                  coarse_start, coarse_end, 50);
+                int l;
+                struct DSVector *oseqs =
+                    cbp_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
+                                      coarse_start, coarse_end, 50);
+                for (l = 0; l < oseqs->size; l++)
+                    ds_vector_append(expanded_hits, ds_vector_get(oseqs, l));
+                ds_vector_free_no_data(oseqs);
             }
         }
     }
-    return NULL;
+    return expanded_hits;
 }
 
 
 int
 main(int argc, char **argv)
 {
-    int i = 0;
+    int i = 0, j = 0;
     struct cbp_database *db = NULL;
     struct opt_config *conf;
     struct opt_args *args;
@@ -270,7 +282,18 @@ main(int argc, char **argv)
     }
     xmlNode *root = xmlDocGetRootElement(doc);
     struct DSVector *iterations = get_blast_iterations(root);
-    expand_blast_hits(iterations, db);
+    struct DSVector *expanded_hits = expand_blast_hits(iterations, db);
+
+    /*Free the XML data and expanded hits*/
+    for (i = 0; i < iterations->size; i++) {
+        struct DSVector *iteration =
+            (struct DSVector *)ds_vector_get(iterations, i);
+        for (j = 0; j < iteration->size; j++) {
+            struct hit *h = (struct hit *)ds_vector_get(iteration, j);
+            ds_vector_free(h->hsps);
+        }
+    }
+    ds_vector_free(expanded_hits);
     cbp_database_free(db);
     xmlFreeDoc(doc);
     return 0;

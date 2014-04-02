@@ -514,6 +514,7 @@ struct cbp_compressed_seq *get_compressed_seq(FILE *f, int id){
         fprintf(stderr, "Could not get compressed sequence\n");
         return NULL;
     }
+    free(h);
 
     read_int_from_file(8, f);
 
