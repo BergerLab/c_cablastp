@@ -54,5 +54,4 @@ in Po-Ru Loh's C++ version of the code, and the order of sequences does not affe
 and decompression work correctly.
 
 Currently working on implementing search.  Expansion of coarse BLAST hits produces almost identical output to
-Po-Ru's version for the first 5000 query of a large query set but segfaults approximately 6000 queries into
-the data set.
+Po-Ru's version on a large query data set with 9997 entries.  Now working on implementing fine BLAST search.
