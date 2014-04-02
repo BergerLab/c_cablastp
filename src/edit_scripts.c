@@ -13,14 +13,15 @@
 int minimum(int a, int b){return a<b?a:b;}
 int maximum(int a, int b){return a>b?a:b;}
 
-/* Converts an integer to its octal representation */
+/*Converts an integer to its octal representation*/
 char *to_octal_str(int i) {
     char *buf = malloc(16*sizeof(*buf));
     sprintf(buf, "%o", i);
     return buf;
 }
 
-/* Converts a character in an edit script to a half-byte */
+/*Converts a character in an edit script to a half-byte representing the 
+  character.*/
 char to_half_byte(char c){
     switch (c) {
         case '0': return (char)0;
@@ -39,8 +40,9 @@ char to_half_byte(char c){
         case 'i': return (char)13;
         case 's': return (char)14;
         /*For direction bytes with a 1 as the first bit to indicate that
-          the script is from a match, move the 1 to the leftmost bit of the
-          half-byte*/
+         *the script is from a match, move the 1 to the leftmost bit of the
+         *half-byte.
+         */
         case '0' | (char)0x80: return (char)8;
         case '9' | (char)0x80: return (char)9;
         /*'N' is represented as the half byte 1111*/
@@ -48,7 +50,7 @@ char to_half_byte(char c){
     }
 }
 
-/* Converts a half-byte to an edit script character */
+/*Converts a half-byte to its corresponding edit script character*/
 char half_byte_to_char(char h){
     if (h < 8) /*h is an octal digit*/
         return '0' + h;
@@ -64,7 +66,7 @@ char half_byte_to_char(char h){
     }
 }
 
-/* Converts the string for an edit script to half-byte format */
+/*Converts the ASCII string for an edit script to half-byte format*/
 char *edit_script_to_half_bytes(char *edit_script){
     int i = 0;
     int length = 0;
@@ -96,20 +98,21 @@ char *edit_script_to_half_bytes(char *edit_script){
     return half_bytes;
 }
 
-/* Converts an edit script in half-byte format to ASCII */
+/*Converts an edit script in half-byte format to ASCII*/
 char *half_bytes_to_ASCII(char *half_bytes, int length){
     int i = 0;
     char *edit_script = malloc((length+1)*sizeof(*edit_script));
     for (i = 0; i < length; i++) {
-        /* Copy the left half-byte of the current byte */
+        /*Copy the left half-byte of the current byte*/
         if (i % 2 == 0) {
             char left = half_bytes[i/2] & (((char)15) << 4);
             left >>= 4;
             left &= (char)15;
             edit_script[i] = half_byte_to_char(left);
             /*Handle the direction byte so that the match bit of the
-              half-byte is added to the direction byte separately from the
-              direction bit*/
+             *half-byte is added to the direction byte separately from the
+             *direction bit.
+             */
             if (i == 0) {
                 left &= (char)1;
                 edit_script[i] = half_byte_to_char(left);
@@ -117,16 +120,16 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
                     edit_script[i] |= (char)0x80;
             }
         }
-        else /* Copy the right half-byte of the current byte */
+        else /*Copy the right half-byte of the current byte*/
             edit_script[i] = half_byte_to_char(half_bytes[i/2] & (char)15);
     }
     edit_script[length] = '\0';
     return edit_script;
 }
 
-/* Takes in as input two strings, a bool representing whether or not they are
- * in the same direction, and the length of the strings and returns an edit
- * script that can convert the reference string to the original string.
+/*Takes in as input two strings, a bool representing whether or not they are
+ *in the same direction, and the length of the strings and returns an edit
+ *script that can convert the reference string to the original string.
  */
 char *make_edit_script(char *str, char *ref, bool dir, int length){
     /*direction has its first bit set to 1 to indicate that the edit script
@@ -183,8 +186,10 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
     return edit_script;
 }
 
-/* reads one edit worth of info (or fails if current decoded char is digit)
-   moves pos accordingly */
+/*Reads one edit worth of info (or fails if current decoded char is digit)
+ *moves pos accordingly.  If there is an edit to read, next_edit reads in
+ *the edit and returns true.  Otherwise, next_edit returns false.
+ */
 bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
     int edit_length = 0;
     int i = 0;
@@ -195,7 +200,7 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
     edit->str_length = 0;
     edit->str = "";
     while (isdigit(edit_script[(*pos)])) {
-        edit->last_dist *= 8; /* octal encoding */
+        edit->last_dist *= 8; /*octal encoding*/
         edit->last_dist += edit_script[(*pos)++] - '0';
     }
     while (isupper(edit_script[(*pos)+edit_length]) ||
@@ -209,31 +214,32 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
 }
 
 /*Takes in as input an edit script in ASCII format, a sequence to read, and
-  the length of the sequence and applies the edit script to the sequence to
-  produce a new sequence.*/
+ *the length of the sequence and applies the edit script to the sequence to
+ *produce a new sequence.
+ */
 char *read_edit_script(char *edit_script, char *orig, int length){
     char *str = malloc((2*length+1)*sizeof(*str));
     int i;
     struct edit_info edit;
-    int orig_pos = 0, last_edit_str_len = 0; /* length of last edit str */
+    int orig_pos = 0, last_edit_str_len = 0; /*length of last edit str*/
     int current = 0;
     int script_pos = 1;
     char *s = str;
 
     while (next_edit(edit_script, &script_pos, &edit)) {
-        /* chunk after previous edit */
+        /*chunk after previous edit*/
         for (i = 0; i < edit.last_dist - last_edit_str_len; i++)
             str[current++] = orig[orig_pos+i];
 
-        /* update position in original string */
+        /*update position in original string*/
         orig_pos += edit.last_dist - last_edit_str_len;
 
-        /* append replacement string in edit script; get rid of dashes */
+        /*append replacement string in edit script; get rid of dashes*/
         for (i = 0; i < edit.str_length; i++)
             if (edit.str[i] != '-')
                 str[current++] = edit.str[i];
 
-        /* skip subdel along original string */
+        /*skip subdel along original string*/
         if (edit.is_subdel) orig_pos += edit.str_length;
 
         last_edit_str_len = edit.str_length;
@@ -250,12 +256,20 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     return str;
 }
 
-void pr_read_edit_script(char *orig, int dest_len, int dest0_coord,
-                         struct cbp_coarse *coarsedb,
-                         struct cbp_link_to_coarse *link){
+/*An implementation of decode_edit_script that is used in Po-Ru's C++ version
+ *used in search for expanding coarse BLAST hits.
+ *
+ *Takes in a string orig, which is the section of the original sequence we want
+ *to re-create, the length of this section of the string, the index in the
+ *original sequence of the start of the section, the coarse database, and a
+ *link_to_coarse we want to apply and applies the link to re-create part of or
+ *all of the section of the original sequence.
+ */
+void decode_edit_script(char *orig, int dest_len, int dest0_coord,
+                        struct cbp_coarse *coarsedb,
+                        struct cbp_link_to_coarse *link){
     int i = 0, i0 = 0, i1 = 0;
     char *diff = link->diff;
-
     struct fasta_seq *sequence = cbp_coarse_read_fasta_seq(coarsedb,
                                           link->coarse_seq_id);
     char *residues = sequence->seq;

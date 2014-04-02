@@ -142,7 +142,7 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
  
             struct cbp_link_to_coarse *current = seq->links;
             while (current) {
-                pr_read_edit_script(orig_str, original_end-original_start+1,
+                decode_edit_script(orig_str, original_end-original_start+1,
                                     original_start, coarsedb, current);
                 current = current -> next;
             }
