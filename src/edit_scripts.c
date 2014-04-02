@@ -272,14 +272,19 @@ void decode_edit_script(char *orig, int dest_len, int dest0_coord,
     char *diff = link->diff;
     struct fasta_seq *sequence = cbp_coarse_read_fasta_seq(coarsedb,
                                           link->coarse_seq_id);
+    int coarse_pos;
+    int last_edit_str_len;
+    struct edit_info *edit = NULL;
+    int script_pos;
+
     char *residues = sequence->seq;
 
     bool fwd = (diff[0] & ((char)0x7f)) == '0';
     /*The link represents an exact match so there are no edits to make*/
     if (diff[1] == '\0' && fwd) {
-        i0 = link->original_start-dest0_coord;
         int starting_i0 = -1;
         int last_i0 = -1;
+        i0 = link->original_start-dest0_coord;
         for (i1 = link->coarse_start; i1 < link->coarse_end; i0++, i1++)
             if (0 <= i0 && i0 < dest_len) {
                 starting_i0 = (starting_i0 == -1 ? i0 : starting_i0);
@@ -292,10 +297,10 @@ void decode_edit_script(char *orig, int dest_len, int dest0_coord,
         return;
     }
 
-    int coarse_pos = link->coarse_start;
-    int last_edit_str_len = 0;
-    struct edit_info *edit = malloc(sizeof(*edit));
-    int script_pos = 1;
+    coarse_pos = link->coarse_start;
+    last_edit_str_len = 0;
+    edit = malloc(sizeof(*edit));
+    script_pos = 1;
 
     /*We are decompressing a link from a forward match*/
     if (fwd) {
