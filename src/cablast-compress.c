@@ -31,13 +31,13 @@ static char *path_join(char *a, char *b)
 int
 main(int argc, char **argv)
 { 
-    struct cbp_database *db;
-    struct cbp_compress_workers *workers;
+    struct cb_database *db;
+    struct cb_compress_workers *workers;
     struct opt_config *conf;
     struct opt_args *args;
     struct fasta_seq_gen *fsg;
     struct fasta_seq *seq;
-    struct cbp_seq *org_seq;
+    struct cb_seq *org_seq;
     int i, org_seq_id;
     struct timeval start, current;
     long double elapsed;
@@ -51,8 +51,8 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    db = cbp_database_init(args->args[0], compress_flags.map_seed_size, false);
-    workers = cbp_compress_start_workers(db, compress_flags.procs);
+    db = cb_database_init(args->args[0], compress_flags.map_seed_size, false);
+    workers = cb_compress_start_workers(db, compress_flags.procs);
 
     org_seq_id = 0;
     gettimeofday(&start, NULL);
@@ -61,8 +61,8 @@ main(int argc, char **argv)
             args->args[i], FASTA_EXCLUDE_NCBI_BLOSUM62, 100);
 
         while (NULL != (seq = fasta_generator_next(fsg))) {
-            org_seq = cbp_seq_init(org_seq_id, seq->name, seq->seq);
-            cbp_compress_send_job(workers, org_seq);
+            org_seq = cb_seq_init(org_seq_id, seq->name, seq->seq);
+            cb_compress_send_job(workers, org_seq);
 
             fasta_free_seq(seq);
 
@@ -78,10 +78,10 @@ main(int argc, char **argv)
         fasta_generator_free(fsg);
     }
 
-    cbp_compress_join_workers(workers);
-    cbp_coarse_save_binary(db->coarse_db);
-    cbp_coarse_save_seeds_binary(db->coarse_db);
-    cbp_compressed_save_binary(db->com_db);
+    cb_compress_join_workers(workers);
+    cb_coarse_save_binary(db->coarse_db);
+    cb_coarse_save_seeds_binary(db->coarse_db);
+    cb_compressed_save_binary(db->com_db);
 
     char *coarse_filename = path_join(args->args[0], "coarse.fasta");
     int len_filename = strlen(coarse_filename);
@@ -94,10 +94,10 @@ main(int argc, char **argv)
     system(makeblastdb);
 
     free(makeblastdb);
-    cbp_database_free(db);
+    cb_database_free(db);
     opt_config_free(conf);
     opt_args_free(args);
-    cbp_compress_free_workers(workers);
+    cb_compress_free_workers(workers);
 
     return 0;
 }

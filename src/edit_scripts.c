@@ -266,11 +266,11 @@ char *read_edit_script(char *edit_script, char *orig, int length){
  *all of the section of the original sequence.
  */
 void decode_edit_script(char *orig, int dest_len, int dest0_coord,
-                        struct cbp_coarse *coarsedb,
-                        struct cbp_link_to_coarse *link){
+                        struct cb_coarse *coarsedb,
+                        struct cb_link_to_coarse *link){
     int i = 0, i0 = 0, i1 = 0;
     char *diff = link->diff;
-    struct fasta_seq *sequence = cbp_coarse_read_fasta_seq(coarsedb,
+    struct fasta_seq *sequence = cb_coarse_read_fasta_seq(coarsedb,
                                           link->coarse_seq_id);
     int coarse_pos;
     int last_edit_str_len;

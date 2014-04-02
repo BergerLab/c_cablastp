@@ -1,5 +1,5 @@
-#ifndef __CABLASTP_SEEDS_H__
-#define __CABLASTP_SEEDS_H__
+#ifndef __CABLAST_SEEDS_H__
+#define __CABLAST_SEEDS_H__
 
 /* Apparently this is required to make pthread_rwlock* stuff available. */
 #define __USE_UNIX98
@@ -7,49 +7,49 @@
 #include <pthread.h>
 #include <stdint.h>
 
-#define CABLASTP_SEEDS_ALPHA_SIZE 4
+#define CABLAST_SEEDS_ALPHA_SIZE 4
 
-const int8_t cbp_seeds_alpha_size[26];
+const int8_t cb_seeds_alpha_size[26];
 
-struct cbp_seed_loc {
+struct cb_seed_loc {
     uint32_t coarse_seq_id;
     uint16_t residue_index;
-    struct cbp_seed_loc *next;
+    struct cb_seed_loc *next;
 };
 
-struct cbp_seed_loc *
-cbp_seed_loc_init(uint32_t coarse_seq_id, uint16_t residue_index);
+struct cb_seed_loc *
+cb_seed_loc_init(uint32_t coarse_seq_id, uint16_t residue_index);
 
 void
-cbp_seed_loc_free(struct cbp_seed_loc *seedLoc);
+cb_seed_loc_free(struct cb_seed_loc *seedLoc);
 
-struct cbp_seeds {
+struct cb_seeds {
     int32_t seed_size;
-    struct cbp_seed_loc **locs;
+    struct cb_seed_loc **locs;
     int32_t locs_length;
     int32_t *powers;
     int32_t powers_length;
     pthread_rwlock_t lock;
 };
 
-struct cbp_seeds *
-cbp_seeds_init(int32_t seed_size);
+struct cb_seeds *
+cb_seeds_init(int32_t seed_size);
 
 void
-cbp_seeds_free(struct cbp_seeds *seeds);
+cb_seeds_free(struct cb_seeds *seeds);
 
-struct cbp_coarse_seq;
+struct cb_coarse_seq;
 
 void
-cbp_seeds_add(struct cbp_seeds *seeds, struct cbp_coarse_seq *seq);
+cb_seeds_add(struct cb_seeds *seeds, struct cb_coarse_seq *seq);
 
 /* Produces a copy of the list of seeds for 'kmer', and therefore the
- * result needs to be freed with `cbp_seed_loc_free` when finished. */
-struct cbp_seed_loc *
-cbp_seeds_lookup(struct cbp_seeds *seeds, char *kmer);
+ * result needs to be freed with `cb_seed_loc_free` when finished. */
+struct cb_seed_loc *
+cb_seeds_lookup(struct cb_seeds *seeds, char *kmer);
 
-void print_seeds(struct cbp_seeds *seeds);
+void print_seeds(struct cb_seeds *seeds);
 
-char *unhash_kmer(struct cbp_seeds *seeds, int hash);
+char *unhash_kmer(struct cb_seeds *seeds, int hash);
 
 #endif

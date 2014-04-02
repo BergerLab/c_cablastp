@@ -1,5 +1,5 @@
-#ifndef __CABLASTP_OPT_H__
-#define __CABLASTP_OPT_H__
+#ifndef __CABLAST_OPT_H__
+#define __CABLAST_OPT_H__
 
 #include <stdint.h>
 #include <stdbool.h>

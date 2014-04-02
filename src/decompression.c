@@ -15,13 +15,13 @@
 
 /*Takes in an entry in a compressed database and a coarse database and returns
   the decompressed sequence that the database entry came from as a pointer to
-  a struct cbp_seq.*/
-struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
-                                   struct cbp_coarse *coarsedb){
+  a struct cb_seq.*/
+struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
+                                   struct cb_coarse *coarsedb){
     uint64_t last_end = 0;
     int overlap;
-    struct cbp_link_to_coarse *link = NULL;
-    struct cbp_seq *seq = NULL;
+    struct cb_link_to_coarse *link = NULL;
+    struct cb_seq *seq = NULL;
     int decompressed_length = 0;
     int i = 0;
     int j = 0;
@@ -30,7 +30,7 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
     for (link = cseq->links; link != NULL; link = link->next) {
         int length;
         char *dec_chunk;
-        struct fasta_seq *chunk = cbp_coarse_read_fasta_seq(coarsedb,
+        struct fasta_seq *chunk = cb_coarse_read_fasta_seq(coarsedb,
                                                            link->coarse_seq_id);
 
         int coarse_len = link->coarse_end - link->coarse_start;
@@ -77,7 +77,7 @@ struct cbp_seq *cbp_decompress_seq(struct cbp_compressed_seq *cseq,
             residues[copied++] = current_chunk[j];
     }
     residues[copied] = '\0';
-    seq = cbp_seq_init(cseq->id, cseq->name, residues);
+    seq = cb_seq_init(cseq->id, cseq->name, residues);
     ds_vector_free(decompressed_chunks);
     free(residues);
     return seq;
@@ -93,7 +93,7 @@ int get_max(int a, int b){return a>b?a:b;}
  *range between the indices hit_from and hit_to.
  */
 struct DSVector *
-cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
+cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
                   int32_t id, int32_t hit_from, int32_t hit_to,
                   int32_t hit_pad_length){
     FILE *links = coarsedb->file_links;
@@ -108,15 +108,15 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
         get_coarse_sequence_links_at(links, coarse_links_index, id);
 
     /*Get the residues of the coarse sequence we are expanding.*/
-    struct fasta_seq *residues = cbp_coarse_read_fasta_seq(coarsedb, id);
+    struct fasta_seq *residues = cb_coarse_read_fasta_seq(coarsedb, id);
 
     int fasta_length = strlen(residues->seq);
-    int64_t *seq_lengths = cbp_compressed_get_lengths(comdb);
+    int64_t *seq_lengths = cb_compressed_get_lengths(comdb);
 
     int i = 0, j = 0;
     for (i = 0; i < coarse_seq_links->size; i++) {
-        struct cbp_link_to_compressed *link =
-            (struct cbp_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
+        struct cb_link_to_compressed *link =
+            (struct cb_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
 
         /*Only expand the link if it overlaps the range for the BLAST Hsp we
           are expanding from.*/
@@ -147,8 +147,8 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
                                        link->coarse_end-hit_from))
                         + hit_pad_length, seq_lengths[link->org_seq_id] - 1);
 
-            struct cbp_compressed_seq *seq =
-                       cbp_compressed_read_seq_at(comdb, link->org_seq_id);
+            struct cb_compressed_seq *seq =
+                       cb_compressed_read_seq_at(comdb, link->org_seq_id);
 
             char *orig_str = malloc((original_end-original_start+2) *
                                     sizeof(*orig_str));
@@ -156,7 +156,7 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
 
             /*Run decode_edit_script for each link_to_coarse in the compressed
               sequence to re-create the section of the original string.*/ 
-            struct cbp_link_to_coarse *current = seq->links;
+            struct cb_link_to_coarse *current = seq->links;
             for (; current; current = current->next)
                 decode_edit_script(orig_str, original_end-original_start+1,
                                     original_start, coarsedb, current);
@@ -164,7 +164,7 @@ cbp_coarse_expand(struct cbp_coarse *coarsedb, struct cbp_compressed *comdb,
 
 printf("%s\n", orig_str);
             ds_vector_append(oseqs, (void *)orig_str);
-            cbp_compressed_seq_free(seq);
+            cb_compressed_seq_free(seq);
         }
     }
 

@@ -1,5 +1,5 @@
-#ifndef __CABLASTP_COMPRESSION_H__
-#define __CABLASTP_COMPRESSION_H__
+#ifndef __CABLAST_COMPRESSION_H__
+#define __CABLAST_COMPRESSION_H__
 
 /* Apparently this is required to make pthread_rwlock* stuff available. */
 #define __USE_UNIX98
@@ -15,28 +15,28 @@
 #include "database.h"
 #include "seq.h"
 
-struct cbp_compress_workers {
+struct cb_compress_workers {
     pthread_t *threads;
     int32_t num_workers;
     struct DSQueue *jobs;
     void *args;
 };
 
-struct cbp_compress_workers *
-cbp_compress_start_workers(struct cbp_database *db, int32_t num_workers);
+struct cb_compress_workers *
+cb_compress_start_workers(struct cb_database *db, int32_t num_workers);
 
 void
-cbp_compress_join_workers(struct cbp_compress_workers *workers);
+cb_compress_join_workers(struct cb_compress_workers *workers);
 
 void
-cbp_compress_free_workers(struct cbp_compress_workers *workers);
+cb_compress_free_workers(struct cb_compress_workers *workers);
 
 void
-cbp_compress_send_job(struct cbp_compress_workers *workers,
-                      struct cbp_seq *org_seq);
+cb_compress_send_job(struct cb_compress_workers *workers,
+                      struct cb_seq *org_seq);
 
-struct cbp_compressed_seq *
-cbp_compress(struct cbp_coarse *coarse_db, struct cbp_seq *org_seq,
-             struct cbp_align_nw_memory *mem);
+struct cb_compressed_seq *
+cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
+             struct cb_align_nw_memory *mem);
 
 #endif

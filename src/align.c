@@ -10,7 +10,7 @@
 #include "flags.h"
 
 struct ungapped_alignment
-cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1,
+cb_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1,
                    int32_t i1, char *oseq, int32_t ostart, int32_t oend,
                    int32_t dir2, int32_t i2, bool *matches,
                    bool *matches_past_clump, int *matches_index)
@@ -83,7 +83,7 @@ cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1,
 }
 
 int32_t
-cbp_align_identity(char *rseq, int32_t rstart, int32_t rend,
+cb_align_identity(char *rseq, int32_t rstart, int32_t rend,
                    char *oseq, int32_t ostart, int32_t oend)
 {
     int32_t rlen, olen, same, i;
@@ -103,11 +103,11 @@ cbp_align_identity(char *rseq, int32_t rstart, int32_t rend,
     return (same * 100) / rlen;
 }
 
-struct cbp_align_nw_memory *
-cbp_align_nw_memory_init()
+struct cb_align_nw_memory *
+cb_align_nw_memory_init()
 {
-    struct cbp_align_nw_memory *mem;
-    int seq_size = CABLASTP_ALIGN_SEQ_SIZE;
+    struct cb_align_nw_memory *mem;
+    int seq_size = CABLAST_ALIGN_SEQ_SIZE;
 
     mem = malloc(sizeof(*mem));
     assert(mem);
@@ -128,7 +128,7 @@ cbp_align_nw_memory_init()
 }
 
 void
-cbp_align_nw_memory_free(struct cbp_align_nw_memory *mem)
+cb_align_nw_memory_free(struct cb_align_nw_memory *mem)
 {
     free(mem->zeroes);
     free(mem->table);
@@ -143,11 +143,11 @@ cbp_align_nw_memory_free(struct cbp_align_nw_memory *mem)
  *struct containing a table of the scores in the alignment and a table of
  *directions for backtracking to the start of the alignment.
  */
-struct cbp_nw_tables
+struct cb_nw_tables
 make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
                char *oseq, int dp_len2, int i2, int dir2)
 {
-    struct cbp_nw_tables tables;
+    struct cb_nw_tables tables;
     int i, j1, j2;
     int dir_prod = dir1*dir2;
     int **dp_score = malloc((dp_len1+1)*sizeof(*dp_score));
@@ -212,7 +212,7 @@ int *best_edge(int **dp_score, int dp_len1, int dp_len2){
    return best; 
 }
 
-int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
+int *backtrack_to_clump(struct cb_nw_tables tables, int *pos){
     int consec_matches = 0;
     int **dp_score = tables.dp_score;
     int **dp_from = tables.dp_from;
@@ -248,15 +248,15 @@ int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos){
     return pos;
 }
 
-struct cbp_alignment
-cbp_align_nw(struct cbp_align_nw_memory *mem,
+struct cb_alignment
+cb_align_nw(struct cb_align_nw_memory *mem,
              char *rseq, int dp_len1, int i1, int dir1,
              char *oseq, int dp_len2, int i2, int dir2,
              bool *matches, int *matches_index)
 {
-    struct cbp_alignment align;
+    struct cb_alignment align;
     int matches_count = 0, i = 0;
-    struct cbp_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1,
+    struct cb_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1,
                                                  oseq, dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
 
@@ -370,7 +370,7 @@ cbp_align_nw(struct cbp_align_nw_memory *mem,
 
 /*Returns the number of non-gap characters in a string*/
 int32_t
-cbp_align_length_nogaps(char *residues)
+cb_align_length_nogaps(char *residues)
 {
     int i, len, rlen;
 

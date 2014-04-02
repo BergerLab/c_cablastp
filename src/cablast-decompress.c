@@ -30,7 +30,7 @@ static char *path_join(char *a, char *b)
 int
 main(int argc, char **argv)
 { 
-    struct cbp_database *db;
+    struct cb_database *db;
     struct opt_config *conf;
     struct opt_args *args;
     struct fasta_seq_gen *fsg;
@@ -46,20 +46,20 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    db = cbp_database_read(args->args[0], compress_flags.map_seed_size);
+    db = cb_database_read(args->args[0], compress_flags.map_seed_size);
 
     org_seq_id = 0;
     gettimeofday(&start, NULL);
-    char *compressed_filename = path_join(args->args[0], CABLASTP_COMPRESSED);
+    char *compressed_filename = path_join(args->args[0], CABLAST_COMPRESSED);
     FILE *compressed_file = fopen(compressed_filename, "r");
-    struct cbp_compressed_seq **compressed = read_compressed(compressed_file);
+    struct cb_compressed_seq **compressed = read_compressed(compressed_file);
     struct fasta_seq **coarse_sequences = malloc(10000 *
                                                  sizeof(*coarse_sequences));
     uint64_t num_coarse_sequences = 0;
     uint64_t last_end;
     int overlap;
-    struct cbp_link_to_coarse *link;
-    fsg = fasta_generator_start(path_join(args->args[0],CABLASTP_COARSE_FASTA),
+    struct cb_link_to_coarse *link;
+    fsg = fasta_generator_start(path_join(args->args[0],CABLAST_COARSE_FASTA),
                                 FASTA_EXCLUDE_NCBI_BLOSUM62, 100);
     while (NULL != (seq = fasta_generator_next(fsg)))
         coarse_sequences[num_coarse_sequences++] = seq;
@@ -74,8 +74,8 @@ main(int argc, char **argv)
               decompressed sequence that has been printed and the parts of the
               decompressed sequence currently being decompressed.*/
             overlap = last_end - link->original_start;
-            struct cbp_seq *chunk =
-                cbp_seq_init_range(-1, "",
+            struct cb_seq *chunk =
+                cb_seq_init_range(-1, "",
                                    coarse_sequences[link->coarse_seq_id]->seq,
                                    link->coarse_start, link->coarse_end + 1);
             for (length = 0; chunk->residues[length] != '\0'; length++);
@@ -96,7 +96,7 @@ main(int argc, char **argv)
             if (link->original_end > last_end)
                 last_end = link->original_end + 1;
 
-            cbp_seq_free(chunk);
+            cb_seq_free(chunk);
 
             current_chunk++;
         }
@@ -108,7 +108,7 @@ main(int argc, char **argv)
         free(coarse_sequences[i]);
     free(coarse_sequences);
 
-    cbp_database_free(db);
+    cb_database_free(db);
     opt_config_free(conf);
     opt_args_free(args);
 

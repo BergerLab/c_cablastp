@@ -1,5 +1,5 @@
-#ifndef __CABLASTP_EDITSCRIPTS_H__
-#define __CABLASTP_EDITSCRIPTS_H__
+#ifndef __CABLAST_EDITSCRIPTS_H__
+#define __CABLAST_EDITSCRIPTS_H__
 
 #include "coarse.h"
 #include "link_to_coarse.h"
@@ -19,8 +19,8 @@ char *to_octal_str(int i);
 char *make_edit_script(char *str, char *ref, bool dir, int length);
 char *read_edit_script(char *edit_script, char *orig, int length);
 void decode_edit_script(char *orig, int dest_len, int dest0_coord,
-                        struct cbp_coarse *coarsedb,
-                        struct cbp_link_to_coarse *link);
+                        struct cb_coarse *coarsedb,
+                        struct cb_link_to_coarse *link);
 bool next_edit(char *edit_script, int *pos, struct edit_info *edit);
 char *no_dashes(char *sequence);
 #endif

@@ -1,5 +1,5 @@
-#ifndef __CABLASTP_COARSE_H__
-#define __CABLASTP_COARSE_H__
+#ifndef __CABLAST_COARSE_H__
+#define __CABLAST_COARSE_H__
 
 /* Apparently this is required to make pthread_rwlock* stuff available. */
 #define __USE_UNIX98
@@ -15,34 +15,34 @@
 #include "seq.h"
 #include "stdbool.h"
 
-struct cbp_link_to_compressed *
-cbp_link_to_compressed_init(int32_t org_seq_id, int16_t coarse_start,
+struct cb_link_to_compressed *
+cb_link_to_compressed_init(int32_t org_seq_id, int16_t coarse_start,
                             int16_t coarse_end, uint64_t original_start,
                             uint64_t original_end, bool dir);
 
 void
-cbp_link_to_compressed_free(struct cbp_link_to_compressed *link);
+cb_link_to_compressed_free(struct cb_link_to_compressed *link);
 
-struct cbp_coarse_seq {
+struct cb_coarse_seq {
     int32_t id;
-    struct cbp_seq *seq;
-    struct cbp_link_to_compressed *links;
+    struct cb_seq *seq;
+    struct cb_link_to_compressed *links;
     pthread_rwlock_t lock_links;
 };
 
-struct cbp_coarse_seq *
-cbp_coarse_seq_init(int32_t id, char *residues, int32_t start, int32_t end);
+struct cb_coarse_seq *
+cb_coarse_seq_init(int32_t id, char *residues, int32_t start, int32_t end);
 
 void
-cbp_coarse_seq_free(struct cbp_coarse_seq *seq);
+cb_coarse_seq_free(struct cb_coarse_seq *seq);
 
 void
-cbp_coarse_seq_addlink(struct cbp_coarse_seq *seq,
-                       struct cbp_link_to_compressed *newlink);
+cb_coarse_seq_addlink(struct cb_coarse_seq *seq,
+                       struct cb_link_to_compressed *newlink);
 
-struct cbp_coarse {
+struct cb_coarse {
     struct DSVector *seqs;
-    struct cbp_seeds *seeds;
+    struct cb_seeds *seeds;
     uint64_t dbsize;
     FILE *file_fasta;
     FILE *file_seeds;
@@ -53,42 +53,42 @@ struct cbp_coarse {
     pthread_rwlock_t lock_seq;
 };
 
-struct cbp_coarse *
-cbp_coarse_init(int32_t seed_size,
+struct cb_coarse *
+cb_coarse_init(int32_t seed_size,
                 FILE *file_fasta, FILE *file_seeds, FILE *file_links,
                 FILE *file_links_index, FILE *file_fasta_index,
                 FILE *file_params);
 
 void
-cbp_coarse_free(struct cbp_coarse *coarse_db);
+cb_coarse_free(struct cb_coarse *coarse_db);
 
-struct cbp_coarse_seq *
-cbp_coarse_add(struct cbp_coarse *coarse_db,
+struct cb_coarse_seq *
+cb_coarse_add(struct cb_coarse *coarse_db,
                char *residues, int32_t start, int32_t end);
 
-struct cbp_coarse_seq *
-cbp_coarse_get(struct cbp_coarse *coarse_db, int32_t i);
+struct cb_coarse_seq *
+cb_coarse_get(struct cb_coarse *coarse_db, int32_t i);
 
 void
-cbp_coarse_save_binary(struct cbp_coarse *coarse_db);
+cb_coarse_save_binary(struct cb_coarse *coarse_db);
 
 void
-cbp_coarse_save_plain(struct cbp_coarse *coarse_db);
+cb_coarse_save_plain(struct cb_coarse *coarse_db);
 
 void
-cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db);
+cb_coarse_save_seeds_binary(struct cb_coarse *coarse_db);
 
 void
-cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db);
+cb_coarse_save_seeds_plain(struct cb_coarse *coarse_db);
 
 
 char *get_coarse_header(FILE *f);
-struct cbp_link_to_compressed *read_coarse_link(FILE *f);
+struct cb_link_to_compressed *read_coarse_link(FILE *f);
 struct DSVector *get_coarse_sequence_links(FILE *f);
 struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
                                                            int32_t id);
-int64_t cbp_coarse_find_offset(FILE *index_file, int id);
-struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb,
+int64_t cb_coarse_find_offset(FILE *index_file, int id);
+struct fasta_seq *cb_coarse_read_fasta_seq(struct cb_coarse *coarsedb,
                                             int id);
 
 #endif

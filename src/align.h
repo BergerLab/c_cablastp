@@ -1,18 +1,18 @@
-#ifndef __CABLASTP_ALIGN_H__
-#define __CABLASTP_ALIGN_H__
+#ifndef __CABLAST_ALIGN_H__
+#define __CABLAST_ALIGN_H__
 
 /*
 This is adapted from Dan Kortschak's Needleman-Wunsch algorithm from the biogo
 package: code.google.com/p/biogo.
 
 It's mostly copied from its original form, but it is optimized specifically
-for cablastp to limit allocations and to absolve the need for the biogo/seq.Seq
+for cablast to limit allocations and to absolve the need for the biogo/seq.Seq
 type.
 */
 
 #include <stdint.h>
 
-#define CABLASTP_ALIGN_SEQ_SIZE 10000
+#define CABLAST_ALIGN_SEQ_SIZE 10000
 
 struct ungapped_alignment{
     int32_t length;
@@ -20,55 +20,55 @@ struct ungapped_alignment{
 };
 
 struct ungapped_alignment
-cbp_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1,
+cb_align_ungapped(char *rseq, int32_t rstart, int32_t rend, int32_t dir1,
                    int32_t i1, char *oseq, int32_t ostart, int32_t oend,
                    int32_t dir2, int32_t i2, bool *matches,
                    bool *matches_past_clump, int *matches_index);
 
 int32_t
-cbp_align_identity(char *rseq, int32_t rstart, int32_t rend,
+cb_align_identity(char *rseq, int32_t rstart, int32_t rend,
                    char *oseq, int32_t ostart, int32_t oend);
 
-struct cbp_align_nw_memory {
+struct cb_align_nw_memory {
     int32_t *table;
     int32_t *zeroes;
     char *ref;
     char *org;
 };
 
-struct cbp_nw_tables{
+struct cb_nw_tables{
     int **dp_score;
     int **dp_from;
 };
 
 int *best_edge(int **dp_score, int dp_len1, int dp_len2);
-int *backtrack_to_clump(struct cbp_nw_tables tables, int *pos);
+int *backtrack_to_clump(struct cb_nw_tables tables, int *pos);
 
-struct cbp_nw_tables
+struct cb_nw_tables
 make_nw_tables(char *rseq, int dp_len1, int i1, int dir1,
                char *oseq, int dp_len2, int i2, int dir2);
 
 
-struct cbp_align_nw_memory *
-cbp_align_nw_memory_init();
+struct cb_align_nw_memory *
+cb_align_nw_memory_init();
 
 void
-cbp_align_nw_memory_free(struct cbp_align_nw_memory *mem);
+cb_align_nw_memory_free(struct cb_align_nw_memory *mem);
 
-struct cbp_alignment {
+struct cb_alignment {
     char *ref;
     char *org;
     int32_t length;
 };
 
-struct cbp_alignment
-cbp_align_nw(struct cbp_align_nw_memory *mem,
+struct cb_alignment
+cb_align_nw(struct cb_align_nw_memory *mem,
              char *rseq, int dp_len1, int i1, int dir1,
              char *oseq, int dp_len2, int i2, int dir2,
              bool *matches, int *matches_index);
 
 int32_t
-cbp_align_length_nogaps(char *residues);
+cb_align_length_nogaps(char *residues);
 
 int32_t
 attempt_ext(int32_t i1, const int32_t dir1, const char *s1, int32_t len1,

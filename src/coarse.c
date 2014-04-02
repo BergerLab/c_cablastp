@@ -9,20 +9,20 @@
 #include "seeds.h"
 #include "seq.h"
 
-struct cbp_coarse *
-cbp_coarse_init(int32_t seed_size,
+struct cb_coarse *
+cb_coarse_init(int32_t seed_size,
                 FILE *file_fasta, FILE *file_seeds, FILE *file_links,
                 FILE *file_links_index, FILE *file_fasta_index,
                 FILE *file_params)
 {
-    struct cbp_coarse *coarse_db;
+    struct cb_coarse *coarse_db;
     int32_t errno;
 
     coarse_db = malloc(sizeof(*coarse_db));
     assert(coarse_db);
 
     coarse_db->seqs = ds_vector_create_capacity(10000000);
-    coarse_db->seeds = cbp_seeds_init(seed_size);
+    coarse_db->seeds = cb_seeds_init(seed_size);
     coarse_db->dbsize = (uint64_t)0;
     coarse_db->file_fasta = file_fasta;
     coarse_db->file_seeds = file_seeds;
@@ -40,7 +40,7 @@ cbp_coarse_init(int32_t seed_size,
 }
 
 void
-cbp_coarse_free(struct cbp_coarse *coarse_db)
+cb_coarse_free(struct cb_coarse *coarse_db)
 {
     int32_t errno;
     int32_t i;
@@ -57,39 +57,39 @@ cbp_coarse_free(struct cbp_coarse *coarse_db)
         exit(1);
     }
     for (i = 0; i < coarse_db->seqs->size; i++)
-        cbp_coarse_seq_free(
-            (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i));
+        cb_coarse_seq_free(
+            (struct cb_coarse_seq *) ds_vector_get(coarse_db->seqs, i));
 
     ds_vector_free_no_data(coarse_db->seqs);
-    cbp_seeds_free(coarse_db->seeds);
+    cb_seeds_free(coarse_db->seeds);
     free(coarse_db);
 }
 
-struct cbp_coarse_seq *
-cbp_coarse_add(struct cbp_coarse *coarse_db,
+struct cb_coarse_seq *
+cb_coarse_add(struct cb_coarse *coarse_db,
                char *residues, int32_t start, int32_t end)
 {
-    struct cbp_coarse_seq *seq;
+    struct cb_coarse_seq *seq;
     int32_t id;
 
     pthread_rwlock_wrlock(&coarse_db->lock_seq);
     id = coarse_db->seqs->size;
-    seq = cbp_coarse_seq_init(id, residues, start, end);
+    seq = cb_coarse_seq_init(id, residues, start, end);
     ds_vector_append(coarse_db->seqs, (void*) seq);
     pthread_rwlock_unlock(&coarse_db->lock_seq);
 
-    cbp_seeds_add(coarse_db->seeds, seq);
+    cb_seeds_add(coarse_db->seeds, seq);
 
     return seq;
 }
 
-struct cbp_coarse_seq *
-cbp_coarse_get(struct cbp_coarse *coarse_db, int32_t i)
+struct cb_coarse_seq *
+cb_coarse_get(struct cb_coarse *coarse_db, int32_t i)
 {
-    struct cbp_coarse_seq *seq;
+    struct cb_coarse_seq *seq;
 
     pthread_rwlock_rdlock(&coarse_db->lock_seq);
-    seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
+    seq = (struct cb_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
     pthread_rwlock_unlock(&coarse_db->lock_seq);
 
     return seq;
@@ -100,10 +100,10 @@ cbp_coarse_get(struct cbp_coarse *coarse_db, int32_t i)
  *the size of the database to the params file.
  */
 void
-cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
+cb_coarse_save_binary(struct cb_coarse *coarse_db)
 {
-    struct cbp_coarse_seq *seq;
-    struct cbp_link_to_compressed *link;
+    struct cb_coarse_seq *seq;
+    struct cb_link_to_compressed *link;
     int64_t i;
     int j;
 
@@ -116,7 +116,7 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
         uint64_t coarse_fasta_loc;
         char *fasta_output = malloc(30000*sizeof(*fasta_output));
         char *link_header = malloc(30*sizeof(*fasta_output));
-        seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
+        seq = (struct cb_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
 
         /*At the start of outputting each sequence, output the indices for the
           coarse links and FASTA files to their index files.*/
@@ -186,14 +186,14 @@ cbp_coarse_save_binary(struct cbp_coarse *coarse_db)
 }
 
 void
-cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
+cb_coarse_save_plain(struct cb_coarse *coarse_db)
 {
-    struct cbp_coarse_seq *seq;
-    struct cbp_link_to_compressed *link;
+    struct cb_coarse_seq *seq;
+    struct cb_link_to_compressed *link;
     int32_t i;
 
     for (i = 0; i < coarse_db->seqs->size; i++) {
-        seq = (struct cbp_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
+        seq = (struct cb_coarse_seq *) ds_vector_get(coarse_db->seqs, i);
         fprintf(coarse_db->file_fasta, "> %d\n%s\n", i, seq->seq->residues);
 
         fprintf(coarse_db->file_links, "> %d\n", i);
@@ -207,20 +207,20 @@ cbp_coarse_save_plain(struct cbp_coarse *coarse_db)
 }
 
 void
-cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db)
+cb_coarse_save_seeds_binary(struct cb_coarse *coarse_db)
 {
-    struct cbp_coarse_seq *seq;
-    struct cbp_link_to_compressed *link;
+    struct cb_coarse_seq *seq;
+    struct cb_link_to_compressed *link;
     int32_t i, j;
     char *kmer;
     uint32_t mask = (uint32_t)3;
 
     for (i = 0; i < coarse_db->seeds->locs_length; i++) {
         kmer = unhash_kmer(coarse_db->seeds, i);
-        struct cbp_seed_loc *loc = cbp_seeds_lookup(coarse_db->seeds, kmer);
+        struct cb_seed_loc *loc = cb_seeds_lookup(coarse_db->seeds, kmer);
         if (loc) {
             output_int_to_file(i, 4, coarse_db->file_seeds);    
-            struct cbp_seed_loc *loc_first = loc;
+            struct cb_seed_loc *loc_first = loc;
             while (loc) {
                 output_int_to_file(loc->coarse_seq_id,4,coarse_db->file_seeds);
                 output_int_to_file(loc->residue_index,2,coarse_db->file_seeds);
@@ -228,7 +228,7 @@ cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db)
                 if (loc) putc((char)0, coarse_db->file_seeds);
             }
             putc((char)1, coarse_db->file_seeds);
-            cbp_seed_loc_free(loc_first);
+            cb_seed_loc_free(loc_first);
         }
         free(kmer);
     }
@@ -236,17 +236,17 @@ cbp_coarse_save_seeds_binary(struct cbp_coarse *coarse_db)
 }
 
 void
-cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db)
+cb_coarse_save_seeds_plain(struct cb_coarse *coarse_db)
 {
-    struct cbp_coarse_seq *seq;
-    struct cbp_link_to_compressed *link;
+    struct cb_coarse_seq *seq;
+    struct cb_link_to_compressed *link;
     int32_t i, j;
     uint32_t i2;
     uint32_t mask = (uint32_t)3;
     char *kmer;
 
     for (i = 0; i < coarse_db->seeds->locs_length; i++) {
-        struct cbp_seed_loc *loc;
+        struct cb_seed_loc *loc;
         i2 = (uint32_t)0;
         for (j = 0; j < coarse_db->seeds->seed_size; j++) {
             i2 <<= 2;
@@ -254,31 +254,31 @@ cbp_coarse_save_seeds_plain(struct cbp_coarse *coarse_db)
         }
         kmer = unhash_kmer(coarse_db->seeds, i2);
         fprintf(coarse_db->file_seeds, "%s\n", kmer);
-        loc = cbp_seeds_lookup(coarse_db->seeds, kmer);
-        struct cbp_seed_loc *loc_first = loc;
+        loc = cb_seeds_lookup(coarse_db->seeds, kmer);
+        struct cb_seed_loc *loc_first = loc;
         while (loc) {
             if (loc->coarse_seq_id < 500)
                 fprintf(coarse_db->file_seeds,"(%d, %d) > ",
                         loc->coarse_seq_id, loc->residue_index);
             loc = loc->next;
         }
-        cbp_seed_loc_free(loc_first);
+        cb_seed_loc_free(loc_first);
         fprintf(coarse_db->file_seeds, "\n");
         free(kmer);
     }
 }
 
-struct cbp_coarse_seq *
-cbp_coarse_seq_init(int32_t id, char *residues, int32_t start, int32_t end)
+struct cb_coarse_seq *
+cb_coarse_seq_init(int32_t id, char *residues, int32_t start, int32_t end)
 {
-    struct cbp_coarse_seq *seq;
+    struct cb_coarse_seq *seq;
     int32_t errno;
 
     seq = malloc(sizeof(*seq));
     assert(seq);
 
     seq->id = id;
-    seq->seq = cbp_seq_init_range(id, "", residues, start, end);
+    seq->seq = cb_seq_init_range(id, "", residues, start, end);
     seq->links = NULL;
 
     if (0 != (errno = pthread_rwlock_init(&seq->lock_links, NULL))) {
@@ -290,9 +290,9 @@ cbp_coarse_seq_init(int32_t id, char *residues, int32_t start, int32_t end)
 }
 
 void
-cbp_coarse_seq_free(struct cbp_coarse_seq *seq)
+cb_coarse_seq_free(struct cb_coarse_seq *seq)
 {
-    struct cbp_link_to_compressed *link1, *link2;
+    struct cb_link_to_compressed *link1, *link2;
     int32_t errno;
 
     if (0 != (errno = pthread_rwlock_destroy(&seq->lock_links))) {
@@ -301,19 +301,19 @@ cbp_coarse_seq_free(struct cbp_coarse_seq *seq)
     }
     for (link1 = seq->links; link1 != NULL; ) {
         link2 = link1->next;
-        cbp_link_to_compressed_free(link1);
+        cb_link_to_compressed_free(link1);
         link1 = link2;
     }
 
-    cbp_seq_free(seq->seq);
+    cb_seq_free(seq->seq);
     free(seq);
 }
 
 void
-cbp_coarse_seq_addlink(struct cbp_coarse_seq *seq,
-                       struct cbp_link_to_compressed *newlink)
+cb_coarse_seq_addlink(struct cb_coarse_seq *seq,
+                       struct cb_link_to_compressed *newlink)
 {
-    struct cbp_link_to_compressed *link;
+    struct cb_link_to_compressed *link;
 
     assert(newlink->next == NULL);
     pthread_rwlock_wrlock(&seq->lock_links);
@@ -328,12 +328,12 @@ cbp_coarse_seq_addlink(struct cbp_coarse_seq *seq,
     pthread_rwlock_unlock(&seq->lock_links);
 }
 
-struct cbp_link_to_compressed *
-cbp_link_to_compressed_init(int32_t org_seq_id, int16_t coarse_start,
+struct cb_link_to_compressed *
+cb_link_to_compressed_init(int32_t org_seq_id, int16_t coarse_start,
                             int16_t coarse_end, uint64_t original_start,
                             uint64_t original_end, bool dir)
 {
-    struct cbp_link_to_compressed *link;
+    struct cb_link_to_compressed *link;
 
     link = malloc(sizeof(*link));
     assert(link);
@@ -350,7 +350,7 @@ cbp_link_to_compressed_init(int32_t org_seq_id, int16_t coarse_start,
 }
 
 void
-cbp_link_to_compressed_free(struct cbp_link_to_compressed *link)
+cb_link_to_compressed_free(struct cb_link_to_compressed *link)
 {
     free(link);
 }
@@ -381,9 +381,9 @@ char *get_coarse_header(FILE *f){
 }
 
 /*Reads one link from a file with the links to the compressed database and
-  converts its data to a struct cbp_link_to_compressed*/
-struct cbp_link_to_compressed *read_coarse_link(FILE *f){
-    struct cbp_link_to_compressed *link = malloc(sizeof(*link));
+  converts its data to a struct cb_link_to_compressed*/
+struct cb_link_to_compressed *read_coarse_link(FILE *f){
+    struct cb_link_to_compressed *link = malloc(sizeof(*link));
     link->org_seq_id = (uint64_t)read_int_from_file(8, f);
     if (feof(f)) {
         free(link);
@@ -419,7 +419,7 @@ struct cbp_link_to_compressed *read_coarse_link(FILE *f){
     return link;
 }
 
-/*Takes in a pointer to the coarse.links file generated by cablastp-compress and
+/*Takes in a pointer to the coarse.links file generated by cablast-compress and
  *returns a vector containing all of the links in the coarse database entry for
  *the sequence the file pointer currently points to.  For this function to work
  *properly the file pointer must be pointing to the start of the header of a
@@ -436,7 +436,7 @@ struct DSVector *get_coarse_sequence_links(FILE *f){
 
     while (true) {
         char c = 1;
-        struct cbp_link_to_compressed *current_link = read_coarse_link(f);
+        struct cb_link_to_compressed *current_link = read_coarse_link(f);
         if (current_link == NULL)
             break;
         ds_vector_append(links, (void *)current_link);
@@ -455,7 +455,7 @@ struct DSVector *get_coarse_sequence_links(FILE *f){
  */
 struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
                                                            int32_t id){
-    int64_t offset = cbp_coarse_find_offset(index, id);
+    int64_t offset = cb_coarse_find_offset(index, id);
     if (offset < 0)
         return NULL;
     bool fseek_success = fseek(links, offset, SEEK_SET) == 0;
@@ -470,7 +470,7 @@ struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
 /*Takes in an index file from a coarse database and the ID number of the
   sequence in the corresponding database file that the user wants to seek to
   and returns the byte offset of the sequence in its database file.*/
-int64_t cbp_coarse_find_offset(FILE *index_file, int id){
+int64_t cb_coarse_find_offset(FILE *index_file, int id){
     int i;
     int try_off = id * 8;
     bool fseek_success = fseek(index_file, try_off, SEEK_SET) == 0;
@@ -492,9 +492,9 @@ int64_t cbp_coarse_find_offset(FILE *index_file, int id){
  *the coarse FASTA file to read in and gets a struct fasta_seq for that
  *sequence.
  */
-struct fasta_seq *cbp_coarse_read_fasta_seq(struct cbp_coarse *coarsedb,
+struct fasta_seq *cb_coarse_read_fasta_seq(struct cb_coarse *coarsedb,
                                                                int id){
-    int64_t offset = cbp_coarse_find_offset(coarsedb->file_fasta_index, id);
+    int64_t offset = cb_coarse_find_offset(coarsedb->file_fasta_index, id);
     if (offset < 0)
         return NULL;
     bool fseek_success = fseek(coarsedb->file_fasta, offset, SEEK_SET) == 0;

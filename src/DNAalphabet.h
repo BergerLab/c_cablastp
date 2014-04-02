@@ -1,5 +1,5 @@
-#ifndef __CABLASTP_DNA_H__
-#define __CABLASTP_DNA_H__
+#ifndef __CABLAST_DNA_H__
+#define __CABLAST_DNA_H__
 
 #include <stdint.h>
 

@@ -38,7 +38,7 @@ static char *path_join(char *a, char *b)
 /*Runs BLAST on the coarse database and stores the results in a temporary
   XML file.*/
 void blast_coarse(struct opt_args *args, uint64_t dbsize){
-    char *input_path = path_join(args->args[0], CABLASTP_COARSE_FASTA);
+    char *input_path = path_join(args->args[0], CABLAST_COARSE_FASTA);
     char *blastn_command =
            "blastn -db  -outfmt 5 -query  -dbsize  -task blastn -evalue "
            "%s > CaBLAST_temp_blast_results.xml";
@@ -182,7 +182,7 @@ void write_fine_fasta(struct DSVector *oseqs){
         return;
     }
     for (i = 0; i < oseqs->size; i++) {
-        struct cbp_seq *current_seq = (struct cbp_seq *)ds_vector_get(oseqs, i);
+        struct cb_seq *current_seq = (struct cb_seq *)ds_vector_get(oseqs, i);
         fprintf(temp, "> %s\n%s\n", current_seq->name, current_seq->residues);
     }
     fclose(temp);
@@ -218,10 +218,10 @@ char *get_blast_args(struct opt_args *args){
  *the vector (representing the index of which query we want to get the results
  *from), and the database we are using for search and returns a vector of
  *every original sequence section re-created from the calls to
- *cbp_coarse_expand for the hits in the iteration we are expanding.
+ *cb_coarse_expand for the hits in the iteration we are expanding.
  */
 struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
-                                   struct cbp_database *db){
+                                   struct cb_database *db){
     struct DSVector *expanded_hits = ds_vector_create();
     int i = 0, j = 0, k = 0;
     struct DSVector *hits = get_blast_hits((xmlNode *)
@@ -237,7 +237,7 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
             int16_t coarse_end = h->hit_to-1;
             int32_t coarse_seq_id = current_hit->accession;
             struct DSVector *oseqs =
-                cbp_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
+                cb_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
                                   coarse_start, coarse_end, 50);
             fprintf(stderr, "                Hsp: %d/%d\n",
                                            j+1, hsps->size);
@@ -254,7 +254,7 @@ main(int argc, char **argv)
 {
     int i = 0, j = 0;
     uint64_t dbsize = 0;
-    struct cbp_database *db = NULL;
+    struct cb_database *db = NULL;
     struct opt_config *conf;
     struct opt_args *args;
     xmlDoc *doc = NULL;
@@ -273,7 +273,7 @@ main(int argc, char **argv)
         exit(1);
     }
 
-    db = cbp_database_read(args->args[0], search_flags.map_seed_size);
+    db = cb_database_read(args->args[0], search_flags.map_seed_size);
     dbsize = read_int_from_file(8, db->coarse_db->file_params);
     blast_coarse(args, dbsize);
 
@@ -300,7 +300,7 @@ main(int argc, char **argv)
     for (i = 0; i < expanded_hits->size; i++)
         ds_vector_free((struct DSVector *)ds_vector_get(expanded_hits, i));
     /*ds_vector_free_no_data(expanded_hits);*/
-    cbp_database_free(db);
+    cb_database_free(db);
     xmlFreeDoc(doc);
     return 0;
 }

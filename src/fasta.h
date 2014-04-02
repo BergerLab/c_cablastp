@@ -1,5 +1,5 @@
-#ifndef __CABLASTP_FASTA_H__
-#define __CABLASTP_FASTA_H__
+#ifndef __CABLAST_FASTA_H__
+#define __CABLAST_FASTA_H__
 
 #include <pthread.h>
 #include <stdbool.h>

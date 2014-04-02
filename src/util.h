@@ -1,5 +1,5 @@
-#ifndef __CABLASTP_UTIL_H__
-#define __CABLASTP_UTIL_H__
+#ifndef __CABLAST_UTIL_H__
+#define __CABLAST_UTIL_H__
 
 #include <stdint.h>
 #include <stdio.h>
