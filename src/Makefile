@@ -8,13 +8,13 @@ COMPRESS_OBJS=align.o DNAalphabet.o DNAmatrix.o \
 COMPRESS_HEADERS=align.o coarse.h compressed.h compression.h \
 							database.h DNAalphabet.h fasta.h flags.h link_to_coarse.h link_to_compressed.h seeds.h seq.h util.h
 
-all: cablastp-compress cablastp-decompress cablastp-search
+all: cablast-compress cablast-decompress cablast-search
 
-compress: DNAalphabet.h cablastp-compress
+compress: DNAalphabet.h cablast-compress
 
-cablastp-compress: cablastp-compress.o $(COMPRESS_HEADERS) $(COMPRESS_OBJS)
+cablast-compress: cablast-compress.o $(COMPRESS_HEADERS) $(COMPRESS_OBJS)
 
-cablastp-compress.o: cablastp-compress.c database.h DNAalphabet.h fasta.h
+cablast-compress.o: cablast-compress.c database.h DNAalphabet.h fasta.h
 
 
 
@@ -24,11 +24,11 @@ DECOMPRESS_OBJS=align.o \
 DECOMPRESS_HEADERS=align.o coarse.h compressed.h compression.h \
 							database.h decompression.h DNAalphabet.h fasta.h flags.h link_to_coarse.h link_to_compressed.h seeds.h seq.h util.h
 
-decompress: DNAalphabet.h cablastp-decompress
+decompress: DNAalphabet.h cablast-decompress
 
-cablastp-decompress: cablastp-decompress.o $(DECOMPRESS_HEADERS) $(DECOMPRESS_OBJS)
+cablast-decompress: cablast-decompress.o $(DECOMPRESS_HEADERS) $(DECOMPRESS_OBJS)
 
-cablastp-decompress.o: cablastp-decompress.c database.h DNAalphabet.h fasta.h
+cablast-decompress.o: cablast-decompress.c database.h DNAalphabet.h fasta.h
 
 
 
@@ -37,11 +37,11 @@ SEARCH_OBJS=align.o bitpack.o coarse.o compressed.o compression.o database.o dec
 SEARCH_HEADERS=align.o coarse.h compressed.h compression.h \
 							database.h decompression.h DNAalphabet.h fasta.h flags.h link_to_coarse.h link_to_compressed.h seeds.h seq.h util.h xml.h
 
-search: DNAalphabet.h cablastp-search
+search: DNAalphabet.h cablast-search
 
-cablastp-search: cablastp-search.o $(SEARCH_HEADERS) $(SEARCH_OBJS)
+cablast-search: cablast-search.o $(SEARCH_HEADERS) $(SEARCH_OBJS)
 
-cablastp-search.o: cablastp-search.c database.h DNAalphabet.h fasta.h
+cablast-search.o: cablast-search.c database.h DNAalphabet.h fasta.h
 
 
 align.o: align.c align.h DNAalphabet.h
@@ -93,7 +93,7 @@ test-ungapped: tests/test-ungapped.o align.o DNAalphabet.o DNAmatrix.o
 
 clean:
 	rm -f *.o tests/*.o
-	rm -f cablastp-compress
+	rm -f cablast-compress
 	rm -f test-*
 
 loc:

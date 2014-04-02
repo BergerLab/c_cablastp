@@ -36,13 +36,13 @@ export C_INCLUDE_PATH=$(pwd)/include
 export LIBRARY_PATH=$(pwd)/lib
 cd ../c_cablastp
 make
-./cablastp-compress --help
+./cablast-compress --help
 ```
 
-The usage of `cablastp-compress` is:
+The usage of `cablast-compress` is:
 
 ```bash
-cablastp-compress [flags] database-directory fasta-file [fasta-file ...]
+cablast-compress [flags] database-directory fasta-file [fasta-file ...]
 ```
 
 

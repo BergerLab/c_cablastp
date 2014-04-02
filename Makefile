@@ -1,27 +1,27 @@
-all: cablastp-compress cablastp-decompress cablastp-search
+all: cablast-compress cablast-decompress cablast-search
 
-cablastp-compress: src/cablastp-compress
-	cp src/cablastp-compress .
+cablast-compress: src/cablast-compress
+	cp src/cablast-compress .
 
-src/cablastp-compress:
+src/cablast-compress:
 	(cd src && make compress)
 
-cablastp-decompress: src/cablastp-decompress
-	cp src/cablastp-decompress .
+cablast-decompress: src/cablast-decompress
+	cp src/cablast-decompress .
 
-src/cablastp-decompress:
+src/cablast-decompress:
 	(cd src && make decompress)
 
-cablastp-search: src/cablastp-search
-	cp src/cablastp-search .
+cablast-search: src/cablast-search
+	cp src/cablast-search .
 
-src/cablastp-search:
+src/cablast-search:
 	(cd src && make search)
 
 
 clean:
 	(cd src && make clean)
-	rm -f cablastp-*
+	rm -f cablast-*
 
 push:
 	git push origin master
