@@ -275,8 +275,13 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
                 fwd_olen = cb_align_length_nogaps(mseqs_fwd.oseq);
                 rev_olen = cb_align_length_nogaps(mseqs_rev.oseq);
                 /*If the match was too short, try the next seed*/                
-                if (rev_olen+seed_size+fwd_olen-1 < compress_flags.min_match_len)
+                if (rev_olen+seed_size+fwd_olen-1 < compress_flags.min_match_len) {
+                    free(mseqs_fwd.rseq);
+                    free(mseqs_fwd.oseq);
+                    free(mseqs_rev.rseq);
+                    free(mseqs_rev.oseq);
                     continue;
+                }
 
                 found_match = true;
 
@@ -366,6 +371,12 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
                                      org_seq->length-ext_seed);
 
                 chunks++;
+
+                free(mseqs_fwd.rseq);
+                free(mseqs_fwd.oseq);
+                free(mseqs_rev.rseq);
+                free(mseqs_rev.oseq);
+
                 free(alignment.ref);
                 free(alignment.org);
             }
@@ -415,8 +426,13 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
                 rev_olen = cb_align_length_nogaps(mseqs_rev.oseq);
 
                 /*If the match was too short, try the next seed*/                
-                if (rev_olen+seed_size+fwd_olen-1 < compress_flags.min_match_len)
+                if (rev_olen+seed_size+fwd_olen-1 < compress_flags.min_match_len) {
+                    free(mseqs_fwd.rseq);
+                    free(mseqs_fwd.oseq);
+                    free(mseqs_rev.rseq);
+                    free(mseqs_rev.oseq);
                     continue;
+                }
 
                 found_match = true;
 
@@ -503,10 +519,18 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
                                      org_seq->length-ext_seed);
 
                 chunks++;
+
+                free(mseqs_fwd.rseq);
+                free(mseqs_fwd.oseq);
+                free(mseqs_rev.rseq);
+                free(mseqs_rev.oseq);
+
                 free(alignment.ref);
                 free(alignment.org);
             }
         }
+        free(kmer);
+        free(revcomp);
         cb_seed_loc_free(seeds);
         cb_seed_loc_free(seeds_r);
 

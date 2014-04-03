@@ -9,6 +9,8 @@
 #include "seeds.h"
 #include "seq.h"
 
+/*Takes in the size of the k-mers that will be used in compression and file
+  pointers for the database and returns a newly-created coarse database.*/
 struct cb_coarse *
 cb_coarse_init(int32_t seed_size,
                 FILE *file_fasta, FILE *file_seeds, FILE *file_links,
@@ -24,6 +26,8 @@ cb_coarse_init(int32_t seed_size,
     coarse_db->seqs = ds_vector_create_capacity(10000000);
     coarse_db->seeds = cb_seeds_init(seed_size);
     coarse_db->dbsize = (uint64_t)0;
+
+    /*Initialize the file pointers*/
     coarse_db->file_fasta = file_fasta;
     coarse_db->file_seeds = file_seeds;
     coarse_db->file_links = file_links;
@@ -39,6 +43,8 @@ cb_coarse_init(int32_t seed_size,
     return coarse_db;
 }
 
+/*Takes in a coarse database, closes its file pointers, and frees the struct
+  for the database.*/
 void
 cb_coarse_free(struct cb_coarse *coarse_db)
 {
