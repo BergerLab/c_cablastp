@@ -168,6 +168,7 @@ printf("%s\n", orig_str);
             ds_vector_append(oseqs,
                              (void *)cb_seq_init(link->org_seq_id,
                              seq->name, orig_str));
+            free(orig_str);
             cb_compressed_seq_free(seq);
         }
     }

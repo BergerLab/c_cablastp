@@ -416,9 +416,11 @@ char *get_compressed_header(FILE *f){
     char *header = malloc(10000*sizeof(*header));
     int header_length = 10000;
     int i = 0;
-    while (c != EOF && c != '\n') {
+    int chars_read = 0;
+    while (c != EOF && (char)c != '\n') {
+        chars_read++;
         c = getc(f);
-        if (c != EOF) {
+        if (c != EOF && (char)c != '\n' && chars_read > 2) {
             header[i] = (char)c;
             i++;
             if (i == header_length-1) {
@@ -426,7 +428,7 @@ char *get_compressed_header(FILE *f){
                 header = realloc(header, header_length*sizeof(*header));
             }
         }
-        else
+        if (c == EOF)
             return NULL;
     }
     header[i] = '\0';
