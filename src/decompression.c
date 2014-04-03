@@ -27,6 +27,7 @@ struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
     int j = 0;
     int copied = 0;
     struct DSVector *decompressed_chunks = ds_vector_create();
+    char *residues = NULL;
     for (link = cseq->links; link != NULL; link = link->next) {
         int length;
         char *dec_chunk;
@@ -70,7 +71,7 @@ struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
         free(coarse_sub);
         fasta_free_seq(chunk);
     }
-    char *residues = malloc((decompressed_length+1)*sizeof(*residues));
+    residues = malloc((decompressed_length+1)*sizeof(*residues));
     for (i = 0; i < decompressed_chunks->size; i++) {
         char *current_chunk = (char *)ds_vector_get(decompressed_chunks, i);
         for (j = 0; current_chunk[j] != '\0'; j++)

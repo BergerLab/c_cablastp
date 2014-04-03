@@ -368,7 +368,6 @@ cb_link_to_coarse_init(int32_t coarse_seq_id,
     link->next = NULL;
     link->diff = make_edit_script(alignment.org, alignment.ref, dir,
                                                    alignment.length);
-      printf("%d-%d, %ld-%ld\n", coarse_start, coarse_end, original_start, original_end);
     assert(link->diff);
 
     return link;
@@ -393,7 +392,6 @@ cb_link_to_coarse_init_nodiff(int32_t coarse_seq_id,
     link->coarse_start = coarse_start;
     link->coarse_end = coarse_end;
     link->next = NULL;
-      printf("%d-%d, %ld-%ld\n", coarse_start, coarse_end, original_start, original_end);
 
     return link;
 }

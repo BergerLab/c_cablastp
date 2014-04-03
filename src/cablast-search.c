@@ -243,6 +243,7 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
                                            j+1, hsps->size);
             for (k = 0; k < oseqs->size; k++)
                 ds_vector_append(expanded_hits, ds_vector_get(oseqs, k));
+            ds_vector_free_no_data(oseqs);
         }
     }
     return expanded_hits;
@@ -286,6 +287,7 @@ main(int argc, char **argv)
     iterations = get_blast_iterations(root);
     for (i = 0; i < iterations->size; i++) {
         expanded_hits = expand_blast_hits(iterations, i, db);
+        ds_vector_free(expanded_hits);
     }
 
     /*Free the XML data and expanded hits*/
@@ -297,9 +299,6 @@ main(int argc, char **argv)
             ds_vector_free(h->hsps);
         }
     }
-    for (i = 0; i < expanded_hits->size; i++)
-        ds_vector_free((struct DSVector *)ds_vector_get(expanded_hits, i));
-    /*ds_vector_free_no_data(expanded_hits);*/
     cb_database_free(db);
     xmlFreeDoc(doc);
     return 0;
