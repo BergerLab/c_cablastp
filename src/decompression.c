@@ -89,8 +89,8 @@ int get_max(int a, int b){return a>b?a:b;}
 
 /*Takes in a coarse database, a compressed database, the accession number,
  *hit_from, and hit_to values of a BLAST Hsp, and a hit pad length and returns
- *a vector containing the expanded original sequence section for each
- *link_to_compressed for the coarse sequence being expanded that is in the
+ *a vector containing a cb_seq struct with an expanded original sequence
+ *section for each link_to_compressed from the coarse sequence that is in the
  *range between the indices hit_from and hit_to.
  */
 struct DSVector *
@@ -122,6 +122,7 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
         /*Only expand the link if it overlaps the range for the BLAST Hsp we
           are expanding from.*/
         if (link->coarse_start <= hit_to && link->coarse_end >= hit_from) {
+            struct cb_link_to_coarse *current = NULL;
             bool dir = link->dir;
 
             /*Calculate the range in the original sequence for the section of
@@ -157,14 +158,16 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
 
             /*Run decode_edit_script for each link_to_coarse in the compressed
               sequence to re-create the section of the original string.*/ 
-            struct cb_link_to_coarse *current = seq->links;
+            current = seq->links;
             for (; current; current = current->next)
                 decode_edit_script(orig_str, original_end-original_start+1,
                                     original_start, coarsedb, current);
             orig_str[original_end-original_start+1] = '\0';
 
 printf("%s\n", orig_str);
-            ds_vector_append(oseqs, (void *)orig_str);
+            ds_vector_append(oseqs,
+                             (void *)cb_seq_init(link->org_seq_id,
+                             seq->name, orig_str));
             cb_compressed_seq_free(seq);
         }
     }
