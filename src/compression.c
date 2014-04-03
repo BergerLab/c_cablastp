@@ -224,8 +224,8 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
         }
 
         /*Get the k-mer and allocate a copy of its reverse complement*/
-        kmer = get_kmer(org_seq->residues+current);
-        revcomp = kmer_revcomp(kmer);
+        kmer = get_kmer(org_seq->residues+current, seed_size);
+        revcomp = kmer_revcomp(kmer, seed_size);
 
         /*The locations of all seeds in the database that start with the
           current k-mer.*/

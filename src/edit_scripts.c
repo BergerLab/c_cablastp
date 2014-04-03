@@ -224,7 +224,6 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     int orig_pos = 0, last_edit_str_len = 0; /*length of last edit str*/
     int current = 0;
     int script_pos = 1;
-    char *s = str;
 
     while (next_edit(edit_script, &script_pos, &edit)) {
         /*chunk after previous edit*/
@@ -246,11 +245,11 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     }
     while (orig_pos < length)
         str[current++] = orig[orig_pos++];
-    str = realloc(str, current+1*sizeof(*str));
+    str = realloc(str, (current+1)*sizeof(*str));
     str[current] = '\0';
     if ((edit_script[0] & ((char)0x7f)) == '1') {
         char *str_fwd = str;
-        str = string_revcomp(s, -1);
+        str = string_revcomp(str_fwd, -1);
         free(str_fwd);
     }
     return str;

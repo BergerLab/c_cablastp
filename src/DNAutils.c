@@ -1,6 +1,8 @@
 #include <stdlib.h>
 #include "DNAutils.h"
 
+/*Returns the base complement for a DNA residue.  The complement for any base
+  that is not A, C, G, or T in this function is N.*/
 char base_complement(char base){
     switch (base) {
         case 'A':
@@ -25,29 +27,36 @@ int bases_match(char a, char b, int dir_prod){
         return a == base_complement(b) && a != 'N' ? 1 : 0;
 }
 
-char *get_kmer(char *DNA_string){
-    int seed_size = 10, i = 0; /*compress_flags.seed_size;*/
-    char *kmer = malloc(seed_size*sizeof(*kmer));
-    for (i = 0; i < seed_size; i++)
+/*Takes in a pointer to the start of a k-mer in a DNA sequence and the length
+  of the k-mer and returns a copy of the k-mer.*/
+char *get_kmer(char *DNA_string, int k){
+    int i = 0;
+    char *kmer = malloc(k*sizeof(*kmer));
+    for (i = 0; i < k; i++)
         kmer[i] = DNA_string[i];
-    kmer[seed_size] = '\0';
+    kmer[k] = '\0';
     return kmer;
 }
 
-char *kmer_revcomp(char *kmer){
-    int seed_size = 10, i = 0; /*compress_flags.seed_size;*/
-    char *revcomp = malloc(seed_size*sizeof(*revcomp));
-    for (i = 0; i < seed_size; i++)
-        revcomp[i] = base_complement(kmer[seed_size-i-1]);
-    revcomp[seed_size] = '\0';
+/*Takes in a k-mer and its length and returns the k-mer's reverse complement.*/
+char *kmer_revcomp(char *kmer, int k){
+    int i = 0;
+    char *revcomp = malloc(k*sizeof(*revcomp));
+    for (i = 0; i < k; i++)
+        revcomp[i] = base_complement(kmer[k-i-1]);
+    revcomp[k] = '\0';
     return revcomp;
 }
 
+/*Takes in a string representing a DNA sequence and its length and returns the
+ *sequence's reverse complement.  If a length less than 0 is given, the length
+ *used is the length of the whole string.
+ */
 char *string_revcomp(char *sequence, int length){
     char *revcomp;
     int i;
     /*Find the length of the sequence up to the null terminator if no length
-      is given*/
+    is given*/
     if (length < 0)
         for (length = 0; sequence[length] != '\0'; length++);
     revcomp = malloc((length+1) * sizeof(*revcomp));
