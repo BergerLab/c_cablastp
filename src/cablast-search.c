@@ -61,9 +61,10 @@ void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query){
         return;
     }
     fprintf(fine_blast_query, "> %s\n%s\n", query->name, query->seq);
+    fclose(fine_blast_query);
     char *blastn_command =
            "blastn -subject  -query CaBLAST_fine_query.fasta -dbsize  "
-           "-task blastn > CaBLAST_results.txt";
+           "-task blastn >> CaBLAST_results.txt";
     int command_length = strlen(blastn_command) + strlen(subject) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
@@ -73,8 +74,7 @@ void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query){
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
     free(blastn);
-    fclose(fine_blast_query);
-    system("rm CaBLAST_fine_query.fasta");
+    /*system("rm CaBLAST_fine_query.fasta");*/
 }
 
 
@@ -315,7 +315,7 @@ main(int argc, char **argv)
         if (expanded_hits->size > 0) {
             write_fine_fasta(expanded_hits);
             blast_fine("CaBLAST_fine.fasta", dbsize, query);
-            system("rm CaBLAST_fine.fasta");
+            /*system("rm CaBLAST_fine.fasta");*/
         }
         for (j = 0; j < expanded_hits->size; j++)
             cb_seq_free(ds_vector_get(expanded_hits, j));
