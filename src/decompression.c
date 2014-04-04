@@ -89,9 +89,9 @@ int get_max(int a, int b){return a>b?a:b;}
 
 /*Takes in a coarse database, a compressed database, the accession number,
  *hit_from, and hit_to values of a BLAST Hsp, and a hit pad length and returns
- *a vector containing a cb_seq struct with an expanded original sequence
- *section for each link_to_compressed from the coarse sequence that is in the
- *range between the indices hit_from and hit_to.
+ *a vector containing a cb_hit_expansion struct with an expanded original
+ *sequence section for each link_to_compressed from the coarse sequence that is
+ *in the range between the indices hit_from and hit_to.
  */
 struct DSVector *
 cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
@@ -165,9 +165,11 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
             orig_str[original_end-original_start+1] = '\0';
 
 printf("%s\n", orig_str);
-            ds_vector_append(oseqs,
-                             (void *)cb_seq_init(link->org_seq_id,
-                             seq->name, orig_str));
+            struct cb_hit_expansion *expansion = malloc(sizeof(*expansion));
+            expansion->offset = (int64_t)original_start;
+            expansion->seq = cb_seq_init(link->org_seq_id,
+                                         seq->name, orig_str);
+            ds_vector_append(oseqs, (void *)expansion);
             free(orig_str);
             cb_compressed_seq_free(seq);
         }

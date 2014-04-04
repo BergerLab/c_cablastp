@@ -56,3 +56,10 @@ cb_seq_free(struct cb_seq *seq)
     free(seq->residues);
     free(seq);
 }
+
+void
+cb_hit_expansion_free(struct cb_hit_expansion *expansion)
+{
+    cb_seq_free(expansion->seq);
+    free(expansion);
+}
