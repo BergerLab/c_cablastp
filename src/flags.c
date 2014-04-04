@@ -108,8 +108,8 @@ load_search_args()
         "arguments to pass into BLAST during fine search.");
     opt_flag_bool(conf,
         &search_flags.no_cleanup, "no-cleanup",
-        "Set to true to keep the coarse search results XML file and fine "
-        "database FASTA file.");
+        "Set to true to keep the coarse search results XML file, the fine "
+        "database FASTA file, and the last fine query FASTA file.");
 
     return conf;
 }

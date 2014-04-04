@@ -74,7 +74,8 @@ void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query){
     fprintf(stderr, "%s\n", blastn);
     system(blastn);
     free(blastn);
-    /*system("rm CaBLAST_fine_query.fasta");*/
+    if(!search_flags.no_cleanup)
+        system("rm CaBLAST_fine_query.fasta");
 }
 
 
@@ -315,7 +316,8 @@ main(int argc, char **argv)
         if (expanded_hits->size > 0) {
             write_fine_fasta(expanded_hits);
             blast_fine("CaBLAST_fine.fasta", dbsize, query);
-            /*system("rm CaBLAST_fine.fasta");*/
+            if(!search_flags.no_cleanup)
+                system("rm CaBLAST_fine.fasta");
         }
         for (j = 0; j < expanded_hits->size; j++)
             cb_seq_free(ds_vector_get(expanded_hits, j));
@@ -336,5 +338,7 @@ main(int argc, char **argv)
     }
     cb_database_free(db);
     xmlFreeDoc(doc);
+    if(!search_flags.no_cleanup)
+        system("rm CaBLAST_temp_blast_results.xml");
     return 0;
 }
