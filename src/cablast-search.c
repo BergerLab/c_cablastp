@@ -55,6 +55,7 @@ void blast_coarse(struct opt_args *args, uint64_t dbsize){
 
 /*Runs BLAST on the fine FASTA file*/
 void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query){
+    /*Make a query FASTA file for the sequence we are testing*/
     FILE *fine_blast_query = fopen("CaBLAST_fine_query.fasta", "w");
     if (fine_blast_query == NULL) {
         fprintf(stderr,"Could not open CaBLAST_fine_query.fasta for writing.");
@@ -62,18 +63,21 @@ void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query){
     }
     fprintf(fine_blast_query, "> %s\n%s\n", query->name, query->seq);
     fclose(fine_blast_query);
+
     char *blastn_command =
            "blastn -subject  -query CaBLAST_fine_query.fasta -dbsize  "
-           "-task blastn >> CaBLAST_results.txt";
+           "-task blastn -outfmt 5 >> CaBLAST_results.txt";
     int command_length = strlen(blastn_command) + strlen(subject) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
             "blastn -subject %s -query CaBLAST_fine_query.fasta -dbsize %lu "
-            "-task blastn >> CaBLAST_results.txt",
+            "-task blastn -outfmt 5 >> CaBLAST_results.txt",
             subject, dbsize);
     fprintf(stderr, "%s\n", blastn);
-    system(blastn);
+    system(blastn); /*Run fine BLAST*/
     free(blastn);
+
+    /*Delete the query FASTA file if the --no-cleanup flag is not being used*/
     if(!search_flags.no_cleanup)
         system("rm CaBLAST_fine_query.fasta");
 }
@@ -182,6 +186,8 @@ struct DSVector *get_blast_iterations(xmlNode *node){
     return iterations;
 }
 
+/*Takes in a vector of sequence structs for the expanded BLAST hits from a
+  query and outputs them to the FASTA file CaBLAST_fine.fasta.*/
 void write_fine_fasta(struct DSVector *oseqs){
     int i;
     FILE *temp = fopen("CaBLAST_fine.fasta", "w");
@@ -238,17 +244,17 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
     for (i = 0; i < hits->size; i++) {
         struct hit *current_hit = (struct hit *)ds_vector_get(hits, i);
         struct DSVector *hsps = current_hit->hsps;
-        fprintf(stderr, "        hit: %d/%d\n", i+1, hits->size);
+        fprintf(stderr, "    hit: %d/%d\n", i+1, hits->size);
         for (j = 0; j < hsps->size; j++) {
             struct hsp *h = (struct hsp *)ds_vector_get(hsps, j);
             int16_t coarse_start = h->hit_from-1;
             int16_t coarse_end = h->hit_to-1;
             int32_t coarse_seq_id = current_hit->accession;
+
             struct DSVector *oseqs =
                 cb_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
                                   coarse_start, coarse_end, 50);
-            fprintf(stderr, "                Hsp: %d/%d\n",
-                                           j+1, hsps->size);
+            fprintf(stderr, "        Hsp: %d/%d\n", j+1, hsps->size);
             for (k = 0; k < oseqs->size; k++)
                 ds_vector_append(expanded_hits, ds_vector_get(oseqs, k));
             ds_vector_free_no_data(oseqs);
@@ -302,6 +308,8 @@ main(int argc, char **argv)
     fclose(query_file);
 
     system("rm CaBLAST_results.txt");
+
+    /*Parse the XML file generated from coarse BLAST and get its iterations.*/
     doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
     if (doc == NULL) {
         fprintf(stderr, "Could not parse CaBLAST_temp_blast_results.xml\n");
@@ -309,13 +317,22 @@ main(int argc, char **argv)
     }
     root = xmlDocGetRootElement(doc);
     iterations = get_blast_iterations(root);
+
     for (i = 0; i < iterations->size; i++) {
-        int j = 0;
+        /*Expand any BLAST hits we got from the current query sequence during
+          coarse BLAST.*/
         expanded_hits = expand_blast_hits(iterations, i, db);
         query = (struct fasta_seq *)ds_vector_get(queries, i);
+
+        /*If the current query sequence had hits in the call to coarse BLAST,
+         *make a FASTA file of the expanded hits and run BLAST with the current
+         *query sequence against the expanded hits file.
+         */
         if (expanded_hits->size > 0) {
             write_fine_fasta(expanded_hits);
             blast_fine("CaBLAST_fine.fasta", dbsize, query);
+            /*Delete the expanded hits file if the --no-cleanup flag is not
+              being used.*/
             if(!search_flags.no_cleanup)
                 system("rm CaBLAST_fine.fasta");
         }
@@ -336,8 +353,12 @@ main(int argc, char **argv)
             free(h);
         }
     }
+
     cb_database_free(db);
     xmlFreeDoc(doc);
+
+    /*Free the coarse BLAST results file if the --no-cleanup flag is not being
+      used.*/
     if(!search_flags.no_cleanup)
         system("rm CaBLAST_temp_blast_results.xml");
     return 0;
