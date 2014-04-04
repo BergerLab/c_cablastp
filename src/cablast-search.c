@@ -337,22 +337,23 @@ main(int argc, char **argv)
             if(!search_flags.no_cleanup)
                 system("rm CaBLAST_fine.fasta");
 
-            /*This code is here temporarily to test the output of this version
-              of CaBLAST against the output from Po-Ru's version.*/
-            xmlDoc *test_doc = xmlReadFile("CaBLAST_results.xml", NULL, 0);
-            xmlNode *test_root = xmlDocGetRootElement(test_doc);
-            struct DSVector *test_iterations = get_blast_iterations(test_root);
+            /*Output information on each fine BLAST hit if the --show-hit-info
+              flag is set to true.*/
+            if (search_flags.show_hit_info) {
+                xmlDoc *test_doc = xmlReadFile("CaBLAST_results.xml", NULL, 0);
+                xmlNode *test_root = xmlDocGetRootElement(test_doc);
+                struct DSVector *test_iterations =
+                    get_blast_iterations(test_root);
 
-            for (j = 0; j < test_iterations->size; j++) {
-                int k, l;
-                struct DSVector *test_hits =
-                    get_blast_hits((xmlNode *)
-                        ds_vector_get(test_iterations, j));
-                for (k = 0; k < test_hits->size; k++) {
-                    struct hit *current_hit =
-                        (struct hit *)ds_vector_get(test_hits, k);
-                    struct DSVector *test_hsps = current_hit->hsps;
-                    for (l = 0; l < test_hsps->size; l++) {
+                for (j = 0; j < test_iterations->size; j++) {
+                    int k, l;
+                    struct DSVector *test_hits =
+                        get_blast_hits((xmlNode *)
+                            ds_vector_get(test_iterations, j));
+                    for (k = 0; k < test_hits->size; k++) {
+                        struct hit *current_hit =
+                            (struct hit *)ds_vector_get(test_hits, k);
+                        struct DSVector *test_hsps = current_hit->hsps;
                     }
                 }
             }

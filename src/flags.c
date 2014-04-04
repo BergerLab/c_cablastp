@@ -110,6 +110,9 @@ load_search_args()
         &search_flags.no_cleanup, "no-cleanup",
         "Set to true to keep the coarse search results XML file, the fine "
         "database FASTA file, and the last fine query FASTA file.");
+    opt_flag_bool(conf,
+        &search_flags.show_hit_info, "show-hit-info",
+        "Set to true to output information on each fine BLAST hit.");
 
     return conf;
 }
