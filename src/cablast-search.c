@@ -346,6 +346,9 @@ main(int argc, char **argv)
                     get_blast_iterations(test_root);
 
                 for (j = 0; j < test_iterations->size; j++) {
+                    struct cb_hit_expansion *expansion =
+                        (struct cb_hit_expansion *)ds_vector_get(
+                                                       expanded_hits, j);
                     int k, l;
                     struct DSVector *test_hits =
                         get_blast_hits((xmlNode *)
@@ -354,6 +357,16 @@ main(int argc, char **argv)
                         struct hit *current_hit =
                             (struct hit *)ds_vector_get(test_hits, k);
                         struct DSVector *test_hsps = current_hit->hsps;
+                        for (l = 0; l < test_hsps->size; l++) {
+                            int64_t offset = expansion->offset;
+                            struct hsp *current_hsp =
+                                (struct hsp *)ds_vector_get(test_hsps, l);
+                            int32_t hit_from =
+                                current_hsp->hit_from + offset - 1;
+                            int32_t hit_to =
+                                current_hsp->hit_to + offset - 1;
+                            fprintf(stderr, "hit: %d-%d\n", hit_from, hit_to);
+                        }
                     }
                 }
             }
