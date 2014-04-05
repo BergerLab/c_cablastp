@@ -66,12 +66,12 @@ void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query){
 
     char *blastn_command =
            "blastn -subject  -query CaBLAST_fine_query.fasta -dbsize  "
-           "-task blastn -outfmt 5 > CaBLAST_results.xml";
+           "-task blastn -outfmt 5 -evalue 1e-30 > CaBLAST_results.xml";
     int command_length = strlen(blastn_command) + strlen(subject) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
             "blastn -subject %s -query CaBLAST_fine_query.fasta -dbsize %lu "
-            "-task blastn -outfmt 5 > CaBLAST_results.xml",
+            "-task blastn -outfmt 5 -evalue 1e-30 > CaBLAST_results.xml",
             subject, dbsize);
     fprintf(stderr, "%s\n", blastn);
     system(blastn); /*Run fine BLAST*/
@@ -271,7 +271,7 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
 int
 main(int argc, char **argv)
 {
-    int i = 0, j = 0;
+    int i = 0, j = 0, k = 0, l = 0;
     uint64_t dbsize = 0;
     struct cb_database *db = NULL;
     struct opt_config *conf;
@@ -280,7 +280,7 @@ main(int argc, char **argv)
     xmlNode *root = NULL;
     struct DSVector *iterations = NULL, *expanded_hits = NULL, *queries = NULL;
     struct fasta_seq *query = NULL;
-    FILE *query_file = NULL;
+    FILE *query_file = NULL, *test_hits_file = NULL;
 
     conf = load_search_args();
     args = opt_config_parse(conf, argc, argv);
@@ -310,6 +310,8 @@ main(int argc, char **argv)
 
     system("rm CaBLAST_results.xml");
 
+    if (search_flags.show_hit_info)
+        test_hits_file = fopen("CaBLAST_hits.txt", "w");
     /*Parse the XML file generated from coarse BLAST and get its iterations.*/
     doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
     if (doc == NULL) {
@@ -365,10 +367,23 @@ main(int argc, char **argv)
                                 current_hsp->hit_from + offset - 1;
                             int32_t hit_to =
                                 current_hsp->hit_to + offset - 1;
-                            fprintf(stderr, "hit: %d-%d\n", hit_from, hit_to);
+                            fprintf(test_hits_file, "hit: %d-%d\n", hit_from,
+                                                                     hit_to);
                         }
                     }
                 }
+                /*Free the XML data for the current query's expanded hits.*/
+                for (j = 0; j < test_iterations->size; j++) {
+                    struct DSVector *current_iteration =
+                        (struct DSVector *)ds_vector_get(test_iterations, j);
+                    for (k = 0; k < current_iteration->size; k++) {
+                        struct hit *h =
+                            (struct hit *)ds_vector_get(current_iteration, k);
+                        ds_vector_free(h->hsps);
+                        free(h);
+                    }
+                }
+                xmlFreeDoc(test_doc);
             }
         }
         for (j = 0; j < expanded_hits->size; j++)
@@ -377,6 +392,8 @@ main(int argc, char **argv)
         fasta_free_seq(query);
     }
     ds_vector_free_no_data(queries);
+    if (search_flags.show_hit_info)
+        fclose(test_hits_file);
 
     /*Free the XML data and expanded hits*/
     for (i = 0; i < iterations->size; i++) {
