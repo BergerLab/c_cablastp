@@ -48,7 +48,7 @@ void blast_coarse(struct opt_args *args, uint64_t dbsize){
     sprintf(blastn,"blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn"
                    " -evalue %s > CaBLAST_temp_blast_results.xml",
            input_path, args->args[1], dbsize, search_flags.coarse_evalue);
-    fprintf(stderr, "%s\n", blastn);
+    /*fprintf(stderr, "%s\n", blastn);*/
     system(blastn);
     free(blastn);
 }
@@ -73,7 +73,7 @@ void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query){
             "blastn -subject %s -query CaBLAST_fine_query.fasta -dbsize %lu "
             "-task blastn -outfmt 5 -evalue 1e-30 > CaBLAST_results.xml",
             subject, dbsize);
-    fprintf(stderr, "%s\n", blastn);
+    /*fprintf(stderr, "%s\n", blastn);*/
     system(blastn); /*Run fine BLAST*/
     free(blastn);
 
@@ -241,11 +241,9 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
     int i = 0, j = 0, k = 0;
     struct DSVector *hits = get_blast_hits((xmlNode *)
                                 ds_vector_get(iterations, index));
-    fprintf(stderr, "iteration: %d/%d\n", index+1, iterations->size);
     for (i = 0; i < hits->size; i++) {
         struct hit *current_hit = (struct hit *)ds_vector_get(hits, i);
         struct DSVector *hsps = current_hit->hsps;
-        fprintf(stderr, "    hit: %d/%d\n", i+1, hits->size);
         for (j = 0; j < hsps->size; j++) {
             struct hsp *h = (struct hsp *)ds_vector_get(hsps, j);
             int32_t coarse_start = h->hit_from-1;
@@ -255,7 +253,6 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
             struct DSVector *oseqs =
                 cb_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
                                   coarse_start, coarse_end, 50);
-            fprintf(stderr, "        Hsp: %d/%d\n", j+1, hsps->size);
             for (k = 0; k < oseqs->size; k++)
                 ds_vector_append(expanded_hits, ds_vector_get(oseqs, k));
             ds_vector_free_no_data(oseqs);
@@ -265,6 +262,18 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
     }
     ds_vector_free_no_data(hits);
     return expanded_hits;
+}
+
+char *progress_bar(int current, int iterations){
+    char *bar = malloc(53*sizeof(*bar));
+    int bars = (int)(((float)current/iterations)*50);
+    int b = 0;
+    bar[0] = '[';
+    for(b = 0; b < 50; b++)
+        bar[b+1] = b <= bars ? '|' : ' ';
+    bar[51] = ']';
+    bar[52] = '\0';
+    return bar;
 }
 
 
@@ -321,9 +330,18 @@ main(int argc, char **argv)
     root = xmlDocGetRootElement(doc);
     iterations = get_blast_iterations(root);
 
+    int message_size = 0;
+    char *iteration_message = malloc(50*sizeof(*iteration_message));
+
     for (i = 0; i < iterations->size; i++) {
         /*Expand any BLAST hits we got from the current query sequence during
           coarse BLAST.*/
+        char *bar = progress_bar(i, iterations->size);
+        fprintf(stderr, "\r");
+        fprintf(stderr, "iteration: %d/%d", i+1, iterations->size);
+        fprintf(stderr, " %s", bar);
+        free(bar);
+
         expanded_hits = expand_blast_hits(iterations, i, db);
         query = (struct fasta_seq *)ds_vector_get(queries, i);
 
@@ -391,6 +409,7 @@ main(int argc, char **argv)
         ds_vector_free_no_data(expanded_hits);
         fasta_free_seq(query);
     }
+    fprintf(stderr, "\n");
     ds_vector_free_no_data(queries);
     if (search_flags.show_hit_info)
         fclose(test_hits_file);
