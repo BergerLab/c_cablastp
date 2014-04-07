@@ -164,7 +164,6 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
                                     original_start, coarsedb, current);
             orig_str[original_end-original_start+1] = '\0';
 
-printf("%s\n", orig_str);
             struct cb_hit_expansion *expansion = malloc(sizeof(*expansion));
             expansion->offset = (int64_t)original_start;
             expansion->seq = cb_seq_init(link->org_seq_id,

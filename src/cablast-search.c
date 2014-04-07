@@ -48,13 +48,16 @@ void blast_coarse(struct opt_args *args, uint64_t dbsize){
     sprintf(blastn,"blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn"
                    " -evalue %s > CaBLAST_temp_blast_results.xml",
            input_path, args->args[1], dbsize, search_flags.coarse_evalue);
-    /*fprintf(stderr, "%s\n", blastn);*/
     system(blastn);
     free(blastn);
 }
 
 /*Runs BLAST on the fine FASTA file*/
-void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query){
+void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query,
+                char *blast_args, bool has_evalue){
+    char *default_evalue = "-evalue 1e-30";
+    int evalue_len = has_evalue ? 0 : strlen(default_evalue);
+
     /*Make a query FASTA file for the sequence we are testing*/
     FILE *fine_blast_query = fopen("CaBLAST_fine_query.fasta", "w");
     if (fine_blast_query == NULL) {
@@ -66,14 +69,13 @@ void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query){
 
     char *blastn_command =
            "blastn -subject  -query CaBLAST_fine_query.fasta -dbsize  "
-           "-task blastn -outfmt 5 -evalue 1e-30 > CaBLAST_results.xml";
-    int command_length = strlen(blastn_command) + strlen(subject) + 31;
+           "-task blastn ";
+    int command_length = strlen(blastn_command) + strlen(subject) + 31 + evalue_len + strlen(blast_args);
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
             "blastn -subject %s -query CaBLAST_fine_query.fasta -dbsize %lu "
-            "-task blastn -outfmt 5 -evalue 1e-30 > CaBLAST_results.xml",
-            subject, dbsize);
-    /*fprintf(stderr, "%s\n", blastn);*/
+            "-task blastn %s %s",
+            subject, dbsize, (has_evalue ? "" : default_evalue), blast_args);
     system(blastn); /*Run fine BLAST*/
     free(blastn);
 
@@ -216,7 +218,9 @@ char *get_blast_args(struct opt_args *args){
         if (index >= 0)
             length += (strlen(args->args[i]) + 1);
         else
-            index = strcmp(args->args[i], "--blast-args") == 0 ? i : -1;
+            index =
+                (strcmp(args->args[i],"--blast-args") == 0 && index == -1) ?
+                                                                     i : index;
     blast_args = malloc(length*sizeof(*args));
     if (index == -1)
         *blast_args = '\0';
@@ -227,6 +231,26 @@ char *get_blast_args(struct opt_args *args){
                 blast_args = strcat(blast_args, " ");
         }
     return blast_args;
+}
+
+/*Checks the string of additional BLAST arguments to CaBLAST and returns true
+ *if the arguments includes the specified argument or false if the additional
+ *BLAST arguments does not include the argument or if no additional BLAST
+ *arguments were given.
+ */
+bool has_blast_arg(struct opt_args *args, char *arg){
+    int i = 0;
+    int index = -1;
+    for (i = 0; i < args->nargs; i++)
+        index = (strcmp(args->args[i], "--blast-args") == 0 && index == -1) ? i : index;
+    fprintf(stderr, "index = %d\n", index);
+    if (index == -1)
+        return false;
+    else
+        for (i = index + 1; i < args->nargs; i++)
+            if (strcmp(args->args[i], arg) == 0)
+                return true;
+    return false;
 }
 
 /*Takes in as input the vector of iterations from coarse BLAST, an index into
@@ -290,6 +314,8 @@ main(int argc, char **argv)
     struct DSVector *iterations = NULL, *expanded_hits = NULL, *queries = NULL;
     struct fasta_seq *query = NULL;
     FILE *query_file = NULL, *test_hits_file = NULL;
+    char *blast_args = NULL;
+    bool has_evalue = false;
 
     conf = load_search_args();
     args = opt_config_parse(conf, argc, argv);
@@ -302,6 +328,8 @@ main(int argc, char **argv)
         opt_config_print_usage(conf);
         exit(1);
     }
+    blast_args = get_blast_args(args);
+    has_evalue = has_blast_arg(args, "-evalue");
 
     db = cb_database_read(args->args[0], search_flags.map_seed_size);
     dbsize = read_int_from_file(8, db->coarse_db->file_params);
@@ -351,7 +379,7 @@ main(int argc, char **argv)
          */
         if (expanded_hits->size > 0) {
             write_fine_fasta(expanded_hits);
-            blast_fine("CaBLAST_fine.fasta", dbsize, query);
+            blast_fine("CaBLAST_fine.fasta", dbsize, query, blast_args, has_evalue);
             /*Delete the expanded hits file if the --no-cleanup flag is not
               being used.*/
             if(!search_flags.no_cleanup)
@@ -359,7 +387,7 @@ main(int argc, char **argv)
 
             /*Output information on each fine BLAST hit if the --show-hit-info
               flag is set to true.*/
-            if (search_flags.show_hit_info) {
+            /*if (search_flags.show_hit_info) {
                 xmlDoc *test_doc = xmlReadFile("CaBLAST_results.xml", NULL, 0);
                 xmlNode *test_root = xmlDocGetRootElement(test_doc);
                 struct DSVector *test_iterations =
@@ -369,7 +397,6 @@ main(int argc, char **argv)
                     struct cb_hit_expansion *expansion =
                         (struct cb_hit_expansion *)ds_vector_get(
                                                        expanded_hits, j);
-                    int k, l;
                     struct DSVector *test_hits =
                         get_blast_hits((xmlNode *)
                             ds_vector_get(test_iterations, j));
@@ -390,7 +417,7 @@ main(int argc, char **argv)
                         }
                     }
                 }
-                /*Free the XML data for the current query's expanded hits.*/
+                /*Free the XML data for the current query's expanded hits.*//*
                 for (j = 0; j < test_iterations->size; j++) {
                     struct DSVector *current_iteration =
                         (struct DSVector *)ds_vector_get(test_iterations, j);
@@ -402,7 +429,7 @@ main(int argc, char **argv)
                     }
                 }
                 xmlFreeDoc(test_doc);
-            }
+            }*/
         }
         for (j = 0; j < expanded_hits->size; j++)
             cb_hit_expansion_free(ds_vector_get(expanded_hits, j));
