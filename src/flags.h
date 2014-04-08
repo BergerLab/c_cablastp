@@ -33,7 +33,7 @@ struct search_flags {
     int32_t map_seed_size;
     char    *coarse_evalue;
     bool    no_cleanup;
-    bool    show_hit_info;
+    bool    hide_messages;
 } search_flags;
 
 

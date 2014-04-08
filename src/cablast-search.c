@@ -48,7 +48,9 @@ void blast_coarse(struct opt_args *args, uint64_t dbsize){
     sprintf(blastn,"blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn"
                    " -evalue %s -out CaBLAST_temp_blast_results.xml",
            input_path, args->args[1], dbsize, search_flags.coarse_evalue);
-    system(blastn);
+    if (!search_flags.hide_messages)
+        fprintf(stderr, "Running coarse BLAST:\n%s\n\n", blastn);
+    system(blastn); /*Run coarse BLAST*/
     free(blastn);
 }
 
@@ -68,6 +70,8 @@ void blast_fine(char *query, uint64_t dbsize,
             "blastn -db CaBLAST_fine.fasta -query %s "
             "-dbsize %lu -task blastn %s %s",
             query, dbsize, (has_evalue ? "" : default_evalue), blast_args);
+    if (!search_flags.hide_messages)
+        fprintf(stderr, "Running fine BLAST:\n%s\n\n", blastn);
     system(blastn); /*Run fine BLAST*/
     free(blastn);
 
@@ -187,13 +191,16 @@ void write_fine_db(struct DSVector *oseqs){
     int i;
     FILE *fine_fasta = fopen("CaBLAST_fine.fasta", "a");
     if (!fine_fasta) {
-        fprintf(stderr, "Could not open CaBLAST_fine.fasta for appending\n");
+        if (!search_flags.hide_messages)
+            fprintf(stderr,
+                    "Could not open CaBLAST_fine.fasta for appending\n");
         return;
     }
     for (i = 0; i < oseqs->size; i++) {
         struct cb_seq *current_seq =
             ((struct cb_hit_expansion *)ds_vector_get(oseqs, i))->seq;
-        fprintf(fine_fasta, "> %s\n%s\n", current_seq->name, current_seq->residues);
+        fprintf(fine_fasta, "> %s\n%s\n", current_seq->name,
+                                          current_seq->residues);
     }
     fclose(fine_fasta);
     system("makeblastdb -dbtype nucl -in CaBLAST_fine.fasta "
@@ -308,7 +315,7 @@ main(int argc, char **argv)
     struct DSVector *iterations = NULL, *expanded_hits = NULL,
                     *queries = NULL, *oseqs = ds_vector_create();
     struct fasta_seq *query = NULL;
-    FILE *query_file = NULL, *test_hits_file = NULL;
+    FILE *query_file = NULL;
     char *blast_args = NULL;
     bool has_evalue = false;
 
@@ -342,8 +349,6 @@ main(int argc, char **argv)
 
     system("rm CaBLAST_fine.fasta");
 
-    if (search_flags.show_hit_info)
-        test_hits_file = fopen("CaBLAST_hits.txt", "w");
     /*Parse the XML file generated from coarse BLAST and get its iterations.*/
     doc = xmlReadFile("CaBLAST_temp_blast_results.xml", NULL, 0);
     if (doc == NULL) {
@@ -353,14 +358,20 @@ main(int argc, char **argv)
     root = xmlDocGetRootElement(doc);
     iterations = get_blast_iterations(root);
 
+    if (!search_flags.hide_messages)
+        fprintf(stderr, "Expanding coarse BLAST hits\n");
+
+    /*Expand any BLAST hits we got from the current query sequence during
+      coarse BLAST.*/
     for (i = 0; i < iterations->size; i++) {
-        /*Expand any BLAST hits we got from the current query sequence during
-          coarse BLAST.*/
-        char *bar = progress_bar(i, iterations->size);
-        fprintf(stderr, "\r");
-        fprintf(stderr, "iteration: %d/%d", i+1, iterations->size);
-        fprintf(stderr, " %s", bar);
-        free(bar);
+        /*If the show-progress flag is activated, display the progress bar*/
+        if (!search_flags.hide_messages) {
+            char *bar = progress_bar(i, iterations->size);
+            fprintf(stderr, "\r");
+            fprintf(stderr, "iteration: %d/%d", i+1, iterations->size);
+            fprintf(stderr, " %s", bar);
+            free(bar);
+        }
 
         expanded_hits = expand_blast_hits(iterations, i, db);
         query = (struct fasta_seq *)ds_vector_get(queries, i);
@@ -372,13 +383,13 @@ main(int argc, char **argv)
         }
         ds_vector_free_no_data(expanded_hits);
     }
+
+    if (!search_flags.hide_messages)
+        fprintf(stderr, "\n\nWriting database for fine BLAST\n\n");
     write_fine_db(oseqs);
     blast_fine(args->args[1], expanded_dbsize, blast_args, has_evalue);
 
-    fprintf(stderr, "\n");
     ds_vector_free_no_data(queries);
-    if (search_flags.show_hit_info)
-        fclose(test_hits_file);
 
     /*Free the XML data and expanded hits*/
     for (i = 0; i < iterations->size; i++) {
