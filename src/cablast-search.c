@@ -53,36 +53,28 @@ void blast_coarse(struct opt_args *args, uint64_t dbsize){
 }
 
 /*Runs BLAST on the fine FASTA file*/
-void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query,
+void blast_fine(char *query, uint64_t dbsize,
                 char *blast_args, bool has_evalue){
     char *default_evalue = "-evalue 1e-30";
     int evalue_len = has_evalue ? 0 : strlen(default_evalue);
 
-    /*Make a query FASTA file for the sequence we are testing*/
-    FILE *fine_blast_query = fopen("CaBLAST_fine_query.fasta", "w");
-    if (fine_blast_query == NULL) {
-        fprintf(stderr,"Could not open CaBLAST_fine_query.fasta for writing.");
-        return;
-    }
-    fprintf(fine_blast_query, "> %s\n%s\n", query->name, query->seq);
-    fclose(fine_blast_query);
-
     char *blastn_command =
-           "blastn -subject  -query CaBLAST_fine_query.fasta -dbsize  "
-           "-task blastn ";
-    int command_length = strlen(blastn_command) + strlen(subject) +
-                         31 + evalue_len + strlen(blast_args);
+           "blastn -db CaBLAST_fine.fasta -query  "
+           "-dbsize  -task blastn ";
+    int command_length = strlen(blastn_command) + strlen(query) + 31 +
+                         evalue_len + strlen(blast_args);
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
-            "blastn -subject %s -query CaBLAST_fine_query.fasta -dbsize %lu "
-            "-task blastn %s %s",
-            subject, dbsize, (has_evalue ? "" : default_evalue), blast_args);
+            "blastn -db CaBLAST_fine.fasta -query %s "
+            "-dbsize %lu -task blastn %s %s",
+            query, dbsize, (has_evalue ? "" : default_evalue), blast_args);
     system(blastn); /*Run fine BLAST*/
     free(blastn);
 
-    /*Delete the query FASTA file if the --no-cleanup flag is not being used*/
-    if(!search_flags.no_cleanup)
-        system("rm CaBLAST_fine_query.fasta");
+    /*Delete the FASTA file full of hit expansions and its database unless the
+      no-cleanup flag is activated.*/
+    if (!search_flags.no_cleanup)
+        system("rm CaBLAST_fine.fasta CaBLAST_fine.fasta.*");
 }
 
 
@@ -221,9 +213,8 @@ char *get_blast_args(struct opt_args *args){
         if (index >= 0)
             length += (strlen(args->args[i]) + 1);
         else
-            index =
-                (strcmp(args->args[i],"--blast-args") == 0 && index == -1) ?
-                                                                     i : index;
+            index = (strcmp(args->args[i],
+                            "--blast-args") == 0 && index == -1) ? i : index;
     blast_args = malloc(length*sizeof(*args));
     if (index == -1)
         *blast_args = '\0';
@@ -245,8 +236,8 @@ bool has_blast_arg(struct opt_args *args, char *arg){
     int i = 0;
     int index = -1;
     for (i = 0; i < args->nargs; i++)
-        index = (strcmp(args->args[i], "--blast-args") == 0 && index == -1) ? i : index;
-    fprintf(stderr, "index = %d\n", index);
+        index = (strcmp(args->args[i], 
+                        "--blast-args") == 0 && index == -1) ? i : index;
     if (index == -1)
         return false;
     else
@@ -349,7 +340,7 @@ main(int argc, char **argv)
 
     fclose(query_file);
 
-    system("rm CaBLAST_results.txt CaBLAST_fine.fasta");
+    system("rm CaBLAST_fine.fasta");
 
     if (search_flags.show_hit_info)
         test_hits_file = fopen("CaBLAST_hits.txt", "w");
@@ -381,7 +372,7 @@ main(int argc, char **argv)
         ds_vector_free_no_data(expanded_hits);
     }
     write_fine_db(oseqs);
-
+    blast_fine(args->args[1], dbsize, blast_args, has_evalue);
 
     fprintf(stderr, "\n");
     ds_vector_free_no_data(queries);
