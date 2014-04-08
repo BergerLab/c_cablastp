@@ -70,7 +70,8 @@ void blast_fine(char *subject, uint64_t dbsize, struct fasta_seq *query,
     char *blastn_command =
            "blastn -subject  -query CaBLAST_fine_query.fasta -dbsize  "
            "-task blastn ";
-    int command_length = strlen(blastn_command) + strlen(subject) + 31 + evalue_len + strlen(blast_args);
+    int command_length = strlen(blastn_command) + strlen(subject) +
+                         31 + evalue_len + strlen(blast_args);
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,
             "blastn -subject %s -query CaBLAST_fine_query.fasta -dbsize %lu "
@@ -190,19 +191,21 @@ struct DSVector *get_blast_iterations(xmlNode *node){
 
 /*Takes in a vector of expansion structs for the expanded BLAST hits from a
   query and outputs them to the FASTA file CaBLAST_fine.fasta.*/
-void write_fine_fasta(struct DSVector *oseqs){
+void write_fine_db(struct DSVector *oseqs){
     int i;
-    FILE *temp = fopen("CaBLAST_fine.fasta", "a");
-    if (!temp) {
+    FILE *fine_fasta = fopen("CaBLAST_fine.fasta", "a");
+    if (!fine_fasta) {
         fprintf(stderr, "Could not open CaBLAST_fine.fasta for appending\n");
         return;
     }
     for (i = 0; i < oseqs->size; i++) {
         struct cb_seq *current_seq =
             ((struct cb_hit_expansion *)ds_vector_get(oseqs, i))->seq;
-        fprintf(temp, "> %s\n%s\n", current_seq->name, current_seq->residues);
+        fprintf(fine_fasta, "> %s\n%s\n", current_seq->name, current_seq->residues);
     }
-    fclose(temp);
+    fclose(fine_fasta);
+    system("makeblastdb -dbtype nucl -in CaBLAST_fine.fasta "
+                                    "-out CaBLAST_fine.fasta");
 }
 
 /*Takes in the arguments for the program and returns a string of all of the
@@ -311,7 +314,8 @@ main(int argc, char **argv)
     struct opt_args *args;
     xmlDoc *doc = NULL;
     xmlNode *root = NULL;
-    struct DSVector *iterations = NULL, *expanded_hits = NULL, *queries = NULL;
+    struct DSVector *iterations = NULL, *expanded_hits = NULL,
+                    *queries = NULL, *oseqs = ds_vector_create();
     struct fasta_seq *query = NULL;
     FILE *query_file = NULL, *test_hits_file = NULL;
     char *blast_args = NULL;
@@ -345,7 +349,7 @@ main(int argc, char **argv)
 
     fclose(query_file);
 
-    system("rm CaBLAST_results.xml");
+    system("rm CaBLAST_results.txt CaBLAST_fine.fasta");
 
     if (search_flags.show_hit_info)
         test_hits_file = fopen("CaBLAST_hits.txt", "w");
@@ -372,14 +376,13 @@ main(int argc, char **argv)
 
         expanded_hits = expand_blast_hits(iterations, i, db);
         query = (struct fasta_seq *)ds_vector_get(queries, i);
-
-        /*If the current query sequence had hits in the call to coarse BLAST,
-         *make a FASTA file of the expanded hits and run BLAST with the current
-         *query sequence against the expanded hits file.
-         */
-        if (expanded_hits->size > 0)
-            write_fine_fasta(expanded_hits);
+        for (j = 0; j < expanded_hits->size; j++)
+            ds_vector_append(oseqs, ds_vector_get(expanded_hits, j));
+        ds_vector_free_no_data(expanded_hits);
     }
+    write_fine_db(oseqs);
+
+
     fprintf(stderr, "\n");
     ds_vector_free_no_data(queries);
     if (search_flags.show_hit_info)
