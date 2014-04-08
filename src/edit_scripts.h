@@ -11,6 +11,9 @@ struct edit_info{
     int str_length;
 };
 
+struct edit_info *edit_info_create();
+void edit_info_free(struct edit_info *edit);
+
 char to_half_byte(char c);
 char half_byte_to_char(char h);
 char *edit_script_to_half_bytes(char *edit_script);
