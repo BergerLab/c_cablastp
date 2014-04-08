@@ -288,7 +288,7 @@ char *progress_bar(int current, int iterations){
     int b = 0;
     bar[0] = '[';
     for(b = 0; b < 50; b++)
-        bar[b+1] = b <= bars ? '|' : ' ';
+        bar[b+1] = b < bars ? '|' : ' ';
     bar[51] = ']';
     bar[52] = '\0';
     return bar;
@@ -298,8 +298,8 @@ char *progress_bar(int current, int iterations){
 int
 main(int argc, char **argv)
 {
-    int i = 0, j = 0, k = 0, l = 0;
-    uint64_t dbsize = 0;
+    int i = 0, j = 0;
+    uint64_t dbsize = 0, expanded_dbsize = 0;
     struct cb_database *db = NULL;
     struct opt_config *conf;
     struct opt_args *args;
@@ -353,9 +353,6 @@ main(int argc, char **argv)
     root = xmlDocGetRootElement(doc);
     iterations = get_blast_iterations(root);
 
-    int message_size = 0;
-    char *iteration_message = malloc(50*sizeof(*iteration_message));
-
     for (i = 0; i < iterations->size; i++) {
         /*Expand any BLAST hits we got from the current query sequence during
           coarse BLAST.*/
@@ -367,12 +364,16 @@ main(int argc, char **argv)
 
         expanded_hits = expand_blast_hits(iterations, i, db);
         query = (struct fasta_seq *)ds_vector_get(queries, i);
-        for (j = 0; j < expanded_hits->size; j++)
-            ds_vector_append(oseqs, ds_vector_get(expanded_hits, j));
+        for (j = 0; j < expanded_hits->size; j++) {
+            struct cb_hit_expansion *current_expansion =
+                   (struct cb_hit_expansion *)ds_vector_get(expanded_hits, j);
+            expanded_dbsize += current_expansion->seq->length;
+            ds_vector_append(oseqs, (void *)current_expansion);
+        }
         ds_vector_free_no_data(expanded_hits);
     }
     write_fine_db(oseqs);
-    blast_fine(args->args[1], dbsize, blast_args, has_evalue);
+    blast_fine(args->args[1], expanded_dbsize, blast_args, has_evalue);
 
     fprintf(stderr, "\n");
     ds_vector_free_no_data(queries);
