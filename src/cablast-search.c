@@ -41,12 +41,12 @@ void blast_coarse(struct opt_args *args, uint64_t dbsize){
     char *input_path = path_join(args->args[0], CABLAST_COARSE_FASTA);
     char *blastn_command =
            "blastn -db  -outfmt 5 -query  -dbsize  -task blastn -evalue "
-           "%s > CaBLAST_temp_blast_results.xml";
+           "%s -out CaBLAST_temp_blast_results.xml";
     int command_length = strlen(blastn_command) + strlen(input_path) +
                                                   strlen(args->args[1]) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
     sprintf(blastn,"blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn"
-                   " -evalue %s > CaBLAST_temp_blast_results.xml",
+                   " -evalue %s -out CaBLAST_temp_blast_results.xml",
            input_path, args->args[1], dbsize, search_flags.coarse_evalue);
     system(blastn);
     free(blastn);
@@ -293,7 +293,7 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
 
 char *progress_bar(int current, int iterations){
     char *bar = malloc(53*sizeof(*bar));
-    int bars = (int)(((float)current/iterations)*50);
+    int bars = (int)(((float)(current+1)/iterations)*50);
     int b = 0;
     bar[0] = '[';
     for(b = 0; b < 50; b++)
@@ -398,6 +398,12 @@ main(int argc, char **argv)
             free(h);
         }
     }
+
+    for (i = 0; i < oseqs->size; i++)
+        cb_hit_expansion_free(
+            (struct cb_hit_expansion *)ds_vector_get(oseqs, i));
+
+    ds_vector_free_no_data(oseqs);
 
     cb_database_free(db);
     xmlFreeDoc(doc);
