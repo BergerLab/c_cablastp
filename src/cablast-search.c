@@ -192,9 +192,9 @@ struct DSVector *get_blast_iterations(xmlNode *node){
   query and outputs them to the FASTA file CaBLAST_fine.fasta.*/
 void write_fine_fasta(struct DSVector *oseqs){
     int i;
-    FILE *temp = fopen("CaBLAST_fine.fasta", "w");
+    FILE *temp = fopen("CaBLAST_fine.fasta", "a");
     if (!temp) {
-        fprintf(stderr, "Could not open CaBLAST_fine.fasta for writing\n");
+        fprintf(stderr, "Could not open CaBLAST_fine.fasta for appending\n");
         return;
     }
     for (i = 0; i < oseqs->size; i++) {
@@ -377,64 +377,8 @@ main(int argc, char **argv)
          *make a FASTA file of the expanded hits and run BLAST with the current
          *query sequence against the expanded hits file.
          */
-        if (expanded_hits->size > 0) {
+        if (expanded_hits->size > 0)
             write_fine_fasta(expanded_hits);
-            blast_fine("CaBLAST_fine.fasta", dbsize, query, blast_args, has_evalue);
-            /*Delete the expanded hits file if the --no-cleanup flag is not
-              being used.*/
-            if(!search_flags.no_cleanup)
-                system("rm CaBLAST_fine.fasta");
-
-            /*Output information on each fine BLAST hit if the --show-hit-info
-              flag is set to true.*/
-            /*if (search_flags.show_hit_info) {
-                xmlDoc *test_doc = xmlReadFile("CaBLAST_results.xml", NULL, 0);
-                xmlNode *test_root = xmlDocGetRootElement(test_doc);
-                struct DSVector *test_iterations =
-                    get_blast_iterations(test_root);
-
-                for (j = 0; j < test_iterations->size; j++) {
-                    struct cb_hit_expansion *expansion =
-                        (struct cb_hit_expansion *)ds_vector_get(
-                                                       expanded_hits, j);
-                    struct DSVector *test_hits =
-                        get_blast_hits((xmlNode *)
-                            ds_vector_get(test_iterations, j));
-                    for (k = 0; k < test_hits->size; k++) {
-                        struct hit *current_hit =
-                            (struct hit *)ds_vector_get(test_hits, k);
-                        struct DSVector *test_hsps = current_hit->hsps;
-                        for (l = 0; l < test_hsps->size; l++) {
-                            int64_t offset = expansion->offset;
-                            struct hsp *current_hsp =
-                                (struct hsp *)ds_vector_get(test_hsps, l);
-                            int32_t hit_from =
-                                current_hsp->hit_from + offset - 1;
-                            int32_t hit_to =
-                                current_hsp->hit_to + offset - 1;
-                            fprintf(test_hits_file, "hit: %d-%d\n", hit_from,
-                                                                     hit_to);
-                        }
-                    }
-                }
-                /*Free the XML data for the current query's expanded hits.*//*
-                for (j = 0; j < test_iterations->size; j++) {
-                    struct DSVector *current_iteration =
-                        (struct DSVector *)ds_vector_get(test_iterations, j);
-                    for (k = 0; k < current_iteration->size; k++) {
-                        struct hit *h =
-                            (struct hit *)ds_vector_get(current_iteration, k);
-                        ds_vector_free(h->hsps);
-                        free(h);
-                    }
-                }
-                xmlFreeDoc(test_doc);
-            }*/
-        }
-        for (j = 0; j < expanded_hits->size; j++)
-            cb_hit_expansion_free(ds_vector_get(expanded_hits, j));
-        ds_vector_free_no_data(expanded_hits);
-        fasta_free_seq(query);
     }
     fprintf(stderr, "\n");
     ds_vector_free_no_data(queries);
