@@ -383,7 +383,6 @@ main(int argc, char **argv)
         }
         ds_vector_free_no_data(expanded_hits);
     }
-
     if (!search_flags.hide_messages)
         fprintf(stderr, "\n\nWriting database for fine BLAST\n\n");
     write_fine_db(oseqs);

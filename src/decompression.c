@@ -148,6 +148,7 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
                                        link->original_start +
                                        link->coarse_end-hit_from))
                         + hit_pad_length, seq_lengths[link->org_seq_id] - 1);
+            uint64_t original_range = original_end - original_start + 1;
 
             struct cb_compressed_seq *seq =
                        cb_compressed_read_seq_at(comdb, link->org_seq_id);
@@ -159,11 +160,16 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
             /*Run decode_edit_script for each link_to_coarse in the compressed
               sequence to re-create the section of the original string.*/ 
             current = seq->links;
-            for (; current; current = current->next)
-                decode_edit_script(orig_str, original_end-original_start+1,
-                                    original_start, coarsedb, current);
+            for (; current; current = current->next) {
+                int coarse_range = current->coarse_end - current->coarse_start;
+                int init_i0 = current->original_start - (int32_t)original_start;
+                int last_i0 = init_i0 + coarse_range;
+                if (0 < last_i0 && (int32_t)original_range > init_i0)
+                        decode_edit_script(orig_str, original_range,
+                                           original_start, coarsedb, current);
+            }
             orig_str[original_end-original_start+1] = '\0';
-
+printf("%s\n", orig_str);
             struct cb_hit_expansion *expansion = malloc(sizeof(*expansion));
             expansion->offset = (int64_t)original_start;
             expansion->seq = cb_seq_init(link->org_seq_id,
