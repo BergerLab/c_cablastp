@@ -20,6 +20,7 @@
 #include "DNAalphabet.h"
 #include "fasta.h"
 #include "flags.h"
+#include "range_tree.h"
 #include "seq.h"
 #include "util.h"
 #include "xml.h"
@@ -261,7 +262,9 @@ bool has_blast_arg(struct opt_args *args, char *arg){
  *cb_coarse_expand for the hits in the iteration we are expanding.
  */
 struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
-                                   struct cb_database *db){
+                                   struct cb_database *db,
+                                   struct DSHashMap *range_trees,
+                                   struct DSHashMap *expanded_seqs){
     struct DSVector *expanded_hits = ds_vector_create();
     int i = 0, j = 0, k = 0;
     struct DSVector *hits = get_blast_hits((xmlNode *)
@@ -314,6 +317,8 @@ main(int argc, char **argv)
     xmlNode *root = NULL;
     struct DSVector *iterations = NULL, *expanded_hits = NULL,
                     *queries = NULL, *oseqs = ds_vector_create();
+    struct DSHashMap *range_trees = ds_hashmap_create(),
+                     *expanded_seqs = ds_hashmap_create();
     struct fasta_seq *query = NULL;
     FILE *query_file = NULL;
     char *blast_args = NULL;
@@ -373,7 +378,8 @@ main(int argc, char **argv)
             free(bar);
         }
 
-        expanded_hits = expand_blast_hits(iterations, i, db);
+        expanded_hits = expand_blast_hits(iterations, i, db, range_trees,
+                                          expanded_seqs);
         query = (struct fasta_seq *)ds_vector_get(queries, i);
         for (j = 0; j < expanded_hits->size; j++) {
             struct cb_hit_expansion *current_expansion =
