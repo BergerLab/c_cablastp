@@ -49,11 +49,17 @@ void cb_range_tree_free(struct cb_range_tree *tree){
     }
 }
 
-/*Insert a node with the specified start and end into a cb_range_tree struct
-  and update the tree so no ranges overlap.*/
+/*Takes in a tree, an expanded DNA sequence, and its starting and ending
+ *indices and inserts a node created from those data into the tree and updates
+ *the tree so that no ranges overlap.
+ */
 void cb_range_tree_insert(struct cb_range_tree *tree,
                           char *sequence, int start, int end){
-    tree->root = cb_range_node_insert(tree->root, sequence, start, end);
+    if (end <= start)
+       fprintf(stderr, "Invalid range start (%d) must be less than end (%d)",
+                       start, end);
+    else
+        tree->root = cb_range_node_insert(tree->root, sequence, start, end);
 }
 
 /*Find the last node in a node's left or right subtree that the range specified
@@ -73,14 +79,14 @@ struct cb_range_node *find_last_in_range(struct cb_range_node *current, int dir,
               current : find_last_in_range(current->right, dir, start, end);
 }
 
-/*Called from cb_range_tree_insert to add the specified range to a
-  cb_range_tree.*/
+/*Called from cb_range_tree_insert to add an expanded DNA sequence and its
+  indices to a cb_range_tree.*/
 struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
                                            char *sequence, int start, int end){
     struct cb_range_node *temp = NULL, *parent = NULL;
 
     /*If the node we are at is a null pointer, then create a new node with the
-      range passed in and return it to add it to the tree.*/
+      sequence and range passed in and return the node to add it to the tree.*/
     if (!current)
         return cb_range_node_create(sequence, start, end);
 
@@ -91,15 +97,24 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
      */
     if (start < current->range->end && end > current->range->start) {
         /*If the start goes past the current node's start, update the current
-          node's start and delete any nodes in the left subtree that would
-          overlap the new range, setting the current node's start to the start
-          of the last node the current node overlaps*/
+         *node's start and delete any nodes in the left subtree that would
+         *overlap the new range, setting the current node's start to the start
+         *of the last node the current node overlaps and updating the node's
+         *sequence to include any sequences the range overlaps to the left.
+         */
         if (start < current->range->start) {
             current->range->start = start;
             temp = current->left;
             parent = find_last_in_range(current, -1, start, end);
 
             if (current != parent) {
+                char *merged =
+                    cb_range_merge(current->sequence, current->range->start,
+                                   current->range->end,
+                                   parent->sequence, parent->range->start,
+                                   parent->range->end);
+                free(current->sequence);
+                current->sequence = merged;
                 current->range->start = parent->range->start;
                 current->left = parent->left;
                 parent->left = NULL;
@@ -107,15 +122,24 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
             }
         }
         /*If the end goes past the current node's end, update the current node's
-          end and delete any nodes in the right subtree that would overlap the
-          new range, setting the current node's end to the end of the last node
-          the current node overlaps*/
+         *end and delete any nodes in the right subtree that would overlap the
+         *new range, setting the current node's end to the end of the last node
+         *the current node overlaps and updating the node's sequence to include
+         *any sequences the range overlaps to the right.
+         */
         if (end > current->range->end) {
             current->range->end = end;
             temp = current->right;
             parent = find_last_in_range(current, 1, start, end);
             
             if (current != parent) {
+                char *merged =
+                    cb_range_merge(parent->sequence, parent->range->start,
+                                   parent->range->end,
+                                   current->sequence, current->range->start,
+                                   current->range->end);
+                free(current->sequence);
+                current->sequence = merged;
                 current->range->start = parent->range->start;
                 current->right = parent->right;
                 parent->right = NULL;
