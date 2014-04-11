@@ -20,9 +20,9 @@ cablast-compress.o: cablast-compress.c database.h DNAalphabet.h fasta.h
 
 DECOMPRESS_OBJS=align.o \
 							bitpack.o coarse.o compressed.o compression.o database.o decompression.o DNAalphabet.o DNAmatrix.o DNAutils.o edit_scripts.o fasta.o flags.o \
-							seeds.o seq.o util.o
+							range_tree.o seeds.o seq.o util.o
 DECOMPRESS_HEADERS=align.o coarse.h compressed.h compression.h \
-							database.h decompression.h DNAalphabet.h fasta.h flags.h link_to_coarse.h link_to_compressed.h seeds.h seq.h util.h
+							database.h decompression.h DNAalphabet.h fasta.h flags.h link_to_coarse.h link_to_compressed.h range_tree.h seeds.h seq.h util.h
 
 decompress: DNAalphabet.h cablast-decompress
 

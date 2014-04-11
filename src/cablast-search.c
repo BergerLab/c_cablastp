@@ -279,8 +279,9 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
             int32_t coarse_seq_id = current_hit->accession;
 
             struct DSVector *oseqs =
-                cb_coarse_expand(db->coarse_db, db->com_db, coarse_seq_id,
-                                  coarse_start, coarse_end, 50);
+                cb_coarse_expand(db->coarse_db, db->com_db,
+                                 range_trees, expanded_seqs, coarse_seq_id,
+                                 coarse_start, coarse_end, 50);
             for (k = 0; k < oseqs->size; k++)
                 ds_vector_append(expanded_hits, ds_vector_get(oseqs, k));
             ds_vector_free_no_data(oseqs);

@@ -10,6 +10,7 @@
 #include "compressed.h"
 #include "decompression.h"
 #include "fasta.h"
+#include "range_tree.h"
 #include "seq.h"
 #include "util.h"
 
@@ -95,8 +96,9 @@ int get_max(int a, int b){return a>b?a:b;}
  */
 struct DSVector *
 cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
-                  int32_t id, int32_t hit_from, int32_t hit_to,
-                  int32_t hit_pad_length){
+                 struct DSHashMap *range_trees, struct DSHashMap *expanded_seqs,
+                 int32_t id, int32_t hit_from, int32_t hit_to,
+                 int32_t hit_pad_length){
     FILE *links = coarsedb->file_links;
     FILE *coarse_links_index = coarsedb->file_links_index;
     FILE *fasta = coarsedb->file_fasta;
@@ -118,6 +120,13 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
     for (i = 0; i < coarse_seq_links->size; i++) {
         struct cb_link_to_compressed *link =
             (struct cb_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
+
+        if (ds_geti(range_trees, link->org_seq_id)) {
+            ds_puti(range_trees, link->org_seq_id,
+                    (void *)cb_range_tree_create());
+            ds_puti(expanded_seqs, link->org_seq_id,
+                    (void *)ds_vector_create());
+        }
 
         /*Only expand the link if it overlaps the range for the BLAST Hsp we
           are expanding from.*/
