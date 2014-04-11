@@ -136,3 +136,16 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
 
     return current;
 }
+
+/*Takes in the sequences and starting and ending indices of two sections of an
+  original sequence and merges the sequences together.*/
+char *cb_range_merge(char *left_seq, int left_start, int left_end,
+                     char *right_seq, int right_start, int right_end){
+    char *merged = malloc((right_end-left_start)*sizeof(*merged));
+    int index = 0, i = 0;
+    for (i = 0; i < right_start-left_start; i++)
+        merged[index++] = left_seq[i];
+    for (i = 0; i < right_end-right_start; i++)
+        merged[index++] = right_seq[i];
+    return merged;
+}
