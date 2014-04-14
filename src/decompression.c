@@ -130,7 +130,6 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
         /*Only expand the link if it overlaps the range for the BLAST Hsp we
           are expanding from.*/
         if (link->coarse_start <= hit_to && link->coarse_end >= hit_from) {
-fprintf(stderr, "Processing link\n");
             struct cb_link_to_coarse *current = NULL;
             bool dir = link->dir;
 
@@ -158,10 +157,8 @@ fprintf(stderr, "Processing link\n");
                                        link->coarse_end-hit_from))
                         + hit_pad_length, seq_lengths[link->org_seq_id] - 1);
             uint64_t original_range = original_end - original_start + 1;
-fprintf(stderr, "Reading compressed sequence\n");
             struct cb_compressed_seq *seq =
                        cb_compressed_read_seq_at(comdb, link->org_seq_id);
-fprintf(stderr, "Read compressed sequence\n");
             char *orig_str = malloc((original_end-original_start+2) *
                                     sizeof(*orig_str));
             for (j = 0; j < original_end-original_start+1; orig_str[j++]='?');
@@ -178,22 +175,16 @@ fprintf(stderr, "Read compressed sequence\n");
                                            original_start, coarsedb, current);
             }
             orig_str[original_end-original_start+1] = '\0';
-fprintf(stderr, "%s\n", orig_str);
 printf("%s\n", orig_str);
             struct cb_hit_expansion *expansion = malloc(sizeof(*expansion));
             expansion->offset = (int64_t)original_start;
             expansion->seq = cb_seq_init(link->org_seq_id,
                                          seq->name, orig_str);
-fprintf(stderr, "Calling cb_range_tree_insert\n");
             /*cb_range_tree_insert(tree, orig_str, original_start, original_end);*/
-fprintf(stderr, "Finished cb_range_tree_insert\n");
-fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!Appending original sequence\n");
             ds_vector_append(oseqs, (void *)expansion);
-fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!Finished appending original sequence\n");
 
             free(orig_str);
             cb_compressed_seq_free(seq);
-fprintf(stderr, "Finished processing link\n");
         }
     }
 
