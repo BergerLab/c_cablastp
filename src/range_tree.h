@@ -31,4 +31,11 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
                                            char *sequence, int start, int end);
 char *cb_range_merge(char *left_seq, int left_start, int left_end,
                      char *right_seq, int right_start, int right_end);
+void cb_range_node_traverse(struct cb_range_node *node,
+                            void (*f)(struct cb_range_node *,void *),
+                            void *acc);
+void cb_range_tree_traverse(struct cb_range_tree *tree,
+                            void (*f)(struct cb_range_node *,void *),
+                            void *acc);
+
 #endif

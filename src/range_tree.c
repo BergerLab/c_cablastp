@@ -178,3 +178,21 @@ fprintf(stderr, "Merging %d-%d and %d-%d\n", left_start, left_end, right_start, 
         merged[index++] = right_seq[i];
     return merged;
 }
+
+void cb_range_node_traverse(struct cb_range_node *node,
+                            void (*f)(struct cb_range_node *,void *),
+                            void *acc){
+    if (node->left != NULL)
+        cb_range_node_traverse(node->left, f, acc);
+    f(node, acc);
+    if (node->right != NULL)
+        cb_range_node_traverse(node->right, f, acc);
+
+}
+
+void cb_range_tree_traverse(struct cb_range_tree *tree,
+                            void (*f)(struct cb_range_node *,void *),
+                            void *acc){
+    cb_range_node_traverse(tree->root, f, acc);
+}
+
