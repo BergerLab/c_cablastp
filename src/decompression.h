@@ -15,8 +15,7 @@ struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
                                    struct cb_coarse *coarsedb);
 struct DSVector *
 cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
-                 struct DSHashMap *range_trees, struct DSHashMap *expanded_seqs,
-                 int32_t id, int32_t start, int32_t end,
-                 int32_t hit_pad_length);
+                 struct DSHashMap *range_trees, int32_t id,
+                 int32_t start, int32_t end, int32_t hit_pad_length);
 
 #endif

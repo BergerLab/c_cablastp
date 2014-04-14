@@ -263,8 +263,7 @@ bool has_blast_arg(struct opt_args *args, char *arg){
  */
 struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
                                    struct cb_database *db,
-                                   struct DSHashMap *range_trees,
-                                   struct DSHashMap *expanded_seqs){
+                                   struct DSHashMap *range_trees){
     struct DSVector *expanded_hits = ds_vector_create();
     int i = 0, j = 0, k = 0;
     struct DSVector *hits = get_blast_hits((xmlNode *)
@@ -280,7 +279,7 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
 
             struct DSVector *oseqs =
                 cb_coarse_expand(db->coarse_db, db->com_db,
-                                 range_trees, expanded_seqs, coarse_seq_id,
+                                 range_trees, coarse_seq_id,
                                  coarse_start, coarse_end, 50);
             for (k = 0; k < oseqs->size; k++)
                 ds_vector_append(expanded_hits, ds_vector_get(oseqs, k));
@@ -318,8 +317,7 @@ main(int argc, char **argv)
     xmlNode *root = NULL;
     struct DSVector *iterations = NULL, *expanded_hits = NULL,
                     *queries = NULL, *oseqs = ds_vector_create();
-    struct DSHashMap *range_trees = ds_hashmap_create(),
-                     *expanded_seqs = ds_hashmap_create();
+    struct DSHashMap *range_trees = ds_hashmap_create();
     struct fasta_seq *query = NULL;
     FILE *query_file = NULL;
     char *blast_args = NULL;
@@ -379,8 +377,7 @@ main(int argc, char **argv)
             free(bar);
         }
 
-        expanded_hits = expand_blast_hits(iterations, i, db, range_trees,
-                                          expanded_seqs);
+        expanded_hits = expand_blast_hits(iterations, i, db, range_trees);
         query = (struct fasta_seq *)ds_vector_get(queries, i);
         for (j = 0; j < expanded_hits->size; j++) {
             struct cb_hit_expansion *current_expansion =
@@ -413,6 +410,7 @@ main(int argc, char **argv)
             (struct cb_hit_expansion *)ds_vector_get(oseqs, i));
 
     ds_vector_free_no_data(oseqs);
+    ds_hashmap_free(range_trees, true, true);
 
     cb_database_free(db);
     xmlFreeDoc(doc);
