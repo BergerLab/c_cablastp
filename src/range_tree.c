@@ -19,7 +19,8 @@ struct cb_range_node *cb_range_node_create(char *sequence, int start, int end){
     node->range->start = start;
     node->range->end = end;
     node->sequence = malloc((end-start+1)*sizeof(*(node->sequence)));
-    strcpy(node->sequence, sequence);
+    strncpy(node->sequence, sequence, (end-start));
+    node->sequence[end-start] = '\0';
     node->left = NULL;
     node->right = NULL;
     return node;
@@ -152,6 +153,7 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
     /*If there is no overlap between the current node's range and the range
       passed in, call cb_range_node_insert on whichever subtree the range would
       be in to make any necessary updates to that subtree.*/
+    else
         if (end < current->range->start)
             current->left = cb_range_node_insert(current->left, sequence,
                                                  start, end);

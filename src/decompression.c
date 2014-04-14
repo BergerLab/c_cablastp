@@ -108,10 +108,6 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
     struct DSVector *coarse_seq_links =
         get_coarse_sequence_links_at(links, coarse_links_index, id);
 
-    /*Get the residues of the coarse sequence we are expanding.*/
-    struct fasta_seq *residues = cb_coarse_read_fasta_seq(coarsedb, id);
-
-    int fasta_length = strlen(residues->seq);
     int64_t *seq_lengths = cb_compressed_get_lengths(comdb);
 
     int i = 0, j = 0;
@@ -159,6 +155,7 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
             uint64_t original_range = original_end - original_start + 1;
             struct cb_compressed_seq *seq =
                        cb_compressed_read_seq_at(comdb, link->org_seq_id);
+
             char *orig_str = malloc((original_end-original_start+2) *
                                     sizeof(*orig_str));
             for (j = 0; j < original_end-original_start+1; orig_str[j++]='?');
@@ -176,18 +173,16 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
             }
             orig_str[original_end-original_start+1] = '\0';
 printf("%s\n", orig_str);
+            cb_range_tree_insert(tree, orig_str, original_start, original_end);
             struct cb_hit_expansion *expansion =
                 cb_hit_expansion_init(link->org_seq_id, seq->name, orig_str,
                                                     (int64_t)original_start);
-            /*cb_range_tree_insert(tree, orig_str, original_start, original_end);*/
             ds_vector_append(oseqs, (void *)expansion);
-
             free(orig_str);
             cb_compressed_seq_free(seq);
         }
     }
 
     ds_vector_free(coarse_seq_links);
-    fasta_free_seq(residues);
     return oseqs;
 }
