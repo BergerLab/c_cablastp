@@ -75,10 +75,10 @@ struct cb_range_node *find_last_in_range(struct cb_range_node *current, int dir,
        return NULL;
    }
    if (dir < 0)
-       return (!current->left || current->left->range->end > start) ?
+       return (!current->left || current->left->range->end < start) ?
               current : find_last_in_range(current->left, dir, start, end);
    else
-       return (!current->right || current->right->range->start < end) ?
+       return (!current->right || current->right->range->start > end) ?
               current : find_last_in_range(current->right, dir, start, end);
 }
 
@@ -111,11 +111,12 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
             parent = find_last_in_range(current, -1, start, end);
 
             if (current != parent) {
+fprintf(stderr, "\nMerging on the left\n");
                 char *merged =
-                    cb_range_merge(current->sequence, current->range->start,
-                                   current->range->end,
-                                   parent->sequence, parent->range->start,
-                                   parent->range->end);
+                    cb_range_merge(parent->sequence, parent->range->start,
+                                   parent->range->end,
+                                   current->sequence, current->range->start,
+                                   current->range->end);
                 free(current->sequence);
                 current->sequence = merged;
                 current->range->start = parent->range->start;
@@ -136,11 +137,12 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
             parent = find_last_in_range(current, 1, start, end);
             
             if (current != parent) {
+fprintf(stderr, "\nMerging on the right\n");
                 char *merged =
-                    cb_range_merge(parent->sequence, parent->range->start,
-                                   parent->range->end,
-                                   current->sequence, current->range->start,
-                                   current->range->end);
+                    cb_range_merge(current->sequence, current->range->start,
+                                   current->range->end,
+                                   parent->sequence, parent->range->start,
+                                   parent->range->end);
                 free(current->sequence);
                 current->sequence = merged;
                 current->range->start = parent->range->start;
@@ -167,6 +169,7 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
   original sequence and merges the sequences together.*/
 char *cb_range_merge(char *left_seq, int left_start, int left_end,
                      char *right_seq, int right_start, int right_end){
+fprintf(stderr, "Merging %d-%d and %d-%d\n", left_start, left_end, right_start, right_end);
     char *merged = malloc((right_end-left_start)*sizeof(*merged));
     int index = 0, i = 0;
     for (i = 0; i < right_start-left_start; i++)
