@@ -57,6 +57,14 @@ cb_seq_free(struct cb_seq *seq)
     free(seq);
 }
 
+struct cb_hit_expansion *
+cb_hit_expansion_init(int32_t id, char *name, char *residues, int offset){
+    struct cb_hit_expansion *expansion = malloc(sizeof(*expansion));
+    expansion->seq = cb_seq_init(id, name, residues);
+    expansion->offset = offset;
+    return expansion;
+}
+
 void
 cb_hit_expansion_free(struct cb_hit_expansion *expansion)
 {

@@ -25,6 +25,9 @@ cb_seq_init_range(int32_t id, char *name, char *residues,
 void
 cb_seq_free(struct cb_seq *seq);
 
+struct cb_hit_expansion *
+cb_hit_expansion_init(int32_t id, char *name, char *residues, int offset);
+
 void
 cb_hit_expansion_free(struct cb_hit_expansion *expansion);
 

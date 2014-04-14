@@ -176,10 +176,9 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
             }
             orig_str[original_end-original_start+1] = '\0';
 printf("%s\n", orig_str);
-            struct cb_hit_expansion *expansion = malloc(sizeof(*expansion));
-            expansion->offset = (int64_t)original_start;
-            expansion->seq = cb_seq_init(link->org_seq_id,
-                                         seq->name, orig_str);
+            struct cb_hit_expansion *expansion =
+                cb_hit_expansion_init(link->org_seq_id, seq->name, orig_str,
+                                                    (int64_t)original_start);
             /*cb_range_tree_insert(tree, orig_str, original_start, original_end);*/
             ds_vector_append(oseqs, (void *)expansion);
 
