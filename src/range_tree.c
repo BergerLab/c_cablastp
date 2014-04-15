@@ -190,6 +190,7 @@ void cb_range_node_traverse(struct cb_range_node *node,
                             void (*f)(struct cb_range_node *,
                                       struct cb_range_tree *,void *),
                             void *acc){
+    fprintf(stderr, "%s\n%s\n", tree->seq_name, node->sequence);
     if (node->left != NULL)
         cb_range_node_traverse(node->left, tree, f, acc);
     f(node, tree, acc);
@@ -205,7 +206,9 @@ void cb_range_tree_traverse(struct cb_range_tree *tree,
                             void (*f)(struct cb_range_node *,
                                       struct cb_range_tree *,void *),
                             void *acc){
-    cb_range_node_traverse(tree->root, tree, f, acc);
+fprintf(stderr, "%d\n", tree==NULL);
+    if (tree != NULL && tree->root != NULL)
+        cb_range_node_traverse(tree->root, tree, f, acc);
 }
 
 /*A function to be passed into cb_range_tree_traverse that takes in a range
@@ -214,6 +217,7 @@ void cb_range_tree_traverse(struct cb_range_tree *tree,
  */
 void cb_range_node_output(struct cb_range_node *node,
                           struct cb_range_tree *tree, void *out){
+    fprintf(stderr, "%s\n", node->sequence);
     fprintf((FILE *)out, "%s\n%s\n", tree->seq_name, node->sequence);
 }
 

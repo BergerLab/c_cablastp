@@ -208,17 +208,18 @@ void write_fine_db(struct DSVector *oseqs){
                                     "-out CaBLAST_fine.fasta");
 }
 
-int32_t greater_than(void *a, void *b){return (*(int32_t*)a)-(*(int32_t*)b);}
-
 void write_fine_db_from_trees(struct DSHashMap *range_trees){
     FILE *tree_expansions = fopen("tree.fasta", "w");
     int i = 0;
-    ds_hashmap_sort_by(range_trees, greater_than);
-    for (i = 0; i < range_trees->keys->size; i++)
-        cb_range_tree_output(
-            (struct cb_range_tree *)ds_geti(range_trees,
-                *(int32_t *)ds_vector_get(range_trees->keys, i)),
-            tree_expansions);
+
+    ds_hashmap_sort_keys(range_trees);
+    for (i = 0; i < range_trees->keys->size; i++){
+        int32_t key =
+            ((struct DSHashKey *)ds_vector_get(range_trees->keys, i))->key.i;
+        struct cb_range_tree *tree =
+            (struct cb_range_tree *)ds_geti(range_trees, key);
+        cb_range_tree_output(tree, tree_expansions);
+    }
     fclose(tree_expansions);
 }
 
@@ -400,10 +401,12 @@ main(int argc, char **argv)
         }
         ds_vector_free_no_data(expanded_hits);
     }
+
     if (!search_flags.hide_messages)
         fprintf(stderr, "\n\nWriting database for fine BLAST\n\n");
     write_fine_db(oseqs);
-    write_fine_db_from_trees(range_trees);
+
+/**********/  write_fine_db_from_trees(range_trees);
     blast_fine(args->args[1], expanded_dbsize, blast_args, has_evalue);
 
     ds_vector_free_no_data(queries);
@@ -424,7 +427,7 @@ main(int argc, char **argv)
             (struct cb_hit_expansion *)ds_vector_get(oseqs, i));
 
     ds_vector_free_no_data(oseqs);
-    ds_hashmap_free(range_trees, true, true);
+/*    ds_hashmap_free(range_trees, true, true);*/
 
     cb_database_free(db);
     xmlFreeDoc(doc);
