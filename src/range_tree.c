@@ -18,9 +18,9 @@ struct cb_range_node *cb_range_node_create(char *sequence, int start, int end){
     node->range = malloc(sizeof(*(node->range)));
     node->range->start = start;
     node->range->end = end;
-    node->sequence = malloc((end-start+1)*sizeof(*(node->sequence)));
-    strncpy(node->sequence, sequence, (end-start));
-    node->sequence[end-start] = '\0';
+    node->sequence = malloc((end-start+2)*sizeof(*(node->sequence)));
+    strncpy(node->sequence, sequence, (end-start+1));
+    node->sequence[end-start+1] = '\0';
     node->left = NULL;
     node->right = NULL;
     return node;
@@ -29,7 +29,9 @@ struct cb_range_node *cb_range_node_create(char *sequence, int start, int end){
 /*Created a new empty cb_range_tree.*/
 struct cb_range_tree *cb_range_tree_create(char *seq_name){
     struct cb_range_tree *tree = malloc(sizeof(*tree));
-    tree->seq_name = seq_name;
+    tree->seq_name = malloc((strlen(seq_name)+1)*sizeof(*(tree->seq_name)));
+    strncpy(tree->seq_name, seq_name, strlen(seq_name));
+    tree->seq_name[strlen(seq_name)] = '\0';
     tree->root = NULL;
     return tree;
 }
@@ -190,7 +192,7 @@ void cb_range_node_traverse(struct cb_range_node *node,
                             void (*f)(struct cb_range_node *,
                                       struct cb_range_tree *,void *),
                             void *acc){
-    fprintf(stderr, "%s\n%s\n", tree->seq_name, node->sequence);
+    /*fprintf(stderr, "%s\n%s\n", tree->seq_name, node->sequence);*/
     if (node->left != NULL)
         cb_range_node_traverse(node->left, tree, f, acc);
     f(node, tree, acc);
@@ -206,7 +208,6 @@ void cb_range_tree_traverse(struct cb_range_tree *tree,
                             void (*f)(struct cb_range_node *,
                                       struct cb_range_tree *,void *),
                             void *acc){
-fprintf(stderr, "%d\n", tree==NULL);
     if (tree != NULL && tree->root != NULL)
         cb_range_node_traverse(tree->root, tree, f, acc);
 }
@@ -217,8 +218,7 @@ fprintf(stderr, "%d\n", tree==NULL);
  */
 void cb_range_node_output(struct cb_range_node *node,
                           struct cb_range_tree *tree, void *out){
-    fprintf(stderr, "%s\n", node->sequence);
-    fprintf((FILE *)out, "%s\n%s\n", tree->seq_name, node->sequence);
+    fprintf((FILE *)out, "> %s\n%s\n", tree->seq_name, node->sequence);
 }
 
 /*Uses cb_range_tree_traverse and cb_range_node_output to output the sequences
