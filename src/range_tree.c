@@ -27,8 +27,9 @@ struct cb_range_node *cb_range_node_create(char *sequence, int start, int end){
 }
 
 /*Created a new empty cb_range_tree.*/
-struct cb_range_tree *cb_range_tree_create(){
+struct cb_range_tree *cb_range_tree_create(char *seq_name){
     struct cb_range_tree *tree = malloc(sizeof(*tree));
+    tree->seq_name = seq_name;
     tree->root = NULL;
     return tree;
 }
@@ -180,32 +181,40 @@ fprintf(stderr, "Merging %d-%d and %d-%d\n", left_start, left_end, right_start, 
 }
 
 /*A pre-order traversal function for range trees.  Takes in a range tree node,
- *a function that takes in a range tree node and a void *, and an accumulator
- *and calls the function for the node and each node in its subtrees.
+ *its tree, a function that takes in a range tree node, its tree, and a void *,
+ *and an accumulator and calls the function for the node and each node in its
+ *subtrees.
  */
 void cb_range_node_traverse(struct cb_range_node *node,
-                            void (*f)(struct cb_range_node *,void *),
+                            struct cb_range_tree *tree,
+                            void (*f)(struct cb_range_node *,
+                                      struct cb_range_tree *,void *),
                             void *acc){
     if (node->left != NULL)
-        cb_range_node_traverse(node->left, f, acc);
-    f(node, acc);
+        cb_range_node_traverse(node->left, tree, f, acc);
+    f(node, tree, acc);
     if (node->right != NULL)
-        cb_range_node_traverse(node->right, f, acc);
-
+        cb_range_node_traverse(node->right, tree, f, acc);
 }
 
-/*Takes in a range tree, a function taking in a range tree node and a void *,
-  and an accumulator and carries out a pre-order traversal on the tree.*/
+/*Takes in a range tree, a function taking in a range tree node, its tree,
+ *and a void *, and an accumulator and carries out a pre-order traversal on
+ *the tree.
+ */
 void cb_range_tree_traverse(struct cb_range_tree *tree,
-                            void (*f)(struct cb_range_node *,void *),
+                            void (*f)(struct cb_range_node *,
+                                      struct cb_range_tree *,void *),
                             void *acc){
-    cb_range_node_traverse(tree->root, f, acc);
+    cb_range_node_traverse(tree->root, tree, f, acc);
 }
 
 /*A function to be passed into cb_range_tree_traverse that takes in a range
-  tree node and a FILE pointer and outputs the node's sequence to the file.*/
-void cb_range_node_output(struct cb_range_node *node, void *out){
-    fprintf((FILE *)out, "%s\n", node->sequence);
+ *tree node, its tree, and a FILE pointer and outputs the node's sequence to
+ *the file.
+ */
+void cb_range_node_output(struct cb_range_node *node,
+                          struct cb_range_tree *tree, void *out){
+    fprintf((FILE *)out, "%s\n%s\n", tree->seq_name, node->sequence);
 }
 
 /*Uses cb_range_tree_traverse and cb_range_node_output to output the sequences

@@ -100,7 +100,6 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
                  int32_t hit_from, int32_t hit_to, int32_t hit_pad_length){
     FILE *links = coarsedb->file_links;
     FILE *coarse_links_index = coarsedb->file_links_index;
-    FILE *compressed = comdb->file_compressed;
 
     struct DSVector *oseqs = ds_vector_create();
 
@@ -115,18 +114,12 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
         struct cb_link_to_compressed *link =
             (struct cb_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
 
-        /*If this is the first time we are expanding the current original
-          sequence, create a new range tree for that sequence.*/
-        if (!ds_geti(range_trees, link->org_seq_id))
-            ds_puti(range_trees, link->org_seq_id,
-                    (void *)cb_range_tree_create());
-        struct cb_range_tree *tree =
-            (struct cb_range_tree *)ds_geti(range_trees, link->org_seq_id);
-
         /*Only expand the link if it overlaps the range for the BLAST Hsp we
           are expanding from.*/
         if (link->coarse_start <= hit_to && link->coarse_end >= hit_from) {
+            struct cb_range_tree *tree = NULL;
             struct cb_link_to_coarse *current = NULL;
+            struct cb_hit_expansion *expansion = NULL;
             bool dir = link->dir;
 
             /*Calculate the range in the original sequence for the section of
@@ -160,6 +153,14 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
                                     sizeof(*orig_str));
             for (j = 0; j < original_end-original_start+1; orig_str[j++]='?');
 
+            /*If this is the first time we are expanding the current original
+              sequence, create a new range tree for that sequence.*/
+            if (!ds_geti(range_trees, link->org_seq_id))
+                ds_puti(range_trees, link->org_seq_id,
+                        (void *)cb_range_tree_create(seq->name));
+            tree = (struct cb_range_tree *)ds_geti(range_trees,
+                                                   link->org_seq_id);
+
             /*Run decode_edit_script for each link_to_coarse in the compressed
               sequence to re-create the section of the original string.*/ 
             current = seq->links;
@@ -174,9 +175,8 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
             orig_str[original_end-original_start+1] = '\0';
 printf("%s\n", orig_str);
             cb_range_tree_insert(tree, orig_str, original_start, original_end);
-            struct cb_hit_expansion *expansion =
-                cb_hit_expansion_init(link->org_seq_id, seq->name, orig_str,
-                                                    (int64_t)original_start);
+            expansion = cb_hit_expansion_init(link->org_seq_id, seq->name,
+                                              orig_str,(int64_t)original_start);
             ds_vector_append(oseqs, (void *)expansion);
             free(orig_str);
             cb_compressed_seq_free(seq);
