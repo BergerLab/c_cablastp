@@ -37,5 +37,7 @@ void cb_range_node_traverse(struct cb_range_node *node,
 void cb_range_tree_traverse(struct cb_range_tree *tree,
                             void (*f)(struct cb_range_node *,void *),
                             void *acc);
+void cb_range_node_output(struct cb_range_node *node, void *out);
+void cb_range_tree_output(struct cb_range_tree *tree, FILE *out);
 
 #endif
