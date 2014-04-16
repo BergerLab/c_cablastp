@@ -25,6 +25,8 @@ struct cb_range_node *cb_range_node_create(char *sequence, int start, int end);
 struct cb_range_tree *cb_range_tree_create(char *name);
 void cb_range_node_free(struct cb_range_node *node);
 void cb_range_tree_free(struct cb_range_tree *tree);
+void cb_range_node_update(struct cb_range_node *node, char *sequence,
+                          int start, int end);
 void cb_range_tree_insert(struct cb_range_tree *tree,
                           char *sequence, int start, int end);
 struct cb_range_node *find_last_in_range(struct cb_range_node *current, int dir,
