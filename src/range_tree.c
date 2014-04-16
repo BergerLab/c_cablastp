@@ -101,7 +101,10 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
      *nodes in the current node's subtrees that the current node's new range
      *overlaps.
      */
-    if (start < current->range->end && end > current->range->start) {
+    if (start <= current->range->end && end >= current->range->start) {
+fprintf(stderr, "\nChecking for merges, left merge: %d < %d, right merge: %d > %d\n",
+        start, current->range->start, end, current->range->end);
+/*fprintf(stderr, "Checking for left merge\n");*/
         /*If the start goes past the current node's start, update the current
          *node's start and delete any nodes in the left subtree that would
          *overlap the new range, setting the current node's start to the start
@@ -109,12 +112,11 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
          *sequence to include any sequences the range overlaps to the left.
          */
         if (start < current->range->start) {
-            current->range->start = start;
             temp = current->left;
             parent = find_last_in_range(current, -1, start, end);
 
             if (current != parent) {
-fprintf(stderr, "\nMerging on the left\n");
+fprintf(stderr, "<=start = %d...     ", start);
                 char *merged =
                     cb_range_merge(parent->sequence, parent->range->start,
                                    parent->range->end,
@@ -124,10 +126,22 @@ fprintf(stderr, "\nMerging on the left\n");
                 current->sequence = merged;
                 current->range->start = parent->range->start;
                 current->left = parent->left;
+fprintf(stderr, "Now the current node's range is %d-%d\n",
+        current->range->start, current->range->end);
                 parent->left = NULL;
                 cb_range_node_free(temp);
             }
+            else {
+                char *merged = cb_range_merge(sequence, start, end,
+                                              current->sequence,
+                                              current->range->start,
+                                              current->range->end);
+                free(current->sequence);
+                current->sequence = merged;
+                current->range->start = start;
+            }
         }
+/*fprintf(stderr, "Checking for right merge\n");*/
         /*If the end goes past the current node's end, update the current node's
          *end and delete any nodes in the right subtree that would overlap the
          *new range, setting the current node's end to the end of the last node
@@ -135,12 +149,11 @@ fprintf(stderr, "\nMerging on the left\n");
          *any sequences the range overlaps to the right.
          */
         if (end > current->range->end) {
-            current->range->end = end;
             temp = current->right;
             parent = find_last_in_range(current, 1, start, end);
             
             if (current != parent) {
-fprintf(stderr, "\nMerging on the right\n");
+fprintf(stderr, "=>");
                 char *merged =
                     cb_range_merge(current->sequence, current->range->start,
                                    current->range->end,
@@ -150,6 +163,7 @@ fprintf(stderr, "\nMerging on the right\n");
                 current->sequence = merged;
                 current->range->start = parent->range->start;
                 current->right = parent->right;
+fprintf(stderr, "Now the current node's range is %d-%d\n", current->range->start, current->range->end);
                 parent->right = NULL;
                 cb_range_node_free(temp);
             }
@@ -175,9 +189,9 @@ char *cb_range_merge(char *left_seq, int left_start, int left_end,
 fprintf(stderr, "Merging %d-%d and %d-%d\n", left_start, left_end, right_start, right_end);
     char *merged = malloc((right_end-left_start)*sizeof(*merged));
     int index = 0, i = 0;
-    for (i = 0; i < right_start-left_start; i++)
+    for (i = 0; i < right_start - left_start; i++)
         merged[index++] = left_seq[i];
-    for (i = 0; i < right_end-right_start; i++)
+    for (i = 0; i < right_end - right_start; i++)
         merged[index++] = right_seq[i];
     return merged;
 }
@@ -226,3 +240,17 @@ void cb_range_node_output(struct cb_range_node *node,
 void cb_range_tree_output(struct cb_range_tree *tree, FILE *out){
     cb_range_tree_traverse(tree, cb_range_node_output, (void *)out);
 }
+
+
+void cb_range_node_output_range(struct cb_range_node *node,
+                          struct cb_range_tree *tree, void *out){
+    fprintf((FILE *)out, "> %d-%d... %s\n", node->range->start,
+                                            node->range->end, node->sequence);
+}
+
+void cb_range_tree_output_range(struct cb_range_tree *tree, FILE *out){
+    fprintf(stderr, "Outputting range tree\n");
+    cb_range_tree_traverse(tree, cb_range_node_output_range, (void *)out);
+    fprintf(stderr, "Finished outputting range tree\n");
+}
+
