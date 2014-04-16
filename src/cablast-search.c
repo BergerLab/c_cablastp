@@ -450,7 +450,7 @@ main(int argc, char **argv)
     cb_range_tree_output_range(t, stderr);
     cb_range_tree_insert(t, "CCCCCCCCCC", 20, 30);
     cb_range_tree_output_range(t, stderr);
-    cb_range_tree_insert(t, "AAAAAAACCCCCAAAAAGGGGG", 38, 60);
+    cb_range_tree_insert(t, "TTTAAAAAAAAAACCCCCAAAAAGGGGG", 32, 60);
     cb_range_tree_output_range(t, stderr);
 
     /*Free the coarse BLAST results file if the --no-cleanup flag is not being
