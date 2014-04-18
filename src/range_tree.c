@@ -1,4 +1,5 @@
 #include <assert.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -13,25 +14,28 @@ struct cb_range_node *cb_range_node_create(char *sequence, int start, int end){
     assert(end > start);
 
     node = malloc(sizeof(*node));
-    node->range = malloc(sizeof(*(node->range)));
-    node->range->start = start;
-    node->range->end = end;
+    node->start = start;
+    node->end = end;
 
-    node->sequence = malloc((end-start+2)*sizeof(*(node->sequence)));
-    strncpy(node->sequence, sequence, (end-start+1));
-    node->sequence[end-start+1] = '\0';
+    node->seq = malloc((end-start+2)*sizeof(*(node->seq)));
+    strncpy(node->seq, sequence, (end-start+1));
+    node->seq[end-start+1] = '\0';
 
     node->left = NULL;
     node->right = NULL;
     return node;
 }
 
-/*Created a new empty cb_range_tree.*/
+/*Creates a new empty cb_range_tree.*/
 struct cb_range_tree *cb_range_tree_create(char *seq_name){
     struct cb_range_tree *tree = malloc(sizeof(*tree));
-    tree->seq_name = malloc((strlen(seq_name)+1)*sizeof(*(tree->seq_name)));
-    strncpy(tree->seq_name, seq_name, strlen(seq_name));
-    tree->seq_name[strlen(seq_name)] = '\0';
+    if (seq_name != NULL) {
+        tree->seq_name = malloc((strlen(seq_name)+1)*sizeof(*(tree->seq_name)));
+        strncpy(tree->seq_name, seq_name, strlen(seq_name));
+        tree->seq_name[strlen(seq_name)] = '\0';
+    }
+    else
+        tree->seq_name = NULL;
     tree->root = NULL;
     return tree;
 }
@@ -39,8 +43,8 @@ struct cb_range_tree *cb_range_tree_create(char *seq_name){
 /*Frees a cb_range_node and all nodes in its subtrees.*/
 void cb_range_node_free(struct cb_range_node *node){
     if (node != NULL) {
-        free(node->range);
-        free(node->sequence);
+        if (node->seq != NULL)
+            free(node->seq);
         cb_range_node_free(node->left);
         cb_range_node_free(node->right);
         free(node);
@@ -61,13 +65,21 @@ void cb_range_tree_free(struct cb_range_tree *tree){
  */
 void cb_range_node_update(struct cb_range_node *node, char *sequence,
                           int start, int end){
+    int len = -1;
+
     assert(end > start);
+    assert(sequence != NULL);
 
-    free(node->sequence);
-    node->sequence = sequence;
 
-    node->range->start = start;
-    node->range->end = end;
+    len = strlen(sequence);
+    if (node->seq != NULL)
+        free(node->seq);
+    node->seq = malloc((len+1)*sizeof(*(node->seq)));
+    strncpy(node->seq, sequence, len);
+    node->seq[len] = '\0';
+
+    node->start = start;
+    node->end = end;
 }
 
 /*Takes in a tree, an expanded DNA sequence, and its starting and ending
@@ -77,113 +89,166 @@ void cb_range_node_update(struct cb_range_node *node, char *sequence,
 void cb_range_tree_insert(struct cb_range_tree *tree,
                           char *sequence, int start, int end){
     assert(end > start);
+    assert(sequence != NULL);
     tree->root = cb_range_node_insert(tree->root, sequence, start, end);
 }
 
-/*Find the last node in a node's left or right subtree that the range specified
-  by start and end would overlap*/
-struct cb_range_node *find_last_in_range(struct cb_range_node *current, int dir,
-                                         int start, int end){
-   assert(end > start);
-   if (dir < 0)
-       return (!current->left || current->left->range->end < start) ?
-              current : find_last_in_range(current->left, dir, start, end);
-   else
-       return (!current->right || current->right->range->start > end) ?
-              current : find_last_in_range(current->right, dir, start, end);
+/*Create a range node data struct*/
+struct cb_range_node_data *cb_range_node_data_create(int start, int end,
+                                                     char *sequence){
+    struct cb_range_node_data *d = malloc(sizeof(*d));
+    int len = -1;
+
+    assert(end > start);
+    assert(sequence != NULL);
+
+
+    d->start = start;
+    d->end = end;
+
+    len = strlen(sequence);
+    d->seq = malloc((len+1)*sizeof(*(d->seq)));
+    strncpy(d->seq, sequence, len);
+    d->seq[len] = '\0';
+    return d;
 }
 
-/*Called from cb_range_tree_insert to add an expanded DNA sequence and its
-  indices to a cb_range_tree.*/
-struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
-                                           char *sequence, int start, int end){
-    struct cb_range_node *temp = NULL, *parent = NULL;
+/*Update a range node data struct*/
+void cb_range_node_data_update(struct cb_range_node_data *d,
+                               int start, int end, char *sequence){
+    int len = -1;
+
     assert(end > start);
+    assert(sequence != NULL);
 
-    /*If the node we are at is a null pointer, then create a new node with the
-      sequence and range passed in and return the node to add it to the tree.*/
-    if (!current)
-        return cb_range_node_create(sequence, start, end);
+    d->start = start;
+    d->end = end;
 
-    /*If the new range overlaps the current node's range and goes past the
-     *current node's range, update the current node's range and delete any
-     *nodes in the current node's subtrees that the current node's new range
-     *overlaps.
+    len = strlen(sequence);
+    if (d->seq != NULL)
+        free(d->seq);
+    d->seq = malloc((len+1)*sizeof(*(d->seq)));
+    strncpy(d->seq, sequence, len);
+    d->seq[len] = '\0';   
+}
+
+/*Free a range node data struct*/
+void cb_range_node_data_free(struct cb_range_node_data *d){
+    assert(d != NULL);
+    if (d->seq != NULL)
+        free(d->seq);
+    free(d);
+}
+
+/*Removes nodes in the tree that overlap with range being passed in with
+ *"start" and "end" in the direction specified by "dir" (-1 = left, 1 = right)
+ *and returns the data of the node overlapping the range that is farthest in
+ *the specified direction.
+ */
+struct cb_range_node_data *remove_overlap(struct cb_range_node *cur,
+                                          int start, int end, int dir,
+                                          struct cb_range_node_data *data){
+    struct cb_range_node *next, *new_next;
+    bool left, overlap, next_overlap;
+    
+    assert(end > start); /*Make sure we are using a valid range*/
+    assert(cur!= NULL); /*remove_overlap is never called from a NULL pointer.*/
+
+    left = dir < 0;
+    overlap = start < cur->end && end > cur->start;
+    next = overlap ? (left ? cur->left : cur->right) :
+                     (left ? cur->right : cur->left);
+    /*If there is no next node, we already found the farthest node in the
+      specified direction to overlap the range, so return its data.*/
+    if (!next)
+        return data;
+    next_overlap = start < next->end && end > next->start;
+
+    /*If the next node overlaps the range, the next node needs to be deleted,
+     *so see if the data we are returning needs to be updated and then free the
+     *the next node and its subtree in the direction opposite of dir, making it
+     *so the next node is now the next node after next.  Since we don't know if
+     *new_next is NULL or overlaps the range, call the next call to
+     *remove_overlap from the current node.
      */
-    if (start <= current->range->end && end >= current->range->start) {
-        /*If the start goes past the current node's start, update the current
-         *node's start and delete any nodes in the left subtree that would
-         *overlap the new range, setting the current node's start to the start
-         *of the last node the current node overlaps and updating the node's
-         *sequence to include any sequences the range overlaps to the left.
-         */
-        if (start < current->range->start) {
-            char *merged = cb_range_merge(sequence, start, end,
-                                          current->sequence,
-                                          current->range->start,
-                                          current->range->end);
-            cb_range_node_update(current, merged, start, current->range->end);
-
-            temp = current->left;
-            parent = find_last_in_range(current, -1, start, end);
-
-            if (current != parent) {
-                if (parent->range->start < start) {
-                    char *merged =
-                        cb_range_merge(parent->sequence, parent->range->start,
-                                       parent->range->end,
-                                       current->sequence, current->range->start,
-                                       current->range->end);
-                    cb_range_node_update(current, merged, parent->range->start,
-                                                          current->range->end);
-                }
-                current->left = parent->left;
-                parent->left = NULL;
-                cb_range_node_free(temp);
-            }
+    if (next_overlap) {
+        if (left && next->start < data->start)
+            cb_range_node_data_update(data, next->start, next->end, next->seq);
+        new_next = left ? next->left : next->right;
+        if (left) {
+            cur->left = new_next;
+            next->left = NULL;
         }
-        /*If the end goes past the current node's end, update the current node's
-         *end and delete any nodes in the right subtree that would overlap the
-         *new range, setting the current node's end to the end of the last node
-         *the current node overlaps and updating the node's sequence to include
-         *any sequences the range overlaps to the right.
-         */
-        if (end > current->range->end) {
-            temp = current->right;
-            parent = find_last_in_range(current, 1, start, end);
-            
-            if (current != parent) {
-fprintf(stderr, "=>");
-                char *merged =
-                    cb_range_merge(current->sequence, current->range->start,
-                                   current->range->end,
-                                   parent->sequence, parent->range->start,
-                                   parent->range->end);
-                /*free(current->sequence);
-                current->sequence = merged;
-                current->range->start = parent->range->start;*/
-                cb_range_node_update(current, merged, parent->range->start,
-                                                      current->range->end);
-                current->right = parent->right;
-fprintf(stderr, "Now the current node's range is %d-%d\n",
-        current->range->start, current->range->end);
-                parent->right = NULL;
-                cb_range_node_free(temp);
-            }
+        else {
+            cur->right = new_next;
+            next->right = NULL;
+        }
+        /*Free the next node and the subtree new_next is not in.*/
+        cb_range_node_free(next);
+
+        return remove_overlap(cur, start, end, dir, data);
+    }
+    /*If the next node does not overlap the range, call the next call to
+      remove_overlap from the next node.*/
+    else
+        return remove_overlap(next, start, end, dir, data);
+}
+
+struct cb_range_node *cb_range_node_insert(struct cb_range_node *node,
+                                           char *sequence, int start, int end){
+    bool overlap;
+    struct cb_range_node_data *last;
+    if (!node)
+        return cb_range_node_create(sequence, start, end);
+    overlap = start < node->end && end > node->start;
+    if (!overlap) {
+        if (end < node->start)
+            node->left=cb_range_node_insert(node->left, sequence, start, end);
+        else
+            node->right=cb_range_node_insert(node->right, sequence, start, end);
+    }
+    else {
+        if (start < node->start) {
+            cb_range_node_update(node,
+                                 cb_range_merge(sequence, start, end, node->seq,
+                                                node->start, node->end),
+                                 start, node->end);
+            last = cb_range_node_data_create(start, end, sequence);
+            remove_overlap(node, start, end, -1, last);
+        }
+        if (start < node->end) {
+            ;
         }
     }
-    /*If there is no overlap between the current node's range and the range
-      passed in, call cb_range_node_insert on whichever subtree the range would
-      be in to make any necessary updates to that subtree.*/
-    else
-        if (end < current->range->start)
-            current->left = cb_range_node_insert(current->left, sequence,
-                                                 start, end);
-        else
-            current->right = cb_range_node_insert(current->right, sequence,
-                                                  start, end);
-    return current;
+    return node;
 }
+
+/*Takes in a range tree node, starting and ending indices for the range being
+ *added to the tree, the direction that the range overlaps the node this
+ *function was originally called from, and a pointer to a range tree node and
+ *finds the node in the tree that is farthest in that direction to overlap the
+ *range being added.
+ */
+/*struct cb_range_node *find_last_overlap(struct cb_range_node *node,
+                                        int start, int end, int dir,
+                                        struct cb_range_node *last){
+    assert(end > start);
+    /*If we are at the end of the tree, return the last node we found that
+      overlaps the range.*//*
+    if (!node) 
+        return last;
+    else {
+        /*If the node overlaps the range passed in, go in the direction
+         *specified by dir to look for nodes further in that direction that
+         *overlap the range.  Otherwise, we are past the range so look in the
+         *opposite direction.
+         *//*
+        bool overlap = start < node->end && end > node->start;
+        struct cb_range_node *next = overlap ? (dir?node->left:node->right) :
+                                               (dir?node->right:node->left);
+        return find_last_overlap(node, start, end, dir, (overlap?node:last));
+    }
+}*/
 
 /*Takes in the sequences and starting and ending indices of two sections of an
   original sequence and merges the sequences together.*/
@@ -195,6 +260,7 @@ fprintf(stderr, "Merging %d-%d and %d-%d\n", left_start, left_end, right_start, 
 
     assert(left_end > left_start && right_end > right_start);
     assert(left_end > right_start && right_end > left_start);
+    assert(left_seq != NULL && right_seq != NULL);
 
     merged = malloc((right_end-left_start)*sizeof(*merged));
     for (i = 0; i < right_start - left_start; i++)
@@ -241,25 +307,29 @@ void cb_range_tree_traverse(struct cb_range_tree *tree,
  */
 void cb_range_node_output(struct cb_range_node *node,
                           struct cb_range_tree *tree, void *out){
-    fprintf((FILE *)out, "> %s\n%s\n", tree->seq_name, node->sequence);
+    fprintf((FILE *)out, "> %s\n%s\n", tree->seq_name, node->seq);
 }
 
 /*Uses cb_range_tree_traverse and cb_range_node_output to output the sequences
-  in the range tree passed in to the specified file pointer passed in.*/
+  in the range tree passed in to the file pointer passed in.*/
 void cb_range_tree_output(struct cb_range_tree *tree, FILE *out){
     cb_range_tree_traverse(tree, cb_range_node_output, (void *)out);
 }
 
-
-void cb_range_node_output_range(struct cb_range_node *node,
+/*A function to be passed into cb_range_tree_traverse that takes in a range
+ *tree node, its tree, and a FILE pointer and outputs the node's range to
+ *and its sequence to the specified file pointer.
+ */
+void cb_range_node_output_data(struct cb_range_node *node,
                           struct cb_range_tree *tree, void *out){
-    fprintf((FILE *)out, "> %d-%d... %s\n", node->range->start,
-                                            node->range->end, node->sequence);
+    fprintf((FILE *)out, "> %d-%d... %s\n", node->start, node->end, node->seq);
 }
 
-void cb_range_tree_output_range(struct cb_range_tree *tree, FILE *out){
+/*Uses cb_range_tree_traverse and cb_range_node_output to output the sequences
+  and ranges in the range tree passed in to the file pointer passed in.*/
+void cb_range_tree_output_data(struct cb_range_tree *tree, FILE *out){
     fprintf(stderr, "Outputting range tree\n");
-    cb_range_tree_traverse(tree, cb_range_node_output_range, (void *)out);
+    cb_range_tree_traverse(tree, cb_range_node_output_data, (void *)out);
     fprintf(stderr, "Finished outputting range tree\n");
 }
 

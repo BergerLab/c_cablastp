@@ -433,25 +433,25 @@ main(int argc, char **argv)
     xmlFreeDoc(doc);
 
     struct cb_range_tree *t = cb_range_tree_create("");
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
     cb_range_tree_insert(t, "AAAAAAAAAA", 80, 90);
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
     cb_range_tree_insert(t, "TTTTTTTTTT", 65, 75);
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
     cb_range_tree_insert(t, "GGGGGGGGGG", 100, 110);
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
     cb_range_tree_insert(t, "CCCCCCCCCC", 120, 130);
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
     cb_range_tree_insert(t, "AAAAAAAAAA", 135, 145);
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
     cb_range_tree_insert(t, "GGGGGGGGGGTTTTT", 55, 70);
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
     cb_range_tree_insert(t, "AAAAAAAAAA", 35, 45);
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
     cb_range_tree_insert(t, "CCCCCCCCCC", 20, 30);
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
     cb_range_tree_insert(t, "TTTAAAAAAAAAACCCCCAAAAAGGGGG", 32, 60);
-    cb_range_tree_output_range(t, stderr);
+    cb_range_tree_output_data(t, stderr);
 
     /*Free the coarse BLAST results file if the --no-cleanup flag is not being
       used.*/
