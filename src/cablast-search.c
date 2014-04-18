@@ -218,7 +218,7 @@ void write_fine_db_from_trees(struct DSHashMap *range_trees){
             ((struct DSHashKey *)ds_vector_get(range_trees->keys, i))->key.i;
         struct cb_range_tree *tree =
             (struct cb_range_tree *)ds_geti(range_trees, key);
-        cb_range_tree_output(tree, tree_expansions);
+        cb_range_tree_output_fasta(tree, tree_expansions);
     }
     fclose(tree_expansions);
 }

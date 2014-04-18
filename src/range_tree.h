@@ -17,7 +17,6 @@ struct cb_range_tree {
     struct cb_range_node *root;
 };
 
-/*A struct for getting the data of a range tree node without its pointers.*/
 struct cb_range_node_data{
     int start;
     int end;
@@ -43,7 +42,7 @@ void cb_range_tree_insert(struct cb_range_tree *tree,
 struct cb_range_node_data *remove_overlap(struct cb_range_node *cur,
                                           int start, int end, int dir,
                                           struct cb_range_node_data *data);
-struct cb_range_node *cb_range_node_insert(struct cb_range_node *current,
+struct cb_range_node *cb_range_node_insert(struct cb_range_node *cur,
                                            char *sequence, int start, int end);
 char *cb_range_merge(char *left_seq, int left_start, int left_end,
                      char *right_seq, int right_start, int right_end);
@@ -58,9 +57,10 @@ void cb_range_tree_traverse(struct cb_range_tree *tree,
                             void (*f)(struct cb_range_node *,
                                       struct cb_range_tree *,void *),
                             void *acc);
-void cb_range_node_output(struct cb_range_node *node,
-                          struct cb_range_tree *tree, void *out);
-void cb_range_tree_output(struct cb_range_tree *tree, FILE *out);
+
+void cb_range_node_output_fasta(struct cb_range_node *node,
+                                struct cb_range_tree *tree, void *out);
+void cb_range_tree_output_fasta(struct cb_range_tree *tree, FILE *out);
 
 void cb_range_node_output_data(struct cb_range_node *node,
                                struct cb_range_tree *tree, void *out);
