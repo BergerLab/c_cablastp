@@ -223,33 +223,6 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *node,
     return node;
 }
 
-/*Takes in a range tree node, starting and ending indices for the range being
- *added to the tree, the direction that the range overlaps the node this
- *function was originally called from, and a pointer to a range tree node and
- *finds the node in the tree that is farthest in that direction to overlap the
- *range being added.
- */
-/*struct cb_range_node *find_last_overlap(struct cb_range_node *node,
-                                        int start, int end, int dir,
-                                        struct cb_range_node *last){
-    assert(end > start);
-    /*If we are at the end of the tree, return the last node we found that
-      overlaps the range.*//*
-    if (!node) 
-        return last;
-    else {
-        /*If the node overlaps the range passed in, go in the direction
-         *specified by dir to look for nodes further in that direction that
-         *overlap the range.  Otherwise, we are past the range so look in the
-         *opposite direction.
-         *//*
-        bool overlap = start < node->end && end > node->start;
-        struct cb_range_node *next = overlap ? (dir?node->left:node->right) :
-                                               (dir?node->right:node->left);
-        return find_last_overlap(node, start, end, dir, (overlap?node:last));
-    }
-}*/
-
 /*Takes in the sequences and starting and ending indices of two sections of an
   original sequence and merges the sequences together.*/
 char *cb_range_merge(char *left_seq, int left_start, int left_end,

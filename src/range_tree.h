@@ -24,7 +24,6 @@ struct cb_range_node_data{
     char *seq;
 };
 
-
 struct cb_range_node *cb_range_node_create(char *sequence, int start, int end);
 struct cb_range_tree *cb_range_tree_create(char *name);
 struct cb_range_node_data *cb_range_node_data_create(int start, int end,
@@ -41,9 +40,6 @@ void cb_range_node_data_update(struct cb_range_node_data *d,
 
 void cb_range_tree_insert(struct cb_range_tree *tree,
                           char *sequence, int start, int end);
-/*struct cb_range_node *find_last_overlap(struct cb_range_node *node,
-                                        int start, int end, int dir,
-                                        struct cb_range_node *last);*/
 struct cb_range_node_data *remove_overlap(struct cb_range_node *cur,
                                           int start, int end, int dir,
                                           struct cb_range_node_data *data);
