@@ -151,7 +151,8 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
 
             char *orig_str = malloc((original_end-original_start+2) *
                                     sizeof(*orig_str));
-            for (j = 0; j < original_end-original_start+1; orig_str[j++]='?');
+            for (j = 0; j < (int64_t)(original_end-original_start+1);
+                                                  orig_str[j++]='?');
 
             /*If this is the first time we are expanding the current original
               sequence, create a new range tree for that sequence.*/

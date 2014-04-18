@@ -137,18 +137,17 @@ cb_database_read(char *dir, int32_t seed_size)
                                     findex_coarse_links, findex_coarse_fasta,
                                     findex_params);
     db->com_db = cb_compressed_init(fcompressed, findex_compressed);
-    /*cb_database_populate(db, pfasta, plinks);*/
 
     return db;
 }
 
-void cb_database_populate(struct cb_database *db, const char *pfasta,
+/*void cb_database_populate(struct cb_database *db, const char *pfasta,
                            const char *plinks){
     struct fasta_seq_gen *fsg = fasta_generator_start(pfasta, "", 100);
     FILE *flinks = fopen(plinks, "r");
-    /*read_coarse(db->coarse_db, flinks, fsg);*/
+    /*read_coarse(db->coarse_db, flinks, fsg);*//*
     fclose(flinks);
-}
+}*/
 
 void
 cb_database_free(struct cb_database *db)

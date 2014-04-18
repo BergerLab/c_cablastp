@@ -6,6 +6,7 @@
 #include "bitpack.h"
 #include "coarse.h"
 #include "DNAutils.h"
+#include "fasta.h"
 #include "seeds.h"
 #include "seq.h"
 
@@ -151,16 +152,21 @@ cb_coarse_save_binary(struct cb_coarse *coarse_db)
         for (link = seq->links; link != NULL; link = link->next) {
             int j;
             char *id_bytes = read_int_to_bytes(link->org_seq_id, 8);
+            int16_t coarse_start, coarse_end;
+            char coarse_start_left, coarse_start_right,
+                 coarse_end_left, coarse_end_right;
             for (j = 0; j < 8; j++)
                 putc(id_bytes[j], coarse_db->file_links);
+
             /*Convert the start and end indices for the link to two
               characters.*/
-            int16_t coarse_start = (int16_t)link->coarse_start;
-            int16_t coarse_end   = (int16_t)link->coarse_end;
-            char coarse_start_left  = (coarse_start >> 8) & mask;
-            char coarse_start_right = coarse_start & mask;
-            char coarse_end_left    = (coarse_end >> 8) & mask;
-            char coarse_end_right   = coarse_end & mask;
+            coarse_start = (int16_t)link->coarse_start;
+            coarse_end   = (int16_t)link->coarse_end;
+            coarse_start_left  = (coarse_start >> 8) & mask;
+            coarse_start_right = coarse_start & mask;
+            coarse_end_left    = (coarse_end >> 8) & mask;
+            coarse_end_right   = coarse_end & mask;
+
             /*Prints the binary representations of the indices and the
               direction of the link to the links file*/
             putc(coarse_start_left, coarse_db->file_links);
@@ -180,6 +186,7 @@ cb_coarse_save_binary(struct cb_coarse *coarse_db)
                 index++;
             }
         }
+
         /*'#' is used as a delimiter to signify the last link of the sequence*/
         if (i+1 < coarse_db->seqs->size){
             putc('#', coarse_db->file_links);
@@ -215,18 +222,17 @@ cb_coarse_save_plain(struct cb_coarse *coarse_db)
 void
 cb_coarse_save_seeds_binary(struct cb_coarse *coarse_db)
 {
-    struct cb_coarse_seq *seq;
-    struct cb_link_to_compressed *link;
-    int32_t i, j;
+    int32_t i;
     char *kmer;
-    uint32_t mask = (uint32_t)3;
 
     for (i = 0; i < coarse_db->seeds->locs_length; i++) {
+        struct cb_seed_loc *loc;
         kmer = unhash_kmer(coarse_db->seeds, i);
-        struct cb_seed_loc *loc = cb_seeds_lookup(coarse_db->seeds, kmer);
+        loc = cb_seeds_lookup(coarse_db->seeds, kmer);
         if (loc) {
+            struct cb_seed_loc *loc_first;
             output_int_to_file(i, 4, coarse_db->file_seeds);    
-            struct cb_seed_loc *loc_first = loc;
+            loc_first = loc;
             while (loc) {
                 output_int_to_file(loc->coarse_seq_id,4,coarse_db->file_seeds);
                 output_int_to_file(loc->residue_index,2,coarse_db->file_seeds);
@@ -244,24 +250,24 @@ cb_coarse_save_seeds_binary(struct cb_coarse *coarse_db)
 void
 cb_coarse_save_seeds_plain(struct cb_coarse *coarse_db)
 {
-    struct cb_coarse_seq *seq;
-    struct cb_link_to_compressed *link;
     int32_t i, j;
     uint32_t i2;
     uint32_t mask = (uint32_t)3;
     char *kmer;
 
     for (i = 0; i < coarse_db->seeds->locs_length; i++) {
-        struct cb_seed_loc *loc;
+        struct cb_seed_loc *loc, *loc_first;
         i2 = (uint32_t)0;
         for (j = 0; j < coarse_db->seeds->seed_size; j++) {
             i2 <<= 2;
             i2 |= ((i >> (2*j)) & mask);
         }
+
         kmer = unhash_kmer(coarse_db->seeds, i2);
         fprintf(coarse_db->file_seeds, "%s\n", kmer);
         loc = cb_seeds_lookup(coarse_db->seeds, kmer);
-        struct cb_seed_loc *loc_first = loc;
+        loc_first = loc;
+
         while (loc) {
             if (loc->coarse_seq_id < 500)
                 fprintf(coarse_db->file_seeds,"(%d, %d) > ",
@@ -461,10 +467,11 @@ struct DSVector *get_coarse_sequence_links(FILE *f){
  */
 struct DSVector *get_coarse_sequence_links_at(FILE *links, FILE *index,
                                                            int32_t id){
+    bool fseek_success;
     int64_t offset = cb_coarse_find_offset(index, id);
     if (offset < 0)
         return NULL;
-    bool fseek_success = fseek(links, offset, SEEK_SET) == 0;
+    fseek_success = fseek(links, offset, SEEK_SET) == 0;
     if (!fseek_success) { 
         fprintf(stderr, "Error in seeking to offset %lu\n", offset);
         return NULL;
@@ -500,12 +507,13 @@ int64_t cb_coarse_find_offset(FILE *index_file, int id){
  */
 struct fasta_seq *cb_coarse_read_fasta_seq(struct cb_coarse *coarsedb,
                                                                int id){
+    bool fseek_success;
     int64_t offset = cb_coarse_find_offset(coarsedb->file_fasta_index, id);
     if (offset < 0)
         return NULL;
-    bool fseek_success = fseek(coarsedb->file_fasta, offset, SEEK_SET) == 0;
+    fseek_success = fseek(coarsedb->file_fasta, offset, SEEK_SET) == 0;
     if (!fseek_success) {
-        fprintf(stderr, "Error in seeking to offset %d\n", offset);
+        fprintf(stderr, "Error in seeking to offset %ld\n", offset);
         return NULL;
     }
     return fasta_read_next(coarsedb->file_fasta, "");

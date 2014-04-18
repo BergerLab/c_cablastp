@@ -259,6 +259,12 @@ cb_align_nw(struct cb_align_nw_memory *mem,
     struct cb_nw_tables tables = make_nw_tables(rseq, dp_len1, i1, dir1,
                                                  oseq, dp_len2, i2, dir2);
     int *best = best_edge(tables.dp_score, dp_len1, dp_len2);
+    int cur_j1, cur_j2;
+    int dir_prod;
+    int **dp_score, **dp_from;
+    bool *matches_to_add;
+    char *subs1_dp, *subs2_dp;
+    int num_steps;
 
     best = backtrack_to_clump(tables, best);
 
@@ -276,18 +282,25 @@ cb_align_nw(struct cb_align_nw_memory *mem,
        
         return align;
     }
-    int cur_j1 = best[0];
-    int cur_j2 = best[1];
-    int dir_prod = dir1 * dir2;
-    int **dp_score = tables.dp_score;
-    int **dp_from = tables.dp_from;
-    bool *matches_to_add = malloc((cur_j1 + cur_j2)*sizeof(*matches_to_add));
-    char *subs1_dp = malloc((cur_j1 + cur_j2)*sizeof(*subs1_dp));
-    char *subs2_dp = malloc((cur_j1 + cur_j2)*sizeof(*subs2_dp));
-    int num_steps = 0;
+    cur_j1 = best[0];
+    cur_j2 = best[1];
+
+    dir_prod = dir1 * dir2;
+
+    dp_score = tables.dp_score;
+    dp_from = tables.dp_from;
+
+    matches_to_add = malloc((cur_j1 + cur_j2)*sizeof(*matches_to_add));
+
+    subs1_dp = malloc((cur_j1 + cur_j2)*sizeof(*subs1_dp));
+    subs2_dp = malloc((cur_j1 + cur_j2)*sizeof(*subs2_dp));
+
+    num_steps = 0;
+
     align.ref = "\0";
     align.org = "\0";
     align.length = -1;
+
     while (!(cur_j1 == 0 && cur_j2 == 0)) {
         int prev_j1, prev_j2;
         switch (dp_from[cur_j1][cur_j2]) {

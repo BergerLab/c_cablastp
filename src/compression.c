@@ -149,7 +149,6 @@ struct cb_compressed_seq *
 cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
              struct cb_align_nw_memory *mem)
 {
-    fprintf(stderr, "Starting compression      %d\n", org_seq->id);
     struct extend_match_with_res mseqs_fwd, mseqs_rev;
     struct cb_coarse_seq *coarse_seq;
     struct cb_compressed_seq *cseq;
@@ -169,6 +168,7 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
 
     bool *matches, *matches_temp;
     bool found_match;
+    fprintf(stderr, "Starting compression      %d\n", org_seq->id);
 
     cseq = cb_compressed_seq_init(org_seq->id, org_seq->name);
     seed_size = coarse_db->seeds->seed_size;
@@ -256,6 +256,7 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
                               coarse_seq->seq->residues,
                               coarse_seq->seq->length, 0)) >
                   compress_flags.attempt_ext_len) {
+                int index;
                 mseqs_rev = extend_match_with_res(mem,
                                          coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length, resind, -1,
@@ -287,7 +288,7 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
 
                 /*Concatenate the extensions and the k-mer for the coarse
                   sequence*/
-                int index = 0;
+                index = 0;
                 alignment.ref = malloc((strlen(mseqs_rev.rseq) + seed_size +
                                         strlen(mseqs_fwd.rseq) + 1) *
                                         sizeof(*(alignment.ref)));
@@ -406,6 +407,7 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
                               coarse_seq->seq->residues,
                               coarse_seq->seq->length, 0)) >
                   compress_flags.attempt_ext_len) {
+                int index;
                 mseqs_rev = extend_match_with_res(mem,
                                          coarse_seq->seq->residues, 0,
                                          coarse_seq->seq->length, resind, -1,
@@ -438,7 +440,7 @@ cb_compress(struct cb_coarse *coarse_db, struct cb_seq *org_seq,
 
                 /*Concatenate the extensions and the k-mer's reverse complement
                   for the coarse sequence*/
-                int index = 0;
+                index = 0;
                 alignment.ref = malloc((strlen(mseqs_rev.rseq) + seed_size +
                                         strlen(mseqs_fwd.rseq) + 1) *
                                         sizeof(*(alignment.ref)));

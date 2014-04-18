@@ -66,8 +66,10 @@ cb_compressed_save_binary(struct cb_compressed *com_db)
     uint64_t index = (uint64_t)0;
 
     for (i = 0; i < com_db->seqs->size; i++) {
-        int j;
         char *id_bytes;
+        int j;
+        uint64_t original_length = 0;
+        struct cb_link_to_coarse *find_length;
 
         output_int_to_file(index, 8, com_db->file_index);
         seq = cb_compressed_seq_at(com_db, i);
@@ -88,8 +90,8 @@ cb_compressed_save_binary(struct cb_compressed *com_db)
         putc('\n', com_db->file_compressed);
         index++;
 
-        struct cb_link_to_coarse *find_length = seq->links;
-        uint64_t original_length = 0;
+        find_length = seq->links;
+        original_length = 0;
         for (; find_length; find_length = find_length->next)
             original_length = find_length->original_end + 1;
 
@@ -213,7 +215,8 @@ cb_compressed_write_binary(struct cb_compressed *com_db,
     struct cb_link_to_coarse *link;
     int16_t mask = (((int16_t)1)<<8)-1;
     char *id_string = malloc(20*sizeof(*id_string));
-    uint64_t index = ftell(com_db->file_compressed);
+    uint64_t index = ftell(com_db->file_compressed), original_length = 0;
+    struct cb_link_to_coarse *find_length;
     output_int_to_file(index, 8, com_db->file_index);
     sprintf(id_string, "%ld", seq->id);
 
@@ -230,8 +233,7 @@ cb_compressed_write_binary(struct cb_compressed *com_db,
 
     free(id_string);
 
-    struct cb_link_to_coarse *find_length = seq->links;
-    uint64_t original_length = 0;
+    find_length = seq->links;
     for (; find_length; find_length = find_length->next)
         original_length = find_length->original_end + 1;
 
@@ -546,10 +548,12 @@ struct cb_compressed_seq *cb_compressed_read_seq_at(
                                                  struct cb_compressed *comdb,
                                                  int32_t id){
     FILE *links = comdb->file_compressed;
+    bool fseek_success;
     int64_t offset = cb_compressed_link_offset(comdb, id);
+
     if (offset < 0)
         return NULL;
-    bool fseek_success = fseek(links, offset, SEEK_SET) == 0;
+    fseek_success = fseek(links, offset, SEEK_SET) == 0;
     if (!fseek_success) { 
         fprintf(stderr, "Error in seeking to offset %lu\n", offset);
         return NULL;
@@ -580,13 +584,15 @@ int64_t *cb_compressed_get_lengths(struct cb_compressed *comdb){
 
     bool fseek_success;
     int64_t *lengths = NULL;
+    int64_t num_sequences = ftell(index) / 8;
+
     fseek_success = fseek(index, 0, SEEK_END) == 0;
     if (!fseek_success) {
         fprintf(stderr, "Error in seeking to end of compressed.cb.index\n");
         return NULL;
     }
 
-    int64_t num_sequences = ftell(index) / 8;
+    num_sequences = ftell(index) / 8;
     fseek_success = fseek(index, 0, SEEK_SET) == 0;
     if (!fseek_success) {
         fprintf(stderr, "Error in seeking to start of compressed.cb.index\n");
@@ -670,11 +676,8 @@ struct cb_compressed_seq **read_compressed(FILE *f){
  *link whose index is passed into id.
  */
 int64_t cb_compressed_link_offset(struct cb_compressed *comdb, int id){
-    int i;
     int try_off = id * 8;
-    int64_t offset = (int64_t)0;
     bool fseek_success = fseek(comdb->file_index, try_off, SEEK_SET) == 0;
-    int64_t mask = make_mask(8);
     if (!fseek_success) {
         fprintf(stderr, "Error in seeking to offset %d", try_off);
         return (int64_t)(-1);
