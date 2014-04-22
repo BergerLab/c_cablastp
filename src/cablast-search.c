@@ -432,62 +432,6 @@ main(int argc, char **argv)
     cb_database_free(db);
     xmlFreeDoc(doc);
 
-    struct cb_range_tree *t = cb_range_tree_create("");
-    fprintf(stderr, "Inserting %s at %d-%d\n", "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 100, 200);
-    cb_range_tree_insert(t, "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA", 100, 200);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "CCCCCCCCCC", 85, 95);
-    cb_range_tree_insert(t, "CCCCCCCCCC", 85, 95);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "TTTTTTTTTT", 65, 75);
-    cb_range_tree_insert(t, "TTTTTTTTTT", 65, 75);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "AAAAA", 45, 50);
-    cb_range_tree_insert(t, "AAAAA", 45, 50);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "TTTT", 77, 81);
-    cb_range_tree_insert(t, "TTTT", 77, 81);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "GGGGG", 55, 60);
-    cb_range_tree_insert(t, "GGGGG", 55, 60);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "AAAAA", 5, 10);
-    cb_range_tree_insert(t, "AAAAA", 5, 10);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "TTT", 0, 3);
-    cb_range_tree_insert(t, "TTT", 0, 3);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "G", 12, 13);
-    cb_range_tree_insert(t, "G", 12, 13);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "CCC", 32, 35);
-    cb_range_tree_insert(t, "CCC", 32, 35);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "TTT", 25, 28);
-    cb_range_tree_insert(t, "TTT", 25, 28);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "A", 30, 31);
-    cb_range_tree_insert(t, "A", 30, 31);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "CC", 20, 22);
-    cb_range_tree_insert(t, "CC", 20, 22);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "T", 16, 17);
-    cb_range_tree_insert(t, "T", 16, 17);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "G", 12, 13);
-    cb_range_tree_insert(t, "G", 12, 13);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "C", 14, 15);
-    cb_range_tree_insert(t, "C", 14, 15);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "A", 23, 24);
-    cb_range_tree_insert(t, "A", 23, 24);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "CGAGTTTCCATCCCTTTTTTTTTTAAAAATTTTTGGGGGAAAAATTTTT", 21, 70);
-    cb_range_tree_insert(t, "CGAGTTTCCATCCCTTTTTTTTTTAAAAATTTTTGGGGGAAAAATTTTT", 21, 70);
-    cb_range_tree_output_data(t, stderr);
-
     /*Free the coarse BLAST results file if the --no-cleanup flag is not being
       used.*/
     if(!search_flags.no_cleanup)
