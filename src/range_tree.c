@@ -138,15 +138,16 @@ struct cb_range_node_data *remove_adjacent(struct cb_range_node *cur,
                                            int start, int end, int dir,
                                            struct cb_range_node_data *data){
     struct cb_range_node *next, *new_next;
-    bool left, adjacent, next_adjacent;
+    bool left, adjacent, next_adjacent, next_is_left;
     
     assert(end > start); /*Make sure we are using a valid range*/
-    assert(cur!= NULL); /*remove_adjacent is never called from a NULL pointer.*/
+    assert(cur != NULL);/*remove_adjacent is never called from a NULL pointer.*/
 
     left = dir < 0;
     adjacent = start <= cur->end && end >= cur->start;
-    next = adjacent ? (left ? cur->left : cur->right) :
-                      (left ? cur->right : cur->left);
+    next_is_left = adjacent ? left : !left;
+    next = next_is_left ? cur->left : cur->right;
+
     /*If there is no next node, we already found the farthest node in the
       specified direction that is adjacent to the range, so return its data.*/
     if (!next)
@@ -166,14 +167,17 @@ struct cb_range_node_data *remove_adjacent(struct cb_range_node *cur,
             cb_range_node_data_update(data, next->start, next->end, next->seq);
 
         new_next = left ? next->left : next->right;
-        if (left) {
+
+        if (next_is_left)
             cur->left = new_next;
-            next->left = NULL;
-        }
-        else {
+        else
             cur->right = new_next;
+
+        if (left)
+            next->left = NULL;
+        else
             next->right = NULL;
-        }
+
         /*Free the next node and the subtree new_next is not in.*/
         cb_range_node_free(next);
 
@@ -192,7 +196,6 @@ struct cb_range_node_data *remove_adjacent(struct cb_range_node *cur,
  */
 void cb_range_tree_insert(struct cb_range_tree *tree,
                           char *sequence, int start, int end){
-fprintf(stderr, "Inserting range %d-%d\n", start, end);
     assert(end > start);
     assert(sequence != NULL);
     tree->root = cb_range_node_insert(tree->root, sequence, start, end);
