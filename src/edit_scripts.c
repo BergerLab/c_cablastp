@@ -89,8 +89,10 @@ char *edit_script_to_half_bytes(char *edit_script){
     int length = 0;
     int odd;
     char *half_bytes;
+
     while (edit_script[length] != '\0')
         length++;
+
     odd = length % 2;
     length = length / 2 + odd;
     half_bytes = malloc(length*sizeof(*half_bytes));
@@ -126,6 +128,7 @@ char *half_bytes_to_ASCII(char *half_bytes, int length){
             left >>= 4;
             left &= (char)15;
             edit_script[i] = half_byte_to_char(left);
+
             /*Handle the direction byte so that the match bit of the
              *half-byte is added to the direction byte separately from the
              *direction bit.
@@ -300,6 +303,7 @@ void decode_edit_script(char *orig, int dest_len, int original_start,
     char *residues = sequence->seq;
 
     bool fwd = (diff[0] & ((char)0x7f)) == '0';
+
     /*The link represents an exact match so there are no edits to make*/
     if (diff[1] == '\0' && fwd) {
         int starting_i0 = -1;
@@ -326,9 +330,8 @@ void decode_edit_script(char *orig, int dest_len, int original_start,
     if (fwd) {
         i0 = link->original_start - original_start;
         while (next_edit(diff, &script_pos, edit)) {
-            int x = 0;
-            int xmin = -i0;
-            int xmax = dest_len - i0;
+            int x = 0, xmin = -i0, xmax = dest_len - i0;
+
             for (x = maximum(0, xmin);
                  x < minimum(edit->last_dist-last_edit_str_len, xmax); x++)
                 orig[i0+x] = residues[x+coarse_pos];
@@ -355,9 +358,7 @@ void decode_edit_script(char *orig, int dest_len, int original_start,
     else {
         i0 = link->original_end - original_start;
         while (next_edit(diff, &script_pos, edit)) {
-            int x = 0;
-            int xmin = i0 - dest_len + 1;
-            int xmax = i0 + 1;
+            int x = 0, xmin = i0 - dest_len + 1, xmax = i0 + 1;
             for (x = maximum(0, xmin);
                  x < minimum(edit->last_dist-last_edit_str_len, xmax); x++)
                 orig[i0-x] = base_complement(residues[x+coarse_pos]);
@@ -387,7 +388,7 @@ void decode_edit_script(char *orig, int dest_len, int original_start,
         int dir = fwd ? 1 : -1;
         for (i1 = coarse_pos; i1 <= link->coarse_end; i1++) {
             if (0 <= i0 && i0 < dest_len)
-                orig[i0] = fwd ? residues[i1]:base_complement(residues[i1]);
+                orig[i0] = fwd ? residues[i1] : base_complement(residues[i1]);
             i0 += dir;
         }
     }
@@ -402,6 +403,7 @@ char *no_dashes(char *sequence){
     int bases = 0;
     int i = 0, j = 0;
     char *n;
+
     /*Get the length of the final string*/
     for (length = 0; sequence[length] != '\0'; length++)
         if (sequence[length] != '-')

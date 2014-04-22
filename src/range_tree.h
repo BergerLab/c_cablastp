@@ -39,8 +39,8 @@ void cb_range_node_data_update(struct cb_range_node_data *d,
 
 void cb_range_tree_insert(struct cb_range_tree *tree,
                           char *sequence, int start, int end);
-struct cb_range_node_data *remove_overlap(struct cb_range_node *cur,
-                                          int start, int end, int dir,
+struct cb_range_node_data *remove_adjacent(struct cb_range_node *cur,
+                                           int start, int end, int dir,
                                           struct cb_range_node_data *data);
 struct cb_range_node *cb_range_node_insert(struct cb_range_node *cur,
                                            char *sequence, int start, int end);

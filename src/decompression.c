@@ -29,6 +29,7 @@ struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
     int copied = 0;
     struct DSVector *decompressed_chunks = ds_vector_create();
     char *residues = NULL;
+
     for (link = cseq->links; link != NULL; link = link->next) {
         int length;
         char *dec_chunk;
@@ -37,6 +38,7 @@ struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
 
         int coarse_len = link->coarse_end - link->coarse_start;
         char *coarse_sub = malloc((coarse_len+1)*sizeof(*coarse_sub));
+
         memcpy(coarse_sub, chunk->seq + link->coarse_start, coarse_len);
         coarse_sub[coarse_len] = '\0';
 
@@ -146,6 +148,7 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
                                        link->coarse_end-hit_from))
                         + hit_pad_length, seq_lengths[link->org_seq_id] - 1);
             uint64_t original_range = original_end - original_start + 1;
+
             struct cb_compressed_seq *seq =
                        cb_compressed_read_seq_at(comdb, link->org_seq_id);
 

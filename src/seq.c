@@ -68,6 +68,8 @@ cb_hit_expansion_init(int32_t id, char *name, char *residues, int offset){
 void
 cb_hit_expansion_free(struct cb_hit_expansion *expansion)
 {
-    cb_seq_free(expansion->seq);
+    assert(expansion != NULL);
+    if (expansion->seq != NULL)
+        cb_seq_free(expansion->seq);
     free(expansion);
 }
