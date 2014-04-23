@@ -117,7 +117,6 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
     for (i = 0; i < coarse_seq_links->size; i++) {
         struct cb_link_to_compressed *link =
             (struct cb_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
-if (link == NULL)fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!link = NULL\n");
 
         /*Only expand the link if it overlaps the range for the BLAST Hsp we
           are expanding from.*/
@@ -184,17 +183,12 @@ if (link == NULL)fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
             }
             orig_str[original_end-original_start+1] = '\0';
 printf("%s\n", orig_str);
-fprintf(stderr, "orig_str = %s\n", orig_str);
             cb_range_tree_insert(tree, orig_str, original_start, original_end);
             expansion = cb_hit_expansion_init(link->org_seq_id, seq->name,
                                               orig_str,(int64_t)original_start);
             ds_vector_append(oseqs, (void *)expansion);
-fprintf(stderr, "Freeing orig_str\n");
             free(orig_str);
-fprintf(stderr, "Finished freeing orig_str\n");
-if(seq == NULL)fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!seq = NULL\n");
             cb_compressed_seq_free(seq);
-fprintf(stderr, "Finished current link\n");
         }
     }
 
