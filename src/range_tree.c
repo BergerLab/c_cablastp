@@ -108,11 +108,10 @@ struct cb_range_node_data *cb_range_node_data_create(int start, int end,
     assert(end > start);
     assert(sequence != NULL);
 
-
     d->start = start;
     d->end = end;
 
-    len = strlen(sequence);
+    len = end - start;
     d->seq = malloc((len+1)*sizeof(*(d->seq)));
     assert(d->seq);
 
@@ -132,7 +131,7 @@ void cb_range_node_data_update(struct cb_range_node_data *d,
     d->start = start;
     d->end = end;
 
-    len = strlen(sequence);
+    len = end - start;
     if (d->seq != NULL)
         free(d->seq);
     d->seq = malloc((len+1)*sizeof(*(d->seq)));
@@ -335,7 +334,7 @@ fprintf(stderr, "Merging %d-%d and %d-%d\n", left_start, left_end, right_start, 
     assert(left_end >= right_start && right_end >= left_start);
     assert(left_seq != NULL && right_seq != NULL);
 
-    merged = malloc((right_end-left_start)*sizeof(*merged));
+    merged = malloc((right_end-left_start+1)*sizeof(*merged));
     assert(merged);
 
     for (i = 0; i < right_start - left_start; i++)

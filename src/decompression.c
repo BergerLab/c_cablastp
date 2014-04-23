@@ -24,10 +24,7 @@ struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
     int overlap;
     struct cb_link_to_coarse *link = NULL;
     struct cb_seq *seq = NULL;
-    int decompressed_length = 0;
-    int i = 0;
-    int j = 0;
-    int copied = 0;
+    int decompressed_length = 0, i = 0, j = 0, copied = 0;
     struct DSVector *decompressed_chunks = ds_vector_create();
     char *residues = NULL;
 
@@ -120,6 +117,7 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
     for (i = 0; i < coarse_seq_links->size; i++) {
         struct cb_link_to_compressed *link =
             (struct cb_link_to_compressed *)ds_vector_get(coarse_seq_links, i);
+if (link == NULL)fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!link = NULL\n");
 
         /*Only expand the link if it overlaps the range for the BLAST Hsp we
           are expanding from.*/
@@ -163,6 +161,7 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
 
             for (j = 0; j < (int64_t)(original_end-original_start+1);
                                                   orig_str[j++]='?');
+            orig_str[original_end-original_start+1] = '\0';
 
             /*If this is the first time we are expanding the current original
               sequence, create a new range tree for that sequence.*/
@@ -180,12 +179,12 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
                 int init_i0 = current->original_start - (int32_t)original_start;
                 int last_i0 = init_i0 + coarse_range;
                 if (0 < last_i0 && (int32_t)original_range > init_i0)
-                        decode_edit_script(orig_str, original_range,
-                                           original_start, coarsedb, current);
+                    decode_edit_script(orig_str, original_range,
+                                       original_start, coarsedb, current);
             }
             orig_str[original_end-original_start+1] = '\0';
 printf("%s\n", orig_str);
-fprintf(stderr, "%s\n", orig_str);
+fprintf(stderr, "orig_str = %s\n", orig_str);
             cb_range_tree_insert(tree, orig_str, original_start, original_end);
             expansion = cb_hit_expansion_init(link->org_seq_id, seq->name,
                                               orig_str,(int64_t)original_start);
@@ -193,6 +192,7 @@ fprintf(stderr, "%s\n", orig_str);
 fprintf(stderr, "Freeing orig_str\n");
             free(orig_str);
 fprintf(stderr, "Finished freeing orig_str\n");
+if(seq == NULL)fprintf(stderr, "!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!seq = NULL\n");
             cb_compressed_seq_free(seq);
 fprintf(stderr, "Finished current link\n");
         }
