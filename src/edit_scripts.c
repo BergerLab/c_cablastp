@@ -16,6 +16,7 @@ int maximum(int a, int b){return a>b?a:b;}
 /*Converts an integer to its octal representation*/
 char *to_octal_str(int i) {
     char *buf = malloc(16*sizeof(*buf));
+    assert(buf);
     sprintf(buf, "%o", i);
     return buf;
 }
@@ -23,6 +24,7 @@ char *to_octal_str(int i) {
 /*The initialization function for an edit_info struct*/
 struct edit_info *edit_info_create(){
     struct edit_info *edit = malloc(sizeof(*edit));
+    assert(edit);
     edit->is_subdel = false;
     edit->last_dist = 0;
     edit->str = NULL;
@@ -96,6 +98,7 @@ char *edit_script_to_half_bytes(char *edit_script){
     odd = length % 2;
     length = length / 2 + odd;
     half_bytes = malloc(length*sizeof(*half_bytes));
+    assert(half_bytes);
  
     while (edit_script[i] != '\0') {
         if (i%2 == 0)
@@ -121,6 +124,8 @@ char *edit_script_to_half_bytes(char *edit_script){
 char *half_bytes_to_ASCII(char *half_bytes, int length){
     int i = 0;
     char *edit_script = malloc((length+1)*sizeof(*edit_script));
+    assert(edit_script);
+
     for (i = 0; i < length; i++) {
         /*Copy the left half-byte of the current byte*/
         if (i % 2 == 0) {
@@ -157,6 +162,8 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
     bool insert_open = false, subdel_open = false;
     int last_edit = 0;
     char *edit_script = malloc(3*length*sizeof(*edit_script));
+    assert(edit_script);
+
     int current = 1;
     int i, j;
     char *octal;
@@ -202,6 +209,8 @@ char *make_edit_script(char *str, char *ref, bool dir, int length){
         }
     }
     edit_script = realloc(edit_script, (current+1)*sizeof(*edit_script));
+    assert(edit_script);
+
     edit_script[current] = '\0';
     return edit_script;
 }
@@ -230,7 +239,9 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
                    edit_script[(*pos)+edit_length] == '-')
         edit_length++;
     edit->str = malloc((edit_length+1)*sizeof(*edit_script));
+    assert(edit->str);
     edit->str_length = edit_length;
+
     while (isupper(edit_script[(*pos)]) || edit_script[(*pos)] == '-')
         edit->str[i++] = edit_script[(*pos)++];
     return true;
@@ -241,12 +252,14 @@ bool next_edit(char *edit_script, int *pos, struct edit_info *edit){
  *produce a new sequence.
  */
 char *read_edit_script(char *edit_script, char *orig, int length){
-    char *str = malloc((2*length+1)*sizeof(*str));
     int i;
     struct edit_info *edit = edit_info_create();
     int orig_pos = 0, last_edit_str_len = 0; /*length of last edit str*/
     int current = 0;
     int script_pos = 1;
+
+    char *str = malloc((2*length+1)*sizeof(*str));
+    assert(str);
 
     while (next_edit(edit_script, &script_pos, edit)) {
         /*chunk after previous edit*/
@@ -269,6 +282,8 @@ char *read_edit_script(char *edit_script, char *orig, int length){
     while (orig_pos < length)
         str[current++] = orig[orig_pos++];
     str = realloc(str, (current+1)*sizeof(*str));
+    assert(str);
+
     str[current] = '\0';
     if ((edit_script[0] & ((char)0x7f)) == '1') {
         char *str_fwd = str;
@@ -409,9 +424,10 @@ char *no_dashes(char *sequence){
         if (sequence[length] != '-')
             bases++;
     n = malloc((bases+1)*sizeof(*n));
-    n[bases] = '\0';
+    assert(n);
     for (i = 0; i < length; i++)
         if (sequence[i] != '-')
             n[j++] = sequence[i];
+    n[bases] = '\0';
     return n;
 }

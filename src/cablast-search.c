@@ -46,6 +46,8 @@ void blast_coarse(struct opt_args *args, uint64_t dbsize){
     int command_length = strlen(blastn_command) + strlen(input_path) +
                                                   strlen(args->args[1]) + 31;
     char *blastn = malloc(command_length * sizeof(*blastn));
+    assert(blastn);
+
     sprintf(blastn,"blastn -db %s -outfmt 5 -query %s -dbsize %lu -task blastn"
                    " -evalue %s -out CaBLAST_temp_blast_results.xml",
            input_path, args->args[1], dbsize, search_flags.coarse_evalue);
@@ -67,6 +69,8 @@ void blast_fine(char *query, uint64_t dbsize,
     int command_length = strlen(blastn_command) + strlen(query) + 31 +
                          evalue_len + strlen(blast_args);
     char *blastn = malloc(command_length * sizeof(*blastn));
+    assert(blastn);
+
     sprintf(blastn,
             "blastn -db CaBLAST_fine.fasta -query %s "
             "-dbsize %lu -task blastn %s %s",
@@ -104,8 +108,12 @@ void traverse_blast_xml_r(xmlNode *r, void (*f)(xmlNode *, void *), void *acc){
 /*Takes in the xmlNode representing a BLAST hsp and populates a struct hsp
   with its data.*/
 struct hsp *populate_blast_hsp(xmlNode *node){
-    struct hsp *h = malloc(sizeof(*h));
+    struct hsp *h;
     bool hit_frame_fwd = true;
+
+    h = malloc(sizeof(*h));
+    assert(h);
+
     h->xml_name = "Hsp";
     for (; node; node = node->next){
         if (!strcmp((char *)node->name, "Hsp_num"))
@@ -135,6 +143,8 @@ struct hsp *populate_blast_hsp(xmlNode *node){
   with its data.*/
 struct hit *populate_blast_hit(xmlNode *node){
     struct hit *h = malloc(sizeof(*h));
+    assert(h);
+
     h->xml_name = "Hit";
     for (; node; node = node->next) {
         if (!strcmp((char *)node->name, "Hit_num"))
@@ -239,6 +249,7 @@ char *get_blast_args(struct opt_args *args){
             index = (strcmp(args->args[i],
                             "--blast-args") == 0 && index == -1) ? i : index;
     blast_args = malloc(length*sizeof(*args));
+    assert(blast_args);
     if (index == -1)
         *blast_args = '\0';
     else
@@ -307,9 +318,13 @@ struct DSVector *expand_blast_hits(struct DSVector *iterations, int index,
 }
 
 char *progress_bar(int current, int iterations){
-    char *bar = malloc(53*sizeof(*bar));
+    char *bar;
     int bars = (int)(((float)(current+1)/iterations)*50);
     int b = 0;
+
+    bar = malloc(53*sizeof(*bar));
+    assert(bar);
+
     bar[0] = '[';
     for(b = 0; b < 50; b++)
         bar[b+1] = b < bars ? '|' : ' ';

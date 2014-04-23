@@ -193,9 +193,13 @@ static int32_t hash_kmer(struct cb_seeds *seeds, char *kmer)
 /*Convert an integer to the k-mer that it represents.  Currently only works for
   size k = 10*/
 char *unhash_kmer(struct cb_seeds *seeds, int hash){
-    char *kmer = malloc(11*sizeof(*kmer));
+    char *kmer;
     int i;
     char nucleotides[4] = {'A','C','G','T'};
+
+    kmer = malloc(11*sizeof(*kmer));
+    assert(kmer);
+
     kmer[10] = '\0';
     for (i = 0; i < seeds -> seed_size; i++) {
         kmer[i] = nucleotides[hash%4];
@@ -208,6 +212,8 @@ char *unhash_kmer(struct cb_seeds *seeds, int hash){
 void print_seeds(struct cb_seeds *seeds){
     int32_t i, j;
     char *kmer = malloc(seeds->seed_size * sizeof(*kmer));
+    assert(kmer);
+
     for (i = 0; i < seeds->locs_length; i++) {
         printf("%s\n", kmer);
         uint32_t new_kmer = (uint32_t)0;

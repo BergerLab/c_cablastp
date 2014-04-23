@@ -108,6 +108,7 @@ str_slice(char *str, int32_t start, int32_t end)
     assert(end <= len);
 
     ret = malloc((1 + end - start) * sizeof(*ret));
+    assert(ret);
     strncpy(ret, str + start, end - start);
 
     return ret;

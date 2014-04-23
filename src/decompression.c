@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <string.h>
@@ -38,6 +39,7 @@ struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
 
         int coarse_len = link->coarse_end - link->coarse_start;
         char *coarse_sub = malloc((coarse_len+1)*sizeof(*coarse_sub));
+        assert(coarse_sub);
 
         memcpy(coarse_sub, chunk->seq + link->coarse_start, coarse_len);
         coarse_sub[coarse_len] = '\0';
@@ -61,6 +63,7 @@ struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
             for (chunk_length=0; dec_chunk[chunk_length]!='\0'; chunk_length++);
 
             section = malloc((chunk_length + 1)*sizeof(*section));
+            assert(section);
             for (i = 0; i <= chunk_length; i++)
                 section[i] = dec_chunk[i];
             ds_vector_append(decompressed_chunks, (void *)section);
@@ -75,6 +78,8 @@ struct cb_seq *cb_decompress_seq(struct cb_compressed_seq *cseq,
         fasta_free_seq(chunk);
     }
     residues = malloc((decompressed_length+1)*sizeof(*residues));
+    assert(residues);
+
     for (i = 0; i < decompressed_chunks->size; i++) {
         char *current_chunk = (char *)ds_vector_get(decompressed_chunks, i);
         for (j = 0; current_chunk[j] != '\0'; j++)
@@ -154,6 +159,8 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
 
             char *orig_str = malloc((original_end-original_start+2) *
                                     sizeof(*orig_str));
+            assert(orig_str);
+
             for (j = 0; j < (int64_t)(original_end-original_start+1);
                                                   orig_str[j++]='?');
 
@@ -178,12 +185,16 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
             }
             orig_str[original_end-original_start+1] = '\0';
 printf("%s\n", orig_str);
+fprintf(stderr, "%s\n", orig_str);
             cb_range_tree_insert(tree, orig_str, original_start, original_end);
             expansion = cb_hit_expansion_init(link->org_seq_id, seq->name,
                                               orig_str,(int64_t)original_start);
             ds_vector_append(oseqs, (void *)expansion);
+fprintf(stderr, "Freeing orig_str\n");
             free(orig_str);
+fprintf(stderr, "Finished freeing orig_str\n");
             cb_compressed_seq_free(seq);
+fprintf(stderr, "Finished current link\n");
         }
     }
 
