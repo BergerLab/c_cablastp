@@ -322,6 +322,36 @@ fprintf(stderr, "Result of merge is %s\n", merged);
     return merged;
 }
 
+/*Takes in a range tree and the starting and ending indices of a range in a DNA
+ *sequence and returns a node in the tree with a range that overlaps the range
+ *if there is one or a null pointer if there is no node in the tree overlapping
+ *the range.
+ */
+struct cb_range_node *cb_range_tree_find(struct cb_range_tree *tree,
+                                                int start, int end){
+    assert(tree);
+    assert(end > start);
+    return cb_range_node_find(tree->root, start, end);
+}
+
+/*The recursive function called from cb_range_tree_find.  Takes in the current
+ *node and the range passed in, making another recursive call if the node's
+ *range does not overlap the range passed in, returning the current node if the
+ *current node's range does overlap the range passed in, or returning a null
+ *pointer if the current node is a null pointer.
+ */
+struct cb_range_node *cb_range_node_find(struct cb_range_node *node,
+                                                int start, int end){
+    if(node == NULL)
+        return NULL;
+    else if(start <= node->end && end >= node->start)
+        return node;
+    else
+        return cb_range_node_find((start < node->start?node->left:node->right),
+                                                                   start, end);
+}
+
+
 /*A pre-order traversal function for range trees.  Takes in a range tree node,
  *its tree, a function that takes in a range tree node, its tree, and a void *,
  *and an accumulator and calls the function for the node and each node in its
