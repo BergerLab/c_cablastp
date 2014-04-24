@@ -172,7 +172,8 @@ struct cb_range_node_data *remove_adjacent(struct cb_range_node *cur,
      *passed in, call the next call to remove_adjacent from the current node.
      */
     if (next_adjacent) {
-        if (left && next->start < data->start || !left && next->end > data->end)
+        if ((left && next->start < data->start) || 
+            (!left && next->end > data->end))
             cb_range_node_data_update(data, next->start, next->end, next->seq);
 
         new_next = left ? next->left : next->right;
@@ -300,8 +301,6 @@ fprintf(stderr, "last->end = %d\n", last->end);
   original sequence and merges the sequences together.*/
 char *cb_range_merge(char *left_seq, int left_start, int left_end,
                      char *right_seq, int right_start, int right_end){
-fprintf(stderr, "Merging %d-%d (%s) and %d-%d (%s)\n", left_start, left_end, left_seq,
-                                                       right_start, right_end, right_seq);
     int index = 0, i = 0;
     char *merged = NULL;
 
@@ -318,7 +317,6 @@ fprintf(stderr, "Merging %d-%d (%s) and %d-%d (%s)\n", left_start, left_end, lef
     for (i = 0; i < right_end - right_start; i++)
         merged[index++] = right_seq[i];
     merged[right_end-left_start] = '\0';
-fprintf(stderr, "Result of merge is %s\n", merged);
     return merged;
 }
 

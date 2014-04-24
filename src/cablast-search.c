@@ -411,7 +411,7 @@ main(int argc, char **argv)
         query = (struct fasta_seq *)ds_vector_get(queries, i);
         for (j = 0; j < expanded_hits->size; j++) {
             struct cb_hit_expansion *current_expansion =
-                   (struct cb_hit_expansion *)ds_vector_get(expanded_hits, j);
+                (struct cb_hit_expansion *)ds_vector_get(expanded_hits, j);
             expanded_dbsize += current_expansion->seq->length;
             ds_vector_append(oseqs, (void *)current_expansion);
         }
@@ -421,6 +421,24 @@ main(int argc, char **argv)
     if (!search_flags.hide_messages)
         fprintf(stderr, "\n\nWriting database for fine BLAST\n\n");
     write_fine_db(oseqs);
+
+    for (i = 0; i < oseqs->size; i++) {
+        struct cb_hit_expansion *current =
+            (struct cb_hit_expansion *)ds_vector_get(oseqs, i);
+        int current_start = current->offset;
+        int current_end = current_start + current->seq->length;
+        int org_seq_id = current->seq->id;
+        char *current_seq = current->seq->residues;
+        struct cb_range_tree *tree = (struct cb_range_tree *)
+                                         ds_geti(range_trees, org_seq_id);
+        struct cb_range_node *current_node =
+            cb_range_tree_find(tree, current_start, current_end);
+        if (!is_complete_overlap(current_node->seq, current_seq))
+            fprintf(stderr, "Error in tree from sequence #%d, %d-%d\n"
+                            "%s does not overlap %s\n\n", org_seq_id,
+                            current_start, current_end, current_node->seq,
+                                                             current_seq);
+    }
 
 /**********/  write_fine_db_from_trees(range_trees);
     blast_fine(args->args[1], expanded_dbsize, blast_args, has_evalue);
@@ -444,34 +462,6 @@ main(int argc, char **argv)
 
     ds_vector_free_no_data(oseqs);
 /*    ds_hashmap_free(range_trees, true, true);*/
-    struct cb_range_tree *t = cb_range_tree_create(""); 
-    fprintf(stderr, "Inserting %s at %d-%d\n", "AAAAA", 25, 30);
-    cb_range_tree_insert(t, "AAAAA", 25, 30);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "TTTTT", 10, 15);
-    cb_range_tree_insert(t, "TTTTT", 10, 15);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "GGGGG", 2, 7);
-    cb_range_tree_insert(t, "GGGGG", 2, 7);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "GGAAC", 18, 23);
-    cb_range_tree_insert(t, "GGAAC", 18, 23);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "CCCCCCCCCC", 50, 60);
-    cb_range_tree_insert(t, "CCCCCCCCCC", 50, 60);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "TTAAAA", 32, 38);
-    cb_range_tree_insert(t, "TTAAAA", 32, 38);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "CC", 43, 45);
-    cb_range_tree_insert(t, "CC", 43, 45);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "AAAAA", 65, 70);
-    cb_range_tree_insert(t, "AAAAA", 65, 70);
-    cb_range_tree_output_data(t, stderr);
-    fprintf(stderr, "Inserting %s at %d-%d\n", "AACTTAAAAAGGTTA", 20, 35);
-    cb_range_tree_insert(t, "AACTTAAAAAGGTTA", 20, 35);
-    cb_range_tree_output_data(t, stderr);
 
     cb_database_free(db);
     xmlFreeDoc(doc);
