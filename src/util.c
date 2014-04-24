@@ -113,3 +113,25 @@ str_slice(char *str, int32_t start, int32_t end)
 
     return ret;
 }
+
+bool
+is_complete_overlap(char *s1, char *s2){
+    int i, j, len1, len2;
+    assert(s1 != NULL && s2 != NULL);
+
+    len1 = strlen(s1);
+    len2 = strlen(s2);
+
+    if (len2 == 0)
+        return true;
+    for (i = 0; i <= len1-len2; i++)
+        for (j = 0; j < len2; j++)
+            if (s2[j] == s1[i+j]) {
+                if (j == len2 - 1)
+                    return true;
+            }
+            else
+                break;
+    return false;
+}
+

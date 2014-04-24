@@ -17,7 +17,7 @@ struct cb_range_tree {
     struct cb_range_node *root;
 };
 
-struct cb_range_node_data{
+struct cb_range_node_data {
     int start;
     int end;
     char *seq;
