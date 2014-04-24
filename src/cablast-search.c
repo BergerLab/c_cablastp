@@ -352,6 +352,7 @@ main(int argc, char **argv)
     char *blast_args = NULL;
     bool has_evalue = false;
 
+    /*fprintf(stderr, "%s\n", cb_range_merge("AAAAA", 5, 10, "CCAAAAACC", 3, 12));return 0;*/
     conf = load_search_args();
     args = opt_config_parse(conf, argc, argv);
 
@@ -443,6 +444,34 @@ main(int argc, char **argv)
 
     ds_vector_free_no_data(oseqs);
 /*    ds_hashmap_free(range_trees, true, true);*/
+    struct cb_range_tree *t = cb_range_tree_create(""); 
+    fprintf(stderr, "Inserting %s at %d-%d\n", "AAAAA", 25, 30);
+    cb_range_tree_insert(t, "AAAAA", 25, 30);
+    cb_range_tree_output_data(t, stderr);
+    fprintf(stderr, "Inserting %s at %d-%d\n", "TTTTT", 10, 15);
+    cb_range_tree_insert(t, "TTTTT", 10, 15);
+    cb_range_tree_output_data(t, stderr);
+    fprintf(stderr, "Inserting %s at %d-%d\n", "GGGGG", 2, 7);
+    cb_range_tree_insert(t, "GGGGG", 2, 7);
+    cb_range_tree_output_data(t, stderr);
+    fprintf(stderr, "Inserting %s at %d-%d\n", "GGAAC", 18, 23);
+    cb_range_tree_insert(t, "GGAAC", 18, 23);
+    cb_range_tree_output_data(t, stderr);
+    fprintf(stderr, "Inserting %s at %d-%d\n", "CCCCCCCCCC", 50, 60);
+    cb_range_tree_insert(t, "CCCCCCCCCC", 50, 60);
+    cb_range_tree_output_data(t, stderr);
+    fprintf(stderr, "Inserting %s at %d-%d\n", "TTAAAA", 32, 38);
+    cb_range_tree_insert(t, "TTAAAA", 32, 38);
+    cb_range_tree_output_data(t, stderr);
+    fprintf(stderr, "Inserting %s at %d-%d\n", "CC", 43, 45);
+    cb_range_tree_insert(t, "CC", 43, 45);
+    cb_range_tree_output_data(t, stderr);
+    fprintf(stderr, "Inserting %s at %d-%d\n", "AAAAA", 65, 70);
+    cb_range_tree_insert(t, "AAAAA", 65, 70);
+    cb_range_tree_output_data(t, stderr);
+    fprintf(stderr, "Inserting %s at %d-%d\n", "AACTTAAAAAGGTTA", 20, 35);
+    cb_range_tree_insert(t, "AACTTAAAAAGGTTA", 20, 35);
+    cb_range_tree_output_data(t, stderr);
 
     cb_database_free(db);
     xmlFreeDoc(doc);

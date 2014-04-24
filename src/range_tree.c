@@ -16,14 +16,13 @@ struct cb_range_node *cb_range_node_create(char *sequence, int start, int end){
     node = malloc(sizeof(*node));
     assert(node);
 
-    node->start = start;
-    node->end = end;
-
     node->seq = malloc((end-start+2)*sizeof(*(node->seq)));
     assert(node->seq);
 
     strncpy(node->seq, sequence, (end-start+1));
     node->seq[end-start+1] = '\0';
+    node->start = start;
+    node->end = end;
 
     node->left = NULL;
     node->right = NULL;
@@ -173,7 +172,7 @@ struct cb_range_node_data *remove_adjacent(struct cb_range_node *cur,
      *passed in, call the next call to remove_adjacent from the current node.
      */
     if (next_adjacent) {
-        if (left && next->start < data->start)
+        if (left && next->start < data->start || !left && next->end > data->end)
             cb_range_node_data_update(data, next->start, next->end, next->seq);
 
         new_next = left ? next->left : next->right;
@@ -246,12 +245,14 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *cur,
     }
     else {
         if (start < cur->start) {
+fprintf(stderr, "Starting left merge\n");
             /*If the new range overlaps the current node's range to the left,
              *update the current node's range and sequence to merge the current
              *node's range and sequence with the new range and sequence.
              */
+            int left_merge_end = end < cur->end ? end : cur->end;
             cb_range_node_update(cur,
-                             cb_range_merge(sequence, start, end,
+                             cb_range_merge(sequence, start, left_merge_end,
                                             cur->seq, cur->start, cur->end),
                              start, cur->end);
             /*Search the tree for the leftmost node that overlaps the new range
@@ -261,14 +262,14 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *cur,
 
             /*If remove_adjacent found a node that overlaps the new range, merge
               it with the current node.*/
-            if (last->start < start) {
+            if (last->start < start)
                 cb_range_node_update(cur,
                                  cb_range_merge(last->seq,last->start,last->end,
                                                 cur->seq, cur->start, cur->end),
-                                 start, cur->end);
-            }
+                                 last->start, cur->end);
         }
         if (end > cur->end) {
+fprintf(stderr, "Starting right merge\n");
             /*If the new range overlaps the current node's range to the right,
              *update the current node's range and sequence to merge the current
              *node's range and sequence with the new range and sequence.
@@ -281,15 +282,15 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *cur,
               to the right, deleting any node overlapping the new range.*/
             last = cb_range_node_data_create(start, end, sequence);
             remove_adjacent(cur, start, end, 1, last);
+fprintf(stderr, "last->end = %d\n", last->end);
 
             /*If remove_adjacent found a node that overlaps the new range, merge
               it with the current node.*/
-            if (last->end > end) {
+            if (last->end > end)
                 cb_range_node_update(cur,
                                  cb_range_merge(cur->seq, cur->start, cur->end,
                                             last->seq, last->start, last->end),
-                                 cur->start, end);
-            }
+                                 cur->start, last->end);
         }
     }
     return cur;
@@ -299,12 +300,14 @@ struct cb_range_node *cb_range_node_insert(struct cb_range_node *cur,
   original sequence and merges the sequences together.*/
 char *cb_range_merge(char *left_seq, int left_start, int left_end,
                      char *right_seq, int right_start, int right_end){
-fprintf(stderr, "Merging %d-%d and %d-%d\n", left_start, left_end, right_start, right_end);
+fprintf(stderr, "Merging %d-%d (%s) and %d-%d (%s)\n", left_start, left_end, left_seq,
+                                                       right_start, right_end, right_seq);
     int index = 0, i = 0;
     char *merged = NULL;
 
+    /*Make sure we are merging valid ranges*/
     assert(left_end > left_start && right_end > right_start);
-    assert(left_end >= right_start && right_end >= left_start);
+    assert(left_start <= right_end && right_end >= left_end);
     assert(left_seq != NULL && right_seq != NULL);
 
     merged = malloc((right_end-left_start+1)*sizeof(*merged));
@@ -315,8 +318,7 @@ fprintf(stderr, "Merging %d-%d and %d-%d\n", left_start, left_end, right_start, 
     for (i = 0; i < right_end - right_start; i++)
         merged[index++] = right_seq[i];
     merged[right_end-left_start] = '\0';
-
-fprintf(stderr, "Finished merging %d-%d and %d-%d\n", left_start, left_end, right_start, right_end);
+fprintf(stderr, "Result of merge is %s\n", merged);
     return merged;
 }
 

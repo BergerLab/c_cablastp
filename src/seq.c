@@ -15,7 +15,6 @@ struct cb_seq *
 cb_seq_init_range(int32_t id, char *name, char *residues,
                    int32_t start, int32_t end)
 {
-fprintf(stderr, "cb_seq_init_range, range passed in is %d-%d", start, end);
     struct cb_seq *seq;
     int len;
 
