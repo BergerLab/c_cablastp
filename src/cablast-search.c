@@ -187,7 +187,6 @@ void add_blast_iteration(xmlNode *node, void *iterations){
         ds_vector_append((struct DSVector *)iterations, (void *)node);
 }
 
-
 /*Takes in the xmlNode for the root of a parsed BLAST XML tree and returns
   a vector of all of the nodes in the tree that represent iterations.*/
 struct DSVector *get_blast_iterations(xmlNode *node){
@@ -196,30 +195,12 @@ struct DSVector *get_blast_iterations(xmlNode *node){
     return iterations;
 }
 
-/*Takes in a vector of expansion structs for the expanded BLAST hits from a
-  query and outputs them to the FASTA file CaBLAST_fine.fasta.*/
-void write_fine_db(struct DSVector *oseqs){
-    int i;
-    FILE *fine_fasta = fopen("CaBLAST_fine.fasta", "a");
-    if (!fine_fasta) {
-        if (!search_flags.hide_messages)
-            fprintf(stderr,
-                    "Could not open CaBLAST_fine.fasta for appending\n");
-        return;
-    }
-    for (i = 0; i < oseqs->size; i++) {
-        struct cb_seq *current_seq =
-            ((struct cb_hit_expansion *)ds_vector_get(oseqs, i))->seq;
-        fprintf(fine_fasta, "> %s\n%s\n", current_seq->name,
-                                          current_seq->residues);
-    }
-    fclose(fine_fasta);
-    system("makeblastdb -dbtype nucl -in CaBLAST_fine.fasta "
-                                    "-out CaBLAST_fine.fasta");
-}
-
-void write_fine_db_from_trees(struct DSHashMap *range_trees){
-    FILE *tree_expansions = fopen("tree.fasta", "w");
+/*Takes in a hash map of range trees created from the expanded BLAST hits
+ *for each original sequence and outputs them to the FASTA file
+ *CaBLAST_fine.fasta
+ */
+void write_fine_db(struct DSHashMap *range_trees){
+    FILE *tree_expansions = fopen("CaBLAST_fine.fasta", "w");
     int i = 0;
 
     ds_hashmap_sort_keys(range_trees);
@@ -421,65 +402,10 @@ main(int argc, char **argv)
         ds_vector_free_no_data(expanded_hits);
     }
 
-    /*if (!search_flags.hide_messages)
+    if (!search_flags.hide_messages)
         fprintf(stderr, "\n\nWriting database for fine BLAST\n\n");
-    write_fine_db(oseqs);*/
-
-    ds_vector_sort(oseqs, range_start_cmp);
-
-    for (i = 0; i < oseqs->size; i++) {
-        struct cb_hit_expansion *current =
-            (struct cb_hit_expansion *)ds_vector_get(oseqs, i);
-        int current_start = current->offset;
-        int current_end = current_start + current->seq->length;
-        int org_seq_id = current->seq->id;
-        char *current_seq = current->seq->residues;
-        struct cb_range_tree *tree = (struct cb_range_tree *)
-                                         ds_geti(range_trees, org_seq_id);
-        struct cb_range_node *current_node =
-            cb_range_tree_find(tree, current_start, current_end);
-        if ((!is_complete_overlap(current_node->seq, current_seq))){
-            fprintf(stderr, "Error in tree from sequence #%d, %d-%d\n"
-                    "%s\ndoes not overlap\n%d-%d\n%s\n\n", org_seq_id,
-                    current_start, current_end, current_seq,
-                    current_node->start, current_node->end, current_node->seq);
-            printf("Error in tree from sequence #%d, %d-%d\n"
-                    "%s\ndoes not overlap\n%d-%d\n%s\n\n", org_seq_id,
-                    current_start, current_end, current_seq,
-                    current_node->start, current_node->end, current_node->seq);
-        }
-    }
-
-printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-
-    for (i = 0; i < 10; i++) {
-        printf("\n\nPrinting sequences from original sequence #%d\n\n", i);
-        for (j = 0; j < oseqs->size; j++) {
-            struct cb_hit_expansion *current =
-                (struct cb_hit_expansion *)ds_vector_get(oseqs, j);
-            int current_start = current->offset;
-            int current_end = current_start + current->seq->length;
-            int org_seq_id = current->seq->id;
-            if (org_seq_id == i)
-                printf("%d-%d\n", current_start, current_end);
-        }
-        printf("___________________________________________________\n");
-    }
-
-printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n");
-
-printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-    for (i = 0; i < 10; i++) {
-        printf("\n\nPrinting tree #%d\n\n", i);
-        struct cb_range_tree *tree = (struct cb_range_tree *)
-                                      ds_geti(range_trees, i);
-        cb_range_tree_output_ranges(tree, stdout);
-    }
-printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
-
-
-/*  write_fine_db_from_trees(range_trees);
-    blast_fine(args->args[1], expanded_dbsize, blast_args, has_evalue);*/
+    write_fine_db(range_trees);
+    blast_fine(args->args[1], expanded_dbsize, blast_args, has_evalue);
 
     ds_vector_free_no_data(queries);
 
