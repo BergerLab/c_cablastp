@@ -333,6 +333,10 @@ char *progress_bar(int current, int iterations){
     return bar;
 }
 
+int32_t range_start_cmp(void *a, void *b){
+    return ((struct cb_hit_expansion *)a)->offset -
+           ((struct cb_hit_expansion *)b)->offset;
+}
 
 int
 main(int argc, char **argv)
@@ -421,10 +425,12 @@ main(int argc, char **argv)
         fprintf(stderr, "\n\nWriting database for fine BLAST\n\n");
     write_fine_db(oseqs);*/
 
+    ds_vector_sort(oseqs, range_start_cmp);
+
     for (i = 0; i < oseqs->size; i++) {
         struct cb_hit_expansion *current =
             (struct cb_hit_expansion *)ds_vector_get(oseqs, i);
-        int current_start = current->offset-1;
+        int current_start = current->offset;
         int current_end = current_start + current->seq->length;
         int org_seq_id = current->seq->id;
         char *current_seq = current->seq->residues;
@@ -434,15 +440,42 @@ main(int argc, char **argv)
             cb_range_tree_find(tree, current_start, current_end);
         if ((!is_complete_overlap(current_node->seq, current_seq))){
             fprintf(stderr, "Error in tree from sequence #%d, %d-%d\n"
-                    "%s\ndoes not overlap\n%s\n\n", org_seq_id,
-                    current_start, current_end, current_node->seq,
-                                                      current_seq);
+                    "%s\ndoes not overlap\n%d-%d\n%s\n\n", org_seq_id,
+                    current_start, current_end, current_seq,
+                    current_node->start, current_node->end, current_node->seq);
             printf("Error in tree from sequence #%d, %d-%d\n"
-                   "%s\ndoes not overlap\n%s\n\n", org_seq_id,
-                   current_start, current_end, current_node->seq,
-                                                     current_seq);
+                    "%s\ndoes not overlap\n%d-%d\n%s\n\n", org_seq_id,
+                    current_start, current_end, current_seq,
+                    current_node->start, current_node->end, current_node->seq);
         }
     }
+
+printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+
+    for (i = 0; i < 10; i++) {
+        printf("\n\nPrinting sequences from original sequence #%d\n\n", i);
+        for (j = 0; j < oseqs->size; j++) {
+            struct cb_hit_expansion *current =
+                (struct cb_hit_expansion *)ds_vector_get(oseqs, j);
+            int current_start = current->offset;
+            int current_end = current_start + current->seq->length;
+            int org_seq_id = current->seq->id;
+            if (org_seq_id == i)
+                printf("%d-%d\n", current_start, current_end);
+        }
+        printf("___________________________________________________\n");
+    }
+
+printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n\n\n");
+
+printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
+    for (i = 0; i < 10; i++) {
+        printf("\n\nPrinting tree #%d\n\n", i);
+        struct cb_range_tree *tree = (struct cb_range_tree *)
+                                      ds_geti(range_trees, i);
+        cb_range_tree_output_ranges(tree, stdout);
+    }
+printf("!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!\n");
 
 
 /*  write_fine_db_from_trees(range_trees);

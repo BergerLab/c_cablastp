@@ -186,16 +186,6 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
             expansion = cb_hit_expansion_init(link->org_seq_id, seq->name,
                                               orig_str,(int64_t)original_start);
 
-if (link->org_seq_id == 2){
-    printf("Inserting into tree #%d\n", link->org_seq_id);
-    printf("%d-%d\n", original_start, original_end);
-    printf("%s\n", orig_str);
-}
-struct cb_range_node *test = cb_range_tree_find(tree, original_start,
-                                                      original_end);
-if (link->org_seq_id == 2)
-    printf("%d-%d\n%s\n\n\n", test->start, test->end, test->seq);
-/*fprintf(stderr, cb_range_tree_find());*/
             ds_vector_append(oseqs, (void *)expansion);
             free(orig_str);
             cb_compressed_seq_free(seq);
