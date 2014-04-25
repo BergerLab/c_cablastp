@@ -192,6 +192,7 @@ cb_coarse_expand(struct cb_coarse *coarsedb, struct cb_compressed *comdb,
         }
     }
 
+    free(seq_lengths);
     ds_vector_free(coarse_seq_links);
     return oseqs;
 }

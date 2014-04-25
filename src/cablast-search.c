@@ -406,6 +406,7 @@ main(int argc, char **argv)
         fprintf(stderr, "\n\nWriting database for fine BLAST\n\n");
     write_fine_db(range_trees);
     blast_fine(args->args[1], expanded_dbsize, blast_args, has_evalue);
+    free(blast_args);
 
     ds_vector_free_no_data(queries);
 
@@ -425,7 +426,9 @@ main(int argc, char **argv)
             (struct cb_hit_expansion *)ds_vector_get(oseqs, i));
 
     ds_vector_free_no_data(oseqs);
-/*    ds_hashmap_free(range_trees, true, true);*/
+    for (i = 0; i < range_trees->keys->size; i++)
+        cb_range_tree_free((struct cb_range_tree *)ds_geti(range_trees,i));
+    ds_hashmap_free(range_trees, false, true);
 
     cb_database_free(db);
     xmlFreeDoc(doc);

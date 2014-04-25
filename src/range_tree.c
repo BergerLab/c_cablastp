@@ -62,6 +62,7 @@ void cb_range_node_free(struct cb_range_node *node){
 void cb_range_tree_free(struct cb_range_tree *tree){
     if (tree != NULL) {
         cb_range_node_free(tree->root);
+        free(tree->seq_name);
         free(tree);
     }
 }
