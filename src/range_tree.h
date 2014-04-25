@@ -69,7 +69,10 @@ void cb_range_tree_output_fasta(struct cb_range_tree *tree, FILE *out);
 
 void cb_range_node_output_data(struct cb_range_node *node,
                                struct cb_range_tree *tree, void *out);
-
 void cb_range_tree_output_data(struct cb_range_tree *tree, FILE *out);
+
+void cb_range_node_output_range(struct cb_range_node *node,
+                          struct cb_range_tree *tree, void *out);
+void cb_range_tree_output_ranges(struct cb_range_tree *tree, FILE *out);
 
 #endif

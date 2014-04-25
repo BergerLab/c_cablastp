@@ -352,7 +352,6 @@ main(int argc, char **argv)
     char *blast_args = NULL;
     bool has_evalue = false;
 
-    /*fprintf(stderr, "%s\n", cb_range_merge("AAAAA", 5, 10, "CCAAAAACC", 3, 12));return 0;*/
     conf = load_search_args();
     args = opt_config_parse(conf, argc, argv);
 
@@ -418,14 +417,14 @@ main(int argc, char **argv)
         ds_vector_free_no_data(expanded_hits);
     }
 
-    if (!search_flags.hide_messages)
+    /*if (!search_flags.hide_messages)
         fprintf(stderr, "\n\nWriting database for fine BLAST\n\n");
-    write_fine_db(oseqs);
+    write_fine_db(oseqs);*/
 
     for (i = 0; i < oseqs->size; i++) {
         struct cb_hit_expansion *current =
             (struct cb_hit_expansion *)ds_vector_get(oseqs, i);
-        int current_start = current->offset;
+        int current_start = current->offset-1;
         int current_end = current_start + current->seq->length;
         int org_seq_id = current->seq->id;
         char *current_seq = current->seq->residues;
@@ -433,15 +432,21 @@ main(int argc, char **argv)
                                          ds_geti(range_trees, org_seq_id);
         struct cb_range_node *current_node =
             cb_range_tree_find(tree, current_start, current_end);
-        if (!is_complete_overlap(current_node->seq, current_seq))
+        if ((!is_complete_overlap(current_node->seq, current_seq))){
             fprintf(stderr, "Error in tree from sequence #%d, %d-%d\n"
-                            "%s does not overlap %s\n\n", org_seq_id,
-                            current_start, current_end, current_node->seq,
-                                                             current_seq);
+                    "%s\ndoes not overlap\n%s\n\n", org_seq_id,
+                    current_start, current_end, current_node->seq,
+                                                      current_seq);
+            printf("Error in tree from sequence #%d, %d-%d\n"
+                   "%s\ndoes not overlap\n%s\n\n", org_seq_id,
+                   current_start, current_end, current_node->seq,
+                                                     current_seq);
+        }
     }
 
-/**********/  write_fine_db_from_trees(range_trees);
-    blast_fine(args->args[1], expanded_dbsize, blast_args, has_evalue);
+
+/*  write_fine_db_from_trees(range_trees);
+    blast_fine(args->args[1], expanded_dbsize, blast_args, has_evalue);*/
 
     ds_vector_free_no_data(queries);
 
