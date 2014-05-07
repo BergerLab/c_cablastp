@@ -212,6 +212,9 @@ void write_fine_db(struct DSHashMap *range_trees){
         cb_range_tree_output_fasta(tree, tree_expansions);
     }
     fclose(tree_expansions);
+
+    system("makeblastdb -dbtype nucl -in CaBLAST_fine.fasta -out "
+           "CaBLAST_fine.fasta");
 }
 
 /*Takes in the arguments for the program and returns a string of all of the
